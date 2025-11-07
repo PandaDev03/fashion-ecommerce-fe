@@ -1,8 +1,10 @@
-import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+import { defineConfig, loadEnv, UserConfig } from 'vite';
+import svgr from 'vite-plugin-svgr';
+import tailwindcss from '@tailwindcss/vite'
+
 import { resolve } from 'path';
 import sass from 'sass';
-import svgr from 'vite-plugin-svgr';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -11,6 +13,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      tailwindcss(),
       svgr({
         svgrOptions: {
           exportType: 'named',
@@ -46,5 +49,5 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       include: [],
     },
-  };
+  } as UserConfig;
 });
