@@ -1,4 +1,5 @@
 import { Flex, Spin } from 'antd';
+import { memo } from 'react';
 
 const Loading = () => {
   return (
@@ -19,4 +20,4 @@ const Loading = () => {
   );
 };
 
-export default Loading;
+export default memo(Loading);
