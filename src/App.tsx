@@ -1,5 +1,12 @@
+import { App as AntApp } from 'antd';
+import AppRouter from './routing/AppRouter';
+
 const App = () => {
-  return <div></div>;
+  return (
+    <AntApp>
+      <AppRouter />
+    </AntApp>
+  );
 };
 
 export default App;
