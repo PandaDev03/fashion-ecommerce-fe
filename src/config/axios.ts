@@ -7,6 +7,7 @@ import axios, {
 } from 'axios';
 
 import { logOut } from '~/features/user';
+import { PATH } from '~/shared/utils/path';
 import toast from '~/shared/utils/toast';
 import { AppStore } from '~/store';
 
@@ -35,7 +36,6 @@ const refreshAccessToken = async () => {
   return response.data.accessToken;
 };
 
-// Thêm type cho store
 export const setupAxiosInterceptors = (store: AppStore) => {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
@@ -93,7 +93,7 @@ export const setupAxiosInterceptors = (store: AppStore) => {
 
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-          // window.location.href = PATH.USER_SIGN_IN;
+          window.location.href = PATH.LOGIN;
 
           toast.warning(
             'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
