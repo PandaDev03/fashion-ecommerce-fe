@@ -1,5 +1,9 @@
 export { ReactComponent as ArrowDown } from './arrow-down.svg';
 export { ReactComponent as Cart } from './cart.svg';
 export { ReactComponent as EmptyCart } from './empty-cart.svg';
+export { ReactComponent as Facebook } from './facebook.svg';
+export { ReactComponent as Instagram } from './instagram.svg';
 export { ReactComponent as LOGO } from './logo.svg';
 export { ReactComponent as Search } from './search.svg';
+export { ReactComponent as Twitter } from './twitter.svg';
+export { ReactComponent as Youtube } from './youtube.svg';
