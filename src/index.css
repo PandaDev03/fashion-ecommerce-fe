@@ -2,8 +2,9 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-body: #5A5A5A;
+  --color-body: #5a5a5a;
   --color-primary: #212121;
+  --color-header: rgb(244 244 244);
 }
 
 html {
@@ -18,6 +19,7 @@ html {
 
 .ant-app,
 .ant-layout {
+  font-size: 14px;
   font-family: 'Open Sans', sans-serif !important;
   font-optical-sizing: auto;
   font-weight: 400;
