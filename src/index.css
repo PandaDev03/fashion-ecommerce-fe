@@ -2,29 +2,23 @@
 @import 'tailwindcss';
 
 @theme {
+  --font-segoe: Segoe UI, sans-serif;
+
   --color-body: #5a5a5a;
   --color-primary: #212121;
   --color-header: rgb(244 244 244);
-}
 
-html {
-  scroll-behavior: smooth;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  --tw-shadow-colored: 0 6px 12px var(--tw-shadow-color);
+  --shadow-product: 0 0 #0000, 0 0 #0000, 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
 :root {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-.ant-app,
-.ant-layout {
-  font-size: 14px;
-  font-family: 'Open Sans', sans-serif !important;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  font-variation-settings: 'wdth' 100;
 }
 
 :root {
@@ -37,4 +31,19 @@ html {
   --button-primary-bg-color-hover: #323332;
 
   --button-outline-border-color: #e6e6e6;
+  --button-primary-border-color: #212121;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.ant-app,
+.ant-layout {
+  font-size: 14px;
+  font-family: 'Open Sans', sans-serif !important;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings: 'wdth' 100;
 }
