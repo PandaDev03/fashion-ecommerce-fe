@@ -49,6 +49,8 @@
   border-color: var(--button-outline-border-color);
 
   &:hover {
+    color: white;
+    background: var(--button-secondary-color);
     border-color: var(--button-primary-border-color);
   }
 }

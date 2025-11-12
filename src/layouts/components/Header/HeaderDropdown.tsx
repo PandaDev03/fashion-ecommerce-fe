@@ -13,7 +13,7 @@ const HeaderDropdown = ({ children, menuItems }: HeaderDropdown) => {
     <div className="relative group">
       {children}
       <div
-        className="absolute rounded-xs opacity-0 invisible top-[130%] ltr:-left-28 rtl:-right-28 transition-all duration-300 ease-in-out group-has-hover:top-full group-has-hover:opacity-100 group-has-hover:visible"
+        className="absolute rounded-xs opacity-0 invisible top-[130%] ltr:-left-28 rtl:-right-28 transition-all duration-300 ease-in-out group-has-hover:top-full group-has-hover:opacity-100 group-has-hover:visible z-10"
         style={{
           boxShadow:
             'var(0 0 #0000, 0 0 #0000), var(0 0 #0000, 0 0 #0000), var(0 2px 3px rgba(0, 0, 0, .08))',

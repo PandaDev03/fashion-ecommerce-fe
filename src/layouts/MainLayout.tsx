@@ -5,7 +5,7 @@ import { Footer, Header } from './components';
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
   return (
-    <Layout className="min-h-screen">
+    <Layout className="min-h-screen bg-white!">
       <Header />
       <div>{children}</div>
       <Footer />

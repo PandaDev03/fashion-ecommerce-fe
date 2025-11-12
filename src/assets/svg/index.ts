@@ -1,9 +1,15 @@
 export { ReactComponent as ArrowDown } from './arrow-down.svg';
+export { ReactComponent as ArrowLeft } from './arrow-left.svg';
+export { ReactComponent as ArrowRight } from './arrow-right.svg';
 export { ReactComponent as Cart } from './cart.svg';
 export { ReactComponent as EmptyCart } from './empty-cart.svg';
 export { ReactComponent as Facebook } from './facebook.svg';
 export { ReactComponent as Instagram } from './instagram.svg';
+export { ReactComponent as Link } from './link.svg';
 export { ReactComponent as LOGO } from './logo.svg';
+export { ReactComponent as MasterCard } from './mastercard.svg';
+export { ReactComponent as PlaceholderMedium } from './placeholder-medium.svg';
+export { ReactComponent as PlaceholderSmall } from './placeholder-small.svg';
 export { ReactComponent as Search } from './search.svg';
 export { ReactComponent as Twitter } from './twitter.svg';
 export { ReactComponent as Youtube } from './youtube.svg';
