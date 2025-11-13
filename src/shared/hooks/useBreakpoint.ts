@@ -47,7 +47,7 @@ export const useBreakpoint = () => {
     };
 
   return {
-    // isXs: width < breakpoints.sm,
+    is2Xs: width < breakpoints.sm,
     isXs: width >= breakpoints.xs,
     isSm: width >= breakpoints.sm,
     isMd: width >= breakpoints.md,

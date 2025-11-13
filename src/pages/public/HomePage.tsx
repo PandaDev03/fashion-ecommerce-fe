@@ -58,13 +58,20 @@ interface Product {
 interface PageContent {
   key: string;
   title?: ReactNode;
-  children: ReactElement;
+  children: ReactElement | (() => ReactElement);
 }
 
 interface TopBrand {
   key: string;
   brandSrc: string;
   backgroundSrc: string;
+}
+
+interface Casual {
+  key: string;
+  img: string;
+  title: string;
+  subTitle: string;
 }
 
 interface SpanClasses {
@@ -75,13 +82,11 @@ interface SpanClasses {
 const spanClasses: SpanClasses = {
   cols: {
     1: 'col-span-1',
-    2: 'col-span-2',
-    3: 'col-span-3',
-    4: 'col-span-4',
+    2: 'lg:col-span-2',
   },
   rows: {
-    1: 'row-span-1',
-    2: 'row-span-2',
+    1: 'lg:row-span-1',
+    2: 'lg:row-span-2',
   },
 };
 
@@ -470,7 +475,7 @@ const newArrivals: Product[] = [
   },
 ];
 
-const casualItems = [
+const casualItems: Casual[] = [
   {
     key: 'spring',
     img: NewSpringKnits,
@@ -494,16 +499,44 @@ const casualItems = [
   },
 ];
 
+const shopByGender = [
+  {
+    key: '1',
+    year: 20,
+    img: WOMEN,
+    title: 'new year',
+    buttonTitle: '#dành riêng cho phụ nữ',
+    resButtonTitle: '#dành cho nữ',
+  },
+  {
+    key: '2',
+    year: 26,
+    img: MEN,
+    title: 'exclusive',
+    buttonTitle: '#dành riêng cho nam giới',
+    resButtonTitle: '#dành cho nam',
+  },
+];
+
 const HomePage = () => {
   const [subscriptionForm] = useForm();
-  const { isSm, isMd, isLg, isXl } = useBreakpoint();
+  const { is2Xs, isXs, isSm, isMd, isLg, isXl } = useBreakpoint();
+
+  console.log({
+    is2Xs: is2Xs,
+    isXs: isXs,
+    isSm: isSm,
+    isMd: isMd,
+    isLg: isLg,
+    isXl: isXl,
+  });
 
   const pageContents: PageContent[] = [
     {
       key: 'collections',
       children: (
-        <div className="grid grid-cols-9 gap-2.5">
-          <div className="relative col-span-5">
+        <div className="grid grid-cols-2 sm:grid-cols-9 gap-2.5">
+          <div className="relative col-span-2 sm:col-span-5">
             <Image
               width="100%"
               height="100%"
@@ -512,7 +545,7 @@ const HomePage = () => {
               className="cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
             />
           </div>
-          <span className="col-span-2">
+          <span className="col-span-1 sm:col-span-2">
             <Image
               width="100%"
               height="100%"
@@ -521,7 +554,7 @@ const HomePage = () => {
               className="cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
             />
           </span>
-          <span className="col-span-2">
+          <span className="col-span-1 sm:col-span-2">
             <Image
               width="100%"
               height="100%"
@@ -539,6 +572,7 @@ const HomePage = () => {
       children: (
         <Swiper
           loop
+          arrows
           autoplay
           spaceBetween={10}
           slidesPerView={isXl ? 7 : isLg ? 5 : isMd ? 4 : isSm ? 3 : 2}
@@ -558,7 +592,7 @@ const HomePage = () => {
                   {icon}
                 </Flex>
                 <Flex vertical>
-                  <h4 className="text-heading text-sm md:text-base xl:text-lg font-semibold capitalize mb-1 select-none">
+                  <h4 className="text-heading text-sm md:text-base xl:text-lg font-semibold capitalize mb-1 select-none truncate">
                     {title}
                   </h4>
                   <p className="text-sm sm:leading-6 leading-7 text-body pb-0.5 truncate select-none">
@@ -582,7 +616,7 @@ const HomePage = () => {
       key: 'featured-products',
       title: 'Sản phẩm nổi bật',
       children: (
-        <div className="grid grid-cols-4 grid-rows-2 gap-7">
+        <div className="grid grid-rows-2 grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 xl:gap-7">
           {featuredProducts?.map((product) => (
             <Flex
               vertical
@@ -600,28 +634,29 @@ const HomePage = () => {
                 />
               </Flex>
               <Flex
-                align="center"
                 justify="space-between"
-                className="w-full px-7! pb-7! shrink-0"
+                className="items-center overflow-hidden w-full px-7! pb-7! max-2xl:px-4! max-2xl:pb-4! shrink-0 max-2xl:flex-col max-2xl:items-start"
               >
-                <Flex vertical justify="space-between">
-                  <h4 className="text-lg text-primary">{product?.title}</h4>
-                  <p className="text-base text-body truncate max-w-[250px]">
+                <Flex vertical justify="space-between" className="w-full">
+                  <h4 className="text-sm font-semibold truncate md:text-base xl:text-lg text-primary max-2xl:mb-1">
+                    {product?.title}
+                  </h4>
+                  <p className="text-sm max-2xl:text-xs text-body truncate max-w-[250px]">
                     {product?.subTitle}
                   </p>
                 </Flex>
-                <Flex vertical align="end">
+                <Flex className="flex-col items-end max-2xl:items-start max-2xl:flex-row-reverse max-2xl:gap-x-2">
                   {product?.originalPrice && (
-                    <p className="text-lg text-body line-through">
-                      {product?.originalPrice} $
+                    <p className="text-lg max-2xl:text-sm text-body line-through">
+                      {product?.originalPrice}$
                     </p>
                   )}
-                  <p className="text-2xl text-primary font-semibold font-segoe">
-                    {product?.price} $
+                  <p className="max-2xl:text-base text-2xl text-primary font-semibold font-segoe">
+                    {product?.price}$
                   </p>
                 </Flex>
               </Flex>
-              <p className="absolute pt-0.5 pb-1 px-3 bg-primary text-white rounded-md top-7 left-7">
+              <p className="absolute pt-0.5 pb-1 px-3 bg-primary text-white rounded-md top-3 left-3 lg:top-7 lg:left-7">
                 20%
               </p>
             </Flex>
@@ -633,10 +668,16 @@ const HomePage = () => {
       key: 'flash-sale',
       title: 'Flash sale',
       children: (
-        <Swiper loop autoplay spaceBetween={10} slidesPerView={5}>
+        <Swiper
+          loop
+          arrows
+          autoplay
+          spaceBetween={10}
+          slidesPerView={isXl ? 5 : isSm ? 3 : 2}
+        >
           {flashSales?.map(({ key, img, ...item }) => (
             <SwiperSlide key={key}>
-              <ProductCard size="sm" imgSrc={img} {...item} />
+              <ProductCard vertical size="sm" imgSrc={img} {...item} />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -656,7 +697,7 @@ const HomePage = () => {
       key: 'top-brands',
       title: 'Thương hiệu hàng đầu',
       children: (
-        <div className="grid grid-cols-6 gap-7">
+        <div className="grid grid-cols-2 sm:grid-cols-4 2xl:grid-cols-6 gap-2.5 md:gap-3 lg:gap-5 xl:gap-7">
           {topBrands?.map((topBrand) => (
             <Flex
               justify="center"
@@ -704,35 +745,16 @@ const HomePage = () => {
       key: 'top-products',
       title: 'Sản phẩm hàng đầu',
       children: (
-        <div className="grid grid-cols-3 gap-7">
-          {topProducts?.map((topProduct) => (
-            <Flex
-              key={topProduct.key}
-              className="group col-span-1 bg-[#f9f9f9] cursor-pointer"
-            >
-              <div className="flex shrink-0 w-64 max-h-64 overflow-hidden">
-                <Image
-                  src={topProduct?.img}
-                  className="transition-all duration-300 ease-in-out group-has-hover:scale-110"
-                />
-              </div>
-              <Flex vertical justify="center" className="p-2! pl-10!">
-                <h4 className="font-semibold text-lg text-primary mb-1.5">
-                  {topProduct?.title}
-                </h4>
-                <p className="truncate text-body max-w-[250px]">
-                  {topProduct?.subTitle}
-                </p>
-                <Flex className="mt-3! gap-x-2">
-                  <p className="font-semibold text-xl text-primary">
-                    {topProduct?.price}$
-                  </p>
-                  <p className="line-through text-body">
-                    {topProduct?.originalPrice}$
-                  </p>
-                </Flex>
-              </Flex>
-            </Flex>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+          {topProducts?.map(({ key, img, ...product }) => (
+            <ProductCard
+              key={key}
+              imgSrc={img}
+              customClassNames={{
+                img: 'shrink-0 w-32 sm:w-44 md:w-40 lg:w-52 2xl:w-56 3xl:w-64',
+              }}
+              {...product}
+            />
           ))}
         </div>
       ),
@@ -742,48 +764,66 @@ const HomePage = () => {
       children: (
         <div className="rounded-md overflow-hidden">
           <Flex justify="space-between">
-            <Flex
-              align="end"
-              justify="center"
-              className="relative group w-1/2 bg-gray-100"
-            >
-              <Image
-                src={WOMEN}
-                className="transition-all duration-200 ease-in-out group-has-hover:scale-105"
-              />
-              <Button
-                displayType="outlined"
-                title="#dành riêng cho phụ nữ"
-                className="absolute left-7 top-7 text-xl uppercase py-7! px-8! shadow-product hover:bg-primary! hover:text-white! hover:border-primary!"
-              />
-              <p className="absolute right-7 top-24 uppercase leading-5 tracking-widest text-3xl text-primary opacity-10 select-none">
-                new year
-              </p>
-              <p className="absolute right-0 top-16 tracking-widest font-bold text-[240px] text-primary opacity-5 select-none">
-                20
-              </p>
-            </Flex>
-            <Flex
-              align="end"
-              justify="center"
-              className="relative group w-1/2 bg-[#ece7e3]"
-            >
-              <Image
-                src={MEN}
-                className="transition-all duration-200 ease-in-out group-has-hover:scale-105"
-              />
-              <Button
-                displayType="outlined"
-                title="#dành riêng cho nam giới"
-                className="absolute right-7 top-7 text-xl uppercase py-7! px-8! shadow-product hover:bg-primary! hover:text-white! hover:border-primary!"
-              />
-              <p className="absolute left-7 top-24 uppercase leading-5 tracking-widest text-3xl text-primary opacity-10 select-none">
-                exclusive
-              </p>
-              <p className="absolute left-5 top-16 tracking-widest font-bold text-[240px] text-primary opacity-5 select-none">
-                26
-              </p>
-            </Flex>
+            {shopByGender.map((item, index) => {
+              const isLeftBanner = !!(index % 2 == 0);
+
+              const position = {
+                leftBanner: {
+                  title: 'right-5',
+                  year: 'right-0',
+                  button: 'bottom-2 left-2 sm:bottom-5 sm:left-5 lg:top-5',
+                },
+                rightBanner: {
+                  title: 'left-4',
+                  year: 'left-4',
+                  button: 'bottom-2 right-2 sm:bottom-5 sm:right-5 lg:top-5',
+                },
+              };
+
+              return (
+                <Flex
+                  key={index}
+                  align="end"
+                  justify="center"
+                  className={classNames(
+                    'relative group w-1/2',
+                    index % 2 == 0 ? 'bg-gray-100' : 'bg-[#ece7e3]'
+                  )}
+                >
+                  <Image
+                    src={item?.img}
+                    className="transition-all duration-200 ease-in-out group-has-hover:scale-105"
+                  />
+                  <Button
+                    displayType="outlined"
+                    title={item?.[isMd ? 'buttonTitle' : 'resButtonTitle']}
+                    className={classNames(
+                      'absolute text-xs sm:text-sm xl:text-xl 2xl:text-xl uppercase px-3! sm:px-5! xl:px-6! 2xl:px-8! py-2.5! sm:py-4! xl:py-5! 2xl:py-7! shadow-product hover:bg-primary! hover:text-white! hover:border-primary!',
+                      position?.[isLeftBanner ? 'leftBanner' : 'rightBanner']
+                        ?.button
+                    )}
+                  />
+                  <p
+                    className={classNames(
+                      'absolute top-7 sm:top-10 uppercase leading-5 tracking-widest text-xs sm:text-sm lg:text-xl xl:text-2xl 3xl:text-3xl text-primary opacity-10 select-none',
+                      position?.[isLeftBanner ? 'leftBanner' : 'rightBanner']
+                        ?.title
+                    )}
+                  >
+                    {item?.title}
+                  </p>
+                  <p
+                    className={classNames(
+                      'absolute top-10 sm:top-13 lg:top-16 tracking-widest font-bold text-7xl md:text-[100px] lg:text-9xl xl:text-[200px] 2xl:text-[240px] text-primary opacity-5 select-none',
+                      position?.[isLeftBanner ? 'leftBanner' : 'rightBanner']
+                        ?.year
+                    )}
+                  >
+                    {item?.year}
+                  </p>
+                </Flex>
+              );
+            })}
           </Flex>
         </div>
       ),
@@ -792,55 +832,80 @@ const HomePage = () => {
       key: 'new-arrivals',
       title: 'Sản phẩm mới',
       children: (
-        <div className="grid grid-cols-5 gap-x-7 gap-y-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
           {newArrivals?.map(({ key, img, ...product }) => (
-            <ProductCard key={key} effect="lift" imgSrc={img} {...product} />
+            <ProductCard
+              vertical
+              key={key}
+              effect="lift"
+              imgSrc={img}
+              {...product}
+            />
           ))}
         </div>
       ),
     },
     {
       key: 'casual',
-      children: (
-        <div className="grid grid-cols-3 gap-x-7">
-          {casualItems.map((item) => (
-            <Flex
-              vertical
-              key={item.key}
-              className="group col-span-1 gap-y-7 cursor-pointer hover:opacity-85 transition-all duration-300 ease-in-out"
-            >
-              <div className="relative overflow-hidden">
-                <Image src={item?.img} className="rounded-md" />
-                <Button
-                  displayType="outlined"
-                  title="Khám phá bộ sưu tập"
-                  className="absolute w-max -bottom-10 right-10 transition-all duration-300 ease-in-out group-has-hover:bottom-10"
-                />
-              </div>
-              <Flex vertical justify="center" align="center">
-                <h4 className="font-bold text-primary text-3xl capitalize mb-3.5">
-                  {item?.title}
-                </h4>
-                <p className="leding-7 text-body text-center px-20">
-                  {item?.subTitle}
-                </p>
-              </Flex>
+      children: () => {
+        const childElement = (item: Casual) => (
+          <Flex
+            vertical
+            key={item.key}
+            className="group col-span-1 gap-y-7 cursor-pointer hover:opacity-85 transition-all duration-300 ease-in-out"
+          >
+            <div className="relative overflow-hidden">
+              <Image src={item?.img} className="rounded-md" />
+              <Button
+                displayType="outlined"
+                title="Khám phá bộ sưu tập"
+                className="absolute w-max bottom-5 right-1/2 max-lg:translate-x-1/2 lg:-bottom-10 lg:right-10 transition-all duration-300 ease-in-out lg:group-has-hover:bottom-10"
+              />
+            </div>
+            <Flex vertical justify="center" align="center">
+              <h4 className="font-bold capitalize text-center text-primary text-base md:text-base lg:text-xl 2xl:text-3xl xl:leading-10 mb-1.5 lg:mb-2.5 2xl:mb-3 3xl:mb-3.5">
+                {item?.title}
+              </h4>
+              <p className="text-center text-body text-xs md:text-sm leading-6 md:leading-7 xl:px-10 3xl:px-20">
+                {item?.subTitle}
+              </p>
             </Flex>
-          ))}
-        </div>
-      ),
+          </Flex>
+        );
+
+        if (isLg)
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-7">
+              {casualItems.map((item) => childElement(item))}
+            </div>
+          );
+
+        return (
+          <Swiper
+            loop
+            arrows
+            // autoplay
+            spaceBetween={15}
+            slidesPerView={is2Xs ? 1 : 2}
+          >
+            {casualItems.map((item) => (
+              <SwiperSlide>{childElement(item)}</SwiperSlide>
+            ))}
+          </Swiper>
+        );
+      },
     },
     {
       key: 'subscription',
       children: (
         <Flex
           vertical
-          className="relative bg-[#f9f9f9] rounded-md py-16! px-24! overflow-hidden"
+          className="relative bg-[#f9f9f9] rounded-lg overflow-hidden px-5! sm:px-8! 2xl:px-24! sm:items-center xl:items-start py-10! md:py-14! lg:py-16!"
         >
-          <h3 className="font-bold text-3xl text-primary mb-3.5">
-            Nhận lời khuyên của chuyên gia trong hộp thư đến của bạn
+          <h3 className="font-bold text-lg text-primary max-md:text-center md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 mb-2 md:mb-2.5 lg:mb-3 xl:mb-3.5">
+            Nhận lời khuyên của chuyên gia
           </h3>
-          <p className="text-sm text-body leading-7">
+          <p className="text-xs leading-6 text-body max-md:text-center md:text-sm md:leading-7">
             Đăng ký nhận bản tin của chúng tôi và cập nhật thông tin mới nhất.
           </p>
           <Form
@@ -849,21 +914,23 @@ const HomePage = () => {
             form={subscriptionForm}
             onFinish={(values) => console.log(values)}
           >
-            <FormItem className="w-[545px]">
+            <FormItem className="w-full md:max-w-[490px]">
               <Input
-                placeholder="Nhập email của bạn tại đây"
                 className="h-14"
+                placeholder="Nhập email của bạn tại đây"
               />
             </FormItem>
-            <Button
-              title="Đăng ký"
-              className="h-14 py-4! px-8!"
-              onClick={() => console.log('subscription')}
-            />
+            <FormItem className="max-md:w-full max-md:pt-1.5!">
+              <Button
+                title="Đăng ký"
+                className="w-full h-14 py-4! px-8!"
+                onClick={() => console.log('subscription')}
+              />
+            </FormItem>
           </Form>
           <div
             style={{ backgroundImage: `url(${SubscriptionBg})` }}
-            className="absolute w-full h-full right-0 top-0 bg-contain bg-right bg-no-repeat z-0"
+            className="hidden xl:block absolute w-full h-full right-0 top-0 bg-contain bg-right bg-no-repeat z-0"
           ></div>
         </Flex>
       ),
@@ -872,12 +939,7 @@ const HomePage = () => {
 
   return (
     <Layout className="bg-white! min-h-screen">
-      <Carousel
-        arrows
-        draggable
-        autoplay={{ dotDuration: true }}
-        autoplaySpeed={5000}
-      >
+      <Carousel draggable autoplaySpeed={5000} autoplay={{ dotDuration: true }}>
         <Image
           alt="banner-1"
           src={BANNER_1_FEMALE_AUTUMN}
@@ -897,20 +959,23 @@ const HomePage = () => {
 
       <Space
         direction="vertical"
-        className="mt-14 px-16 max-w-[1920px] gap-y-16!"
+        className="max-w-[1920px] mt-5 md:mt-8 gap-y-6! lg:gap-y-16! px-4! md:px-8! 2xl:px-16!"
       >
         {pageContents?.map(({ key, title, children }) => {
+          const childElement = () =>
+            typeof children === 'function' ? children() : children;
+
           if (title)
             return (
               <div key={key}>
-                <h3 className="font-bold text-3xl text-primary mb-8 capitalize">
+                <h3 className="font-bold text-lg lg:text-3xl text-primary mb-4 lg:mb-8 capitalize">
                   {title}
                 </h3>
-                {children}
+                {childElement()}
               </div>
             );
 
-          return children;
+          return childElement();
         })}
       </Space>
     </Layout>

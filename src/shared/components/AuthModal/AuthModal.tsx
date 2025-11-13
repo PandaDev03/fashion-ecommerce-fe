@@ -16,7 +16,7 @@ const AuthModal = ({ ...props }: ModalProps) => {
   const [signInForm] = useForm();
   const [signUpForm] = useForm();
 
-  const [isSignUpVisible, setIsSignUpVisible] = useState(true);
+  const [isSignUpVisible, setIsSignUpVisible] = useState(false);
 
   const signInFormItems: FormItemProps[] = [
     {
@@ -78,8 +78,9 @@ const AuthModal = ({ ...props }: ModalProps) => {
 
   return (
     <Modal
+      centered
       classNames={{
-        content: 'w-[450px]',
+        content: 'max-w-[450px]',
       }}
       {...props}
     >

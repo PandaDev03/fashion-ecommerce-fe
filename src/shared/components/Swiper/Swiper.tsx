@@ -9,15 +9,15 @@ import 'swiper/css/bundle';
 import SwiperNavButton from './SwiperNavButton';
 
 interface Swiper extends SwiperProps {
+  arrows?: boolean;
   ref?: RefObject<SwiperTypes | null>;
-  customNavButton?: boolean;
 }
 
 const Swiper = ({
   ref,
+  arrows,
   modules,
   children,
-  customNavButton = true,
   ...props
 }: Swiper) => {
   const swiperRef = useRef<SwiperTypes>(null);
@@ -35,7 +35,7 @@ const Swiper = ({
       >
         {children}
       </SwiperComponent>
-      {customNavButton && <SwiperNavButton ref={swiperRef} />}
+      {arrows && <SwiperNavButton ref={swiperRef} />}
     </div>
   );
 };
