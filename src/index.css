@@ -8,11 +8,8 @@
   --color-primary: #212121;
   --color-header: rgb(244 244 244);
 
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-ring-offset-shadow: 0 0 #0000;
-  --tw-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-  --tw-shadow-colored: 0 6px 12px var(--tw-shadow-color);
   --shadow-product: 0 0 #0000, 0 0 #0000, 0 6px 12px rgba(0, 0, 0, 0.08);
+  --shadow-top: 0 0 #0000, 0 0 #0000, 0 -2px 3px rgba(0, 0, 0, .06);
 }
 
 :root {
