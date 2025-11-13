@@ -3,6 +3,7 @@ import { memo } from 'react';
 
 const Drawer = ({ classNames, ...props }: DrawerProps) => {
   const customClassNames: DrawerProps['classNames'] = {
+    wrapper: 'max-sm:max-w-[80%]!',
     header: '[&>*:first-child]:flex-row-reverse',
     ...classNames,
   };
