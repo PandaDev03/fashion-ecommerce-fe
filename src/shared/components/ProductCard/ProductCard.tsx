@@ -1,6 +1,6 @@
 import { Flex } from 'antd';
 import classNames from 'classnames';
-import { memo, ReactNode } from 'react';
+import { HTMLAttributes, memo, ReactNode } from 'react';
 import { PlaceholderMedium, PlaceholderSmall } from '~/assets/svg';
 
 interface ProductCard {
@@ -9,8 +9,13 @@ interface ProductCard {
   subTitle: ReactNode;
   price: number;
   originalPrice?: number;
+  vertical?: boolean;
   size?: 'sm' | 'md';
   effect?: 'lift' | 'scale';
+  customClassNames?: {
+    img?: HTMLAttributes<HTMLElement>['className'];
+    wrapper?: HTMLAttributes<HTMLElement>['className'];
+  };
 }
 
 const ProductCard = ({
@@ -19,26 +24,47 @@ const ProductCard = ({
   subTitle,
   price,
   originalPrice,
+  customClassNames,
   size = 'md',
+  vertical = false,
   effect = 'scale',
 }: ProductCard) => {
   return (
     <Flex
-      vertical
+      vertical={vertical}
       className={classNames(
         'group rounded-md cursor-pointer',
+        vertical ? '' : 'bg-[#f9f9f9]',
         effect === 'lift'
           ? 'transition duration-200 ease-in-out transform hover:-translate-y-1 hover:shadow-product'
           : ''
       )}
     >
-      <div className="flex mb-3 md:mb-3.5">
+      <div
+        className={classNames(
+          'flex',
+          customClassNames?.img,
+          vertical ? 'mb-3 md:mb-3.5' : ''
+        )}
+      >
         <span className="relative inline-block overflow-hidden rounded-md max-w-full">
-          <span className="block max-w-full">
+          <span className="block">
             {size === 'md' ? (
-              <PlaceholderMedium className="block max-w-full" />
+              <PlaceholderMedium
+                style={{
+                  width: 'initial',
+                  height: 'initial',
+                }}
+                className="block max-w-full"
+              />
             ) : (
-              <PlaceholderSmall className="block max-w-full" />
+              <PlaceholderSmall
+                style={{
+                  width: 'initial',
+                  height: 'initial',
+                }}
+                className="block max-w-full"
+              />
             )}
           </span>
           <img
@@ -55,13 +81,27 @@ const ProductCard = ({
           className="absolute top-3.5 md:top-5 3xl:top-7 ltr:left-3.5 rtl:right-3.5 ltr:md:left-5 rtl:md:right-5 ltr:3xl:left-7 rtl:3xl:right-7 gap-y-1"
         ></Flex>
       </div>
-      <Flex vertical className="py-2! px-4!">
-        <h4 className="font-semibold text-base text-primary mb-1">{title}</h4>
-        <p className="truncate text-body max-w-[250px]">{subTitle}$</p>
-        <Flex className="gap-x-2">
-          <p className="font-semibold text-lg text-primary mt-2.5">{price}$</p>
+      <Flex
+        vertical
+        className={classNames(
+          'overflow-hidden w-full py-2! px-4!',
+          vertical ? '' : 'justify-center'
+        )}
+      >
+        <h4 className="font-semibold text-sm sm:text-base md:text-sm lg:text-base xl:text-lg text-primary mb-1 truncate">
+          {title}
+        </h4>
+        <p className="truncate text-xs lg:text-sm text-body">
+          {subTitle}
+        </p>
+        <Flex align="center" className="gap-x-2 mt-2.5!">
+          <p className="font-semibold text-sm lg:text-lg text-primary">
+            ${price}
+          </p>
           {originalPrice && (
-            <p className="line-through text-base text-body">{originalPrice}</p>
+            <p className="line-through text-sm lg:text-base text-gray-400">
+              ${originalPrice}
+            </p>
           )}
         </Flex>
       </Flex>
