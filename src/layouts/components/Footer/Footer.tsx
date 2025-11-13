@@ -43,7 +43,7 @@ const Footer = () => {
       ],
     },
     {
-      title: 'Liên Hệ',
+      title: 'Liên hệ',
       children: [
         {
           label: 'Liên hệ với chúng tôi',
@@ -57,44 +57,44 @@ const Footer = () => {
       ],
     },
     {
-      title: 'Về Chúng Tôi',
+      title: 'Về chúng tôi',
       children: [
         {
-          label: 'Trung Tâm Hỗ Trợ',
+          label: 'Trung tâm hỗ trợ',
         },
         {
-          label: 'Hỗ Trợ Khách Hàng',
+          label: 'Hỗ trợ khách hàng',
         },
         {
-          label: 'Bản Quyền',
+          label: 'Bản quyền',
         },
       ],
     },
     {
-      title: 'Chăm Sóc Khách Hàng',
+      title: 'Chăm sóc khách hàng',
       children: [
         {
-          label: 'FAQ & Hỗ Trợ',
+          label: 'FAQ & hỗ trợ',
         },
         {
-          label: 'Vận Chuyển & Giao Hàng',
+          label: 'Vận chuyển & giao hàng',
         },
         {
-          label: 'Đổi Trả Hàng',
+          label: 'Đổi trả hàng',
         },
       ],
     },
     {
-      title: 'Thông Tin Của Chúng Tôi',
+      title: 'Thông tin của chúng tôi',
       children: [
         {
-          label: 'Cập nhật Chính sách Bảo mật',
+          label: 'Chính sách bảo mật',
         },
         {
-          label: 'Điều khoản & Điều kiện',
+          label: 'Điều khoản & điều kiện',
         },
         {
-          label: 'Chính sách Đổi Trả',
+          label: 'Chính sách đổi trả',
         },
       ],
     },
@@ -102,25 +102,25 @@ const Footer = () => {
       title: 'Danh Mục Nổi Bật',
       children: [
         {
-          label: 'Thời Trang Nam',
+          label: 'Thời trang nam',
         },
         {
-          label: 'Thời Trang Trẻ Em',
+          label: 'Thời trang trẻ em',
         },
         {
-          label: 'Đồ Thể Thao',
+          label: 'Đồ thể thao',
         },
       ],
     },
   ];
 
   return (
-    <footer className="border-b-4 border-primary mt-9 md:mt-11 lg:mt-16 3xl:mt-20 pt-2.5 lg:pt-0 2xl:pt-2">
-      <div className="mx-auto max-w-[1920px]">
-        <div className="grid grid-cols-6 mb-24 px-4 md:px-8 2xl:px-16">
+    <footer className="mt-9 md:mt-11 lg:mt-16 3xl:mt-20 pt-2.5 lg:pt-0 2xl:pt-2">
+      <div className="mx-auto max-w-[1920px] px-4 md:px-8 2xl:px-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-9 xl:gap-5  pb-9 md:pb-14 lg:pb-16 2xl:pb-20 3xl:pb-24 lg:mb-0.5 2xl:mb-0 3xl:-mb-1 xl:grid-cols-6">
           {items.map((item, index) => (
             <div key={index} className="col-span-1">
-              <h4 className="font-semibold text-lg text-primary mb-5 capitalize">
+              <h4 className="mb-5 text-sm font-semibold text-heading md:text-base xl:text-lg 2xl:mb-6 3xl:mb-7">
                 {item?.title}
               </h4>
               <Flex vertical className="gap-y-2">
@@ -131,7 +131,9 @@ const Footer = () => {
                     className="gap-x-3 cursor-pointer"
                   >
                     {child?.icon && child?.icon}
-                    <p className="text-body">{child?.label}</p>
+                    <p className="text-xs md:text-base text-body truncate">
+                      {child?.label}
+                    </p>
                   </Flex>
                 ))}
               </Flex>
@@ -141,18 +143,23 @@ const Footer = () => {
       </div>
       <Flex
         align="center"
-        justify="space-between"
-        className="py-5! px-16! border-t border-gray-200"
+        className="py-5! px-16! border-t border-gray-200 justify-center md:justify-between"
       >
         <Flex vertical className="gap-y-1.5">
-          <p className="text-body">Copyright © 2025 REDQ All rights reserved</p>
-          <p className="text-body">Thiết kế tham khảo từ REDQ.</p>
+          <p className="text-center text-xs md:text-base text-body">
+            Copyright © 2025 REDQ All rights reserved
+          </p>
+          <p className="text-center text-xs md:text-base text-body">
+            Thiết kế tham khảo từ REDQ.
+          </p>
         </Flex>
-        <Flex align="center" className="gap-x-7">
-          <MasterCard className="cursor-pointer" />
-          <Image width={50} src={VISA} className="cursor-pointer" />
-          <Image width={50} src={Paypal} className="cursor-pointer" />
-        </Flex>
+        <div className="hidden md:flex">
+          <Flex align="center" className="gap-x-7">
+            <MasterCard className="cursor-pointer" />
+            <Image width={50} src={VISA} className="cursor-pointer" />
+            <Image width={50} src={Paypal} className="cursor-pointer" />
+          </Flex>
+        </div>
       </Flex>
     </footer>
   );
