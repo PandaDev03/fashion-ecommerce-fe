@@ -5,8 +5,8 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
+import { AuthApi } from '~/features/auth/api/auth';
 
-import { logOut } from '~/features/user';
 import { PATH } from '~/shared/utils/path';
 import toast from '~/shared/utils/toast';
 import { AppStore } from '~/store';
@@ -26,28 +26,27 @@ interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 const refreshAccessToken = async () => {
-  const refreshToken = localStorage.getItem('refreshToken');
-
   const response = await instance.post<{ accessToken: string }>(
-    '/auth/refresh',
-    { refreshToken: refreshToken }
+    '/auth/refresh'
   );
 
   return response.data.accessToken;
 };
 
-export const setupAxiosInterceptors = (store: AppStore) => {
+const revokeSession = async () => {
+  try {
+    await AuthApi.signOut();
+  } catch (error) {
+    console.error('Logout failed after refresh failure:', error);
+  }
+};
+
+export const setupAxiosInterceptors = () => {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
       const accessToken = localStorage.getItem('accessToken');
       if (accessToken && config.headers)
         config.headers.Authorization = `Bearer ${accessToken}`;
-
-      // Nếu truyền refresh token qua header: Cần xem lại header 'Cookies' có chuẩn không
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken && config.headers) {
-        config.headers['X-Refresh-Token'] = refreshToken;
-      }
 
       return config;
     },
@@ -58,21 +57,15 @@ export const setupAxiosInterceptors = (store: AppStore) => {
 
   instance.interceptors.response.use(
     (response: AxiosResponse): any => {
-      const { accessToken, refreshToken } = response.data;
-
+      const { accessToken } = response.data.data;
       if (accessToken) localStorage.setItem('accessToken', accessToken);
-      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
 
       return response.data;
     },
     async (error: AxiosError) => {
       const originalRequest = error.config as CustomInternalAxiosRequestConfig;
 
-      if (
-        error.response?.status === 401 &&
-        (error.response.data as any)?.action === 'REFRESH_TOKEN' &&
-        !originalRequest._retry
-      ) {
+      if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
 
         try {
@@ -89,11 +82,10 @@ export const setupAxiosInterceptors = (store: AppStore) => {
         } catch (refreshError) {
           console.error('Refresh token failed:', refreshError);
 
-          store.dispatch(logOut());
+          await revokeSession();
 
           localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          window.location.href = PATH.LOGIN;
+          window.location.href = PATH.HOME;
 
           toast.warning(
             'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'

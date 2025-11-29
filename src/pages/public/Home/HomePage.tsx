@@ -33,7 +33,7 @@ import Layout from '~/shared/components/Layout/Layout';
 import ProductModal, { Size } from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import Swiper from '~/shared/components/Swiper/Swiper';
-import { useBreakpoint } from '~/shared/hooks/useBreakpoint';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 
 interface Category {
   key: string;

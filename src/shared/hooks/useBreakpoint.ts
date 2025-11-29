@@ -33,7 +33,7 @@ const useWindowSize = () => {
   return windowSize;
 };
 
-export const useBreakpoint = () => {
+const useBreakpoint = () => {
   const { width } = useWindowSize();
 
   if (width === undefined)
@@ -59,3 +59,5 @@ export const useBreakpoint = () => {
     isDesktop: width >= breakpoints.lg,
   };
 };
+
+export default useBreakpoint;

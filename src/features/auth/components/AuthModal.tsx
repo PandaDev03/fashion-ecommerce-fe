@@ -1,77 +1,37 @@
-import { Divider, Flex, FormItemProps, ModalProps } from 'antd';
+import { Divider, Flex, ModalProps } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { memo, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { LOGO } from '~/assets/svg';
+import { ISignIn, ISignUp } from '~/features/auth/types/auth';
 import GoogleAuthButton from '~/shared/components/Button/GoogleAuthButton';
-import Form from '~/shared/components/Form/Form';
-import FormItem from '~/shared/components/Form/FormItem';
-import Input from '~/shared/components/Input/Input';
-import InputPassword from '~/shared/components/Input/InputPassword';
 import Modal from '~/shared/components/Modal/Modal';
-import Switch from '~/shared/components/Switch/Switch';
+import FormSignIn from './FormSignIn';
+import FormSignUp from './FormSignUp';
 
-const AuthModal = ({ ...props }: ModalProps) => {
+interface AuthModalProps extends ModalProps {
+  loading?: boolean;
+  onSignUp: (values: ISignUp) => void;
+  onSignIn: (values: ISignIn) => void;
+}
+
+const AuthModal = ({
+  loading,
+  onSignUp,
+  onSignIn,
+  ...props
+}: AuthModalProps) => {
   const [signInForm] = useForm();
   const [signUpForm] = useForm();
 
   const [isSignUpVisible, setIsSignUpVisible] = useState(false);
 
-  const signInFormItems: FormItemProps[] = [
-    {
-      name: 'email',
-      label: 'Email',
-      children: <Input />,
-    },
-    {
-      name: 'password',
-      label: 'Mật khẩu',
-      children: <InputPassword type="password" />,
-    },
-    {
-      name: 'remember',
-      valuePropName: 'checked',
-      children: (
-        <Flex align="center" justify="space-between">
-          <label>
-            <Flex align="center" className="cursor-pointer gap-x-1">
-              <Switch />
-              <span className="text-primary">Ghi nhớ đăng nhập</span>
-            </Flex>
-          </label>
-          <Link to={'/'} className="w-fit underline! text-primary!">
-            Quên mật khẩu
-          </Link>
-        </Flex>
-      ),
-    },
-  ];
-
-  const signUpFormItems: FormItemProps[] = [
-    {
-      name: 'name',
-      label: 'Tên',
-      children: <Input />,
-    },
-    {
-      name: 'email',
-      label: 'Email',
-      children: <Input />,
-    },
-    {
-      name: 'password',
-      label: 'Mật khẩu',
-      children: <InputPassword type="password" />,
-    },
-  ];
-
   const handleSignIn = (values: any) => {
-    console.log('finish', values);
+    onSignIn(values);
   };
 
-  const handleSignUp = (values: any) => {
-    console.log('finish', values);
+  const handleSignUp = (values: ISignUp) => {
+    onSignUp(values);
   };
 
   const handleGoogleSignIn = () => {};
@@ -107,30 +67,22 @@ const AuthModal = ({ ...props }: ModalProps) => {
           </p>
         </Flex>
         {isSignUpVisible ? (
-          <Form form={signUpForm} onFinish={handleSignUp} submitTitle="Đăng ký">
-            {signUpFormItems.map(({ children, ...props }, index) => (
-              <FormItem key={index} {...props}>
-                {children}
-              </FormItem>
-            ))}
-          </Form>
+          <FormSignUp
+            loading={loading}
+            form={signUpForm}
+            onFinish={handleSignUp}
+          />
         ) : (
-          <Form
+          <FormSignIn
+            loading={loading}
             form={signInForm}
             onFinish={handleSignIn}
-            submitTitle="Đăng nhập"
-          >
-            {signInFormItems.map(({ children, ...props }, index) => (
-              <FormItem key={index} {...props}>
-                {children}
-              </FormItem>
-            ))}
-          </Form>
+          />
         )}
         <Divider>
           <span className="text-xs text-body font-normal">Hoặc</span>
         </Divider>
-        <GoogleAuthButton onClick={handleGoogleSignIn} />
+        <GoogleAuthButton loading={loading} onClick={handleGoogleSignIn} />
         <span className="mt-5">
           {isSignUpVisible ? (
             <>

@@ -5,7 +5,7 @@ import { FILE_NOT_FOUND_ILLUSTRATION } from '~/assets/images';
 import { PlaceholderExtraLarge } from '~/assets/svg';
 import { SIZES } from '~/config/constants';
 import { Product } from '~/pages/public/Home/HomePage';
-import { useBreakpoint } from '~/shared/hooks/useBreakpoint';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import Button from '../Button/Button';
 import QuantitySelector from '../QuantitySelector/QuantitySelector';
 import Modal from './Modal';

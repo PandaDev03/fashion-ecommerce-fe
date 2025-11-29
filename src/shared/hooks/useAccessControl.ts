@@ -1,6 +1,6 @@
 import { useAppSelector } from './useStore';
 
-export const useAccessControl = () => {
+const useAccessControl = () => {
   const userRole = useAppSelector((state) => state.user.currentUser?.role);
   const userPermissions = useAppSelector(
     (state) => state.user.currentUser?.permissions || []
@@ -21,3 +21,5 @@ export const useAccessControl = () => {
 
   return { hasRole, hasPermission, hasAnyRole };
 };
+
+export default useAccessControl;

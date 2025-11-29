@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { Flex, MenuProps } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { ReactNode, useState } from 'react';
@@ -11,6 +12,10 @@ import {
   Twitter,
   Youtube,
 } from '~/assets/svg';
+import { AuthApi } from '~/features/auth/api/auth';
+import AuthModal from '~/features/auth/components/AuthModal';
+import { ISignIn, ISignUp } from '~/features/auth/types/auth';
+import { getMe } from '~/features/user';
 import Button from '~/shared/components/Button/Button';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import Form from '~/shared/components/Form/Form';
@@ -18,8 +23,9 @@ import FormItem from '~/shared/components/Form/FormItem';
 import Input from '~/shared/components/Input/Input';
 import Layout from '~/shared/components/Layout/Layout';
 import Menu from '~/shared/components/Menu/Menu';
-import AuthModal from '~/shared/components/Modal/AuthModal';
-import { useBreakpoint } from '~/shared/hooks/useBreakpoint';
+import { useToast } from '~/shared/contexts/NotificationContext';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
+import { useAppDispatch } from '~/shared/hooks/useStore';
 import { BottomNavBar, Footer, Header } from './components';
 
 const siderMenu: MenuProps['items'] = [
@@ -442,13 +448,36 @@ const siderMenu: MenuProps['items'] = [
 ];
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
-  const { isXl } = useBreakpoint();
+  const toast = useToast();
+  const dispatch = useAppDispatch();
 
+  const { isXl } = useBreakpoint();
   const [subscriptionForm] = useForm();
 
   const [isAuthVisible, setIsAuthVisible] = useState(false);
   const [isMenuDrawerVisible, setIsMenuDrawerVisible] = useState(false);
   const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
+
+  const { mutate: signUpMutate, isPending: isSignUpPending } = useMutation({
+    mutationFn: (values: ISignUp) => AuthApi.signUp(values),
+    onSuccess: (response) => {
+      toast.success(response?.data?.message);
+    },
+    onError: (error: any) =>
+      toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
+  });
+
+  const { mutate: signInMutate, isPending: isSignInPending } = useMutation({
+    mutationFn: (values: ISignIn) => AuthApi.signIn(values),
+    onSuccess: (response) => {
+      setIsAuthVisible(false);
+
+      dispatch(getMe());
+      toast.success(response?.message);
+    },
+    onError: (error: any) =>
+      toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
+  });
 
   const handleOpenAuthModal = () => {
     setIsAuthVisible(true);
@@ -518,10 +547,15 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         onOpenCartDrawer={handleOpenCartDrawer}
         onOpenMenuDrawer={handleOpenMenuDrawer}
       />
+
       <AuthModal
         open={isAuthVisible}
+        loading={isSignUpPending || isSignInPending}
         onCancel={() => setIsAuthVisible(false)}
+        onSignUp={(values) => signUpMutate(values)}
+        onSignIn={(values) => signInMutate(values)}
       />
+
       <Drawer
         title={<LOGO />}
         placement="left"
