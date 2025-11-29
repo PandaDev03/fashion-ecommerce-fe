@@ -1,12 +1,10 @@
 import { Breadcrumb, BreadcrumbProps, Divider, Flex } from 'antd';
 import { memo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined } from '~/assets/svg';
 
 import Button from '~/shared/components/Button/Button';
 import Checkbox from '~/shared/components/Checkbox/Checkbox';
 import Drawer from '~/shared/components/Drawer/Drawer';
-import { PATH } from '~/shared/utils/path';
 
 interface Filter {
   isOpenFilterDrawer: boolean;
@@ -158,13 +156,11 @@ const filters: FilterItem[] = [
 ];
 
 const FilterContent = ({ isBreadcrumb = false }: FilterContent) => {
-  const navigate = useNavigate();
-
   const breadcrumbItems: BreadcrumbProps['items'] = [
     {
       key: 'home',
       title: 'Trang chủ',
-      onClick: () => navigate(PATH.HOME),
+      href: '/',
     },
     {
       key: 'products',
@@ -211,7 +207,7 @@ const FilterContent = ({ isBreadcrumb = false }: FilterContent) => {
 const Filter = ({ isOpenFilterDrawer, onClose }: Filter) => {
   return (
     <>
-      <div className="w-full hidden lg:block max-w-96 pt-8! pb-16! lg:pb-20!">
+      <div className="w-full hidden lg:block max-w-96 pt-8!">
         <FilterContent isBreadcrumb />
       </div>
       <Drawer

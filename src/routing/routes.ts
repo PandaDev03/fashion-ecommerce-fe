@@ -31,6 +31,13 @@ const routes: AppRoute[] = [
     layout: MainLayout,
     element: React.lazy(() => import('~/pages/public/Product/ProductPage')),
   },
+  {
+    path: PATH.PRODUCT_DETAILS,
+    layout: MainLayout,
+    element: React.lazy(
+      () => import('~/pages/public/Product/ProductDetailPage')
+    ),
+  },
 
   // PROTECTED ROUTES
   {
