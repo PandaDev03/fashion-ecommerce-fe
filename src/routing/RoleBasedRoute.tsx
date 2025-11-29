@@ -1,8 +1,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
+import useAccessControl from '~/shared/hooks/useAccessControl';
 import { PATH } from '~/shared/utils/path';
-import { useAccessControl } from '../shared/hooks/useAccessControl';
 
 interface RoleBasedRouteProps {
   requiredRoles: string[];

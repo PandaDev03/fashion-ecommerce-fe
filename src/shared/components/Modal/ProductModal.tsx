@@ -5,7 +5,7 @@ import { FILE_NOT_FOUND_ILLUSTRATION } from '~/assets/images';
 import { PlaceholderExtraLarge } from '~/assets/svg';
 import { SIZES } from '~/config/constants';
 import { Product } from '~/pages/public/Home/HomePage';
-import { useBreakpoint } from '~/shared/hooks/useBreakpoint';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import Button from '../Button/Button';
 import QuantitySelector from '../QuantitySelector/QuantitySelector';
 import Modal from './Modal';
@@ -14,7 +14,7 @@ interface ProductModalProps extends ModalProps {
   quantity: number;
   product: Product;
   colors?: string[];
-  sizes?: readonly string[];
+  sizes?: readonly Size['size'][];
   selectedSize?: string;
   selectedColor?: string;
   onDecrease: () => void;
@@ -66,9 +66,8 @@ const ProductModal = ({
             <PlaceholderExtraLarge
               style={{
                 width: 'initial',
-                height: 'initial',
               }}
-              className="block max-w-full"
+              className="block max-w-full max-lg:max-h-[430px]"
             />
           </span>
           <img
@@ -100,7 +99,7 @@ const ProductModal = ({
               Kích cỡ
             </h3>
             <Flex className="gap-x-3">
-              {SIZES.map((item, index) => (
+              {sizes.map((item, index) => (
                 <Flex
                   key={index}
                   align="center"
@@ -120,28 +119,24 @@ const ProductModal = ({
               Màu sắc
             </h3>
             <Flex className="gap-x-3">
-              {['#e86c25', '#ffa5b4', '#8224e3', '#dd3333'].map(
-                (item, index) => (
-                  <Flex
-                    key={index}
-                    align="center"
-                    justify="center"
-                    className={`w-9 md:w-11 h-9 md:h-11 border rounded-md p-1! uppercase cursor-pointer ${
-                      selectedColor === item
-                        ? 'border-black'
-                        : 'border-gray-100'
-                    }`}
-                    onClick={() => onSelectColor?.(item)}
-                  >
-                    <span
-                      style={{
-                        backgroundColor: `${item}`,
-                      }}
-                      className="block w-full h-full rounded"
-                    ></span>
-                  </Flex>
-                )
-              )}
+              {colors.map((item, index) => (
+                <Flex
+                  key={index}
+                  align="center"
+                  justify="center"
+                  className={`w-9 md:w-11 h-9 md:h-11 border rounded-md p-1! uppercase cursor-pointer ${
+                    selectedColor === item ? 'border-black' : 'border-gray-100'
+                  }`}
+                  onClick={() => onSelectColor?.(item)}
+                >
+                  <span
+                    style={{
+                      backgroundColor: `${item}`,
+                    }}
+                    className="block w-full h-full rounded"
+                  ></span>
+                </Flex>
+              ))}
             </Flex>
           </div>
           <div className="pt-2 md:pt-4">

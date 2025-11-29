@@ -5,9 +5,9 @@ import { memo, ReactNode } from 'react';
 
 import Button from '../Button/Button';
 
-interface IProps extends FormProps {
+export interface IFormProps extends FormProps {
   loading?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   submitTitle?: string;
   cancelTitle?: string;
@@ -37,7 +37,7 @@ const Form = ({
   onCancel,
   onFinish,
   ...props
-}: IProps) => {
+}: IFormProps) => {
   const customClass = classNames('w-full', className);
 
   const checkFormValidate = async () => {

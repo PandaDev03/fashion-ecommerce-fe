@@ -1,4 +1,15 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { UserAPI } from '../api/userApi';
 
-export const logOut = createAsyncThunk('user/logOut', async () => {});
-export const getUserInfo = createAsyncThunk('user/getUserInfo', async () => {});
+export const getMe = createAsyncThunk(
+  'user/getMe',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = UserAPI.getMe();
+      return response;
+    } catch (error: any) {
+      console.log(error);
+      return rejectWithValue(error?.message || 'Có lỗi xảy ra');
+    }
+  }
+);

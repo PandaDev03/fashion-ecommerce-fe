@@ -7,10 +7,12 @@ import Button from './Button';
 
 interface IProps {
   title?: string;
+  loading?: boolean;
   onClick: (value: any) => void;
 }
 
 const GoogleAuthButton = ({
+  loading,
   title = 'Đăng nhập bằng Google',
   onClick,
 }: IProps) => {
@@ -42,6 +44,7 @@ const GoogleAuthButton = ({
   return (
     <Button
       title={title}
+      loading={loading}
       iconBefore={
         <Image preview={false} src={GOOGLE_LOGO} width={24} height={24} />
       }

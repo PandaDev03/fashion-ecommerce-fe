@@ -7,6 +7,10 @@ import Button from '~/shared/components/Button/Button';
 import Menu from '~/shared/components/Menu/Menu';
 import { PATH } from '~/shared/utils/path';
 import HeaderDropdown from './HeaderDropdown';
+import { useAppSelector } from '~/shared/hooks/useStore';
+import Image from '~/shared/components/Image/Image';
+import { PROFILE_PICTURE } from '~/assets/images';
+import classNames from 'classnames';
 
 interface Header {
   onOpenAuthModal: () => void;
@@ -495,9 +499,12 @@ const Header = ({
   onOpenMenuDrawer,
 }: Header) => {
   const navigate = useNavigate();
+  const { currentUser } = useAppSelector((state) => state.user);
+
+  console.log(currentUser);
 
   return (
-    <div className="sticky top-0 left-0 shadow-md h-16 sm:h-20 lg:h-24 px-6 bg-white max-w-[1920px] z-20">
+    <div className="sticky top-0 left-0 shadow-md h-16 sm:h-20 lg:h-24 px-6 bg-white max-w-[1920px] z-30">
       <Flex
         gap={10}
         align="center"
@@ -555,11 +562,21 @@ const Header = ({
           <div className="hidden lg:block">
             <Flex align="center" className="gap-x-6">
               <Search className="cursor-pointer" />
-              <Button
-                title="Đăng nhập"
-                displayType="outlined"
-                onClick={onOpenAuthModal}
-              />
+              {!Object.keys(currentUser)?.length ? (
+                <Button
+                  title="Đăng nhập"
+                  displayType="outlined"
+                  onClick={onOpenAuthModal}
+                />
+              ) : (
+                <div
+                  className={`${
+                    Object.keys(currentUser)?.length ? 'order-3' : ''
+                  }`}
+                >
+                  <Image width={30} height={30} src={PROFILE_PICTURE} />
+                </div>
+              )}
               <Badge showZero count={0} onClick={onOpenCartDrawer}>
                 <Cart className="cursor-pointer" />
               </Badge>

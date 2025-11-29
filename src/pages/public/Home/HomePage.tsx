@@ -1,6 +1,4 @@
 import { Carousel, Flex, Space } from 'antd';
-import { useForm } from 'antd/es/form/Form';
-import FormItem from 'antd/es/form/FormItem';
 import classNames from 'classnames';
 import { ReactElement, ReactNode, useState } from 'react';
 import { SwiperSlide } from 'swiper/react';
@@ -22,22 +20,20 @@ import {
   ReadyToParty,
   SNEAKERS,
   SPORTS,
-  SUBSCRIPTION_BG,
   SUNGLASS,
   WATCH,
   WOMAN,
   WOMEN,
 } from '~/assets/images';
 import { Link } from '~/assets/svg';
+import { MAX_QUANTITY, MIN_QUANTITY } from '~/config/constants';
 import Button from '~/shared/components/Button/Button';
-import Form from '~/shared/components/Form/Form';
 import Image from '~/shared/components/Image/Image';
-import Input from '~/shared/components/Input/Input';
 import Layout from '~/shared/components/Layout/Layout';
 import ProductModal, { Size } from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import Swiper from '~/shared/components/Swiper/Swiper';
-import { useBreakpoint } from '~/shared/hooks/useBreakpoint';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 
 interface Category {
   key: string;
@@ -382,7 +378,7 @@ const topProducts: Product[] = [
     title: 'Maniac Red Boys',
     subTitle:
       'Quần short thể thao Under Armour là sản phẩm thiết yếu dành cho thể thao, mềm mại và nhẹ với chất liệu thấm hút ẩm.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fp-20-m.png&w=384&q=100',
+    img: 'https://image.uniqlo.com/UQ/ST3/vn/imagesgoods/475367/item/vngoods_58_475367_3x4.jpg?width=369',
   },
   {
     key: 'nike-shoes-2',
@@ -521,11 +517,7 @@ const shopByGender = [
   },
 ];
 
-const MIN_QUANTITY = 1;
-const MAX_QUANTITY = 99;
-
 const HomePage = () => {
-  const [subscriptionForm] = useForm();
   const { is2Xs, isSm, isMd, isLg, isXl } = useBreakpoint();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -910,44 +902,44 @@ const HomePage = () => {
         );
       },
     },
-    {
-      key: 'subscription',
-      children: (
-        <Flex
-          vertical
-          align={isXl ? 'start' : 'center'}
-          className="px-5! sm:px-8! md:px-16! 2xl:px-24! relative overflow-hidden sm:items-center xl:items-start rounded-lg bg-[#f9f9f9] py-10! md:py-14! lg:py-16!"
-        >
-          <div className="-mt-1.5 lg:-mt-2 xl:-mt-0.5 text-center ltr:xl:text-left rtl:xl:text-right mb-7 md:mb-8 lg:mb-9 xl:mb-0">
-            <h3 className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 font-bold text-heading mb-2 md:mb-2.5 lg:mb-3 xl:mb-3.5">
-              Nhận lời khuyên của chuyên gia
-            </h3>
-            <p className="text-xs leading-6 text-body md:text-sm md:leading-7">
-              Đăng ký nhận bản tin của chúng tôi và cập nhật thông tin mới nhất.
-            </p>
-          </div>
-          <Form
-            layout="inline"
-            form={subscriptionForm}
-            onFinish={(values) => console.log(values)}
-            className="w-full shrink-0 sm:w-96 md:w-[545px] md:mt-7 z-10"
-          >
-            <FormItem className="w-full max-w-full md:max-w-[74%] mb-[2%]! md:mr-[2%]!">
-              <Input className="h-11 md:h-12 min-h-12" />
-            </FormItem>
-            <Button
-              title="Đăng ký"
-              className="w-full max-w-full md:max-w-[24%] text-sm leading-4 px-5! md:px-6! lg:px-8! py-4! md:py-3.5! lg:py-4! mt-3! sm:mt-0! md:h-full"
-              onClick={() => subscriptionForm.submit()}
-            />
-          </Form>
-          <div
-            style={{ backgroundImage: `url(${SUBSCRIPTION_BG})` }}
-            className="hidden xl:block absolute w-full h-full right-0 top-0 bg-contain bg-right bg-no-repeat z-0"
-          ></div>
-        </Flex>
-      ),
-    },
+    // {
+    //   key: 'subscription',
+    //   children: (
+    //     <Flex
+    //       vertical
+    //       align={isXl ? 'start' : 'center'}
+    //       className="px-5! sm:px-8! md:px-16! 2xl:px-24! relative overflow-hidden sm:items-center xl:items-start rounded-lg bg-[#f9f9f9] py-10! md:py-14! lg:py-16!"
+    //     >
+    //       <div className="-mt-1.5 lg:-mt-2 xl:-mt-0.5 text-center ltr:xl:text-left rtl:xl:text-right mb-7 md:mb-8 lg:mb-9 xl:mb-0">
+    //         <h3 className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 font-bold text-heading mb-2 md:mb-2.5 lg:mb-3 xl:mb-3.5">
+    //           Nhận lời khuyên của chuyên gia
+    //         </h3>
+    //         <p className="text-xs leading-6 text-body md:text-sm md:leading-7">
+    //           Đăng ký nhận bản tin của chúng tôi và cập nhật thông tin mới nhất.
+    //         </p>
+    //       </div>
+    //       <Form
+    //         layout="inline"
+    //         form={subscriptionForm}
+    //         onFinish={(values) => console.log(values)}
+    //         className="w-full shrink-0 sm:w-96 md:w-[545px] md:mt-7 z-10"
+    //       >
+    //         <FormItem className="w-full max-w-full md:max-w-[74%] mb-[2%]! md:mr-[2%]!">
+    //           <Input className="h-11 md:h-12 min-h-12" />
+    //         </FormItem>
+    //         <Button
+    //           title="Đăng ký"
+    //           className="w-full max-w-full md:max-w-[24%] text-sm leading-4 px-5! md:px-6! lg:px-8! py-4! md:py-3.5! lg:py-4! mt-3! sm:mt-0! md:h-full"
+    //           onClick={() => subscriptionForm.submit()}
+    //         />
+    //       </Form>
+    //       <div
+    //         style={{ backgroundImage: `url(${SUBSCRIPTION_BG})` }}
+    //         className="hidden xl:block absolute w-full h-full right-0 top-0 bg-contain bg-right bg-no-repeat z-0"
+    //       ></div>
+    //     </Flex>
+    //   ),
+    // },
   ];
 
   const handleSelectedSize = (size: Size['size']) => {
