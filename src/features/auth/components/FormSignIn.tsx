@@ -1,6 +1,7 @@
 import { Flex, FormItemProps } from 'antd';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
+
 import Form, { IFormProps } from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
 import Input from '~/shared/components/Input/Input';
@@ -12,11 +13,19 @@ const signInFormItems: FormItemProps[] = [
     name: 'email',
     label: 'Email',
     children: <Input />,
+    rules: [
+      { required: true, message: 'Vui lòng nhập email' },
+      { type: 'email', message: 'Email không đúng định dạng' },
+    ],
   },
   {
     name: 'password',
     label: 'Mật khẩu',
     children: <InputPassword type="password" />,
+    rules: [
+      { required: true, message: 'Vui lòng nhập mật khẩu' },
+      { min: 8, message: 'Mật khẩu phải có ít nhât 8 ký tự' },
+    ],
   },
   {
     name: 'remember',
@@ -38,8 +47,19 @@ const signInFormItems: FormItemProps[] = [
 ];
 
 const FormSignIn = ({ ...props }: IFormProps) => {
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  const handleFinishFailed = () => {
+    setHasSubmitted(true);
+  };
+
   return (
-    <Form submitTitle="Đăng nhập" {...props}>
+    <Form
+      submitTitle="Đăng nhập"
+      validateTrigger={hasSubmitted ? 'onChange' : 'onSubmit'}
+      onFinishFailed={handleFinishFailed}
+      {...props}
+    >
       {signInFormItems.map(({ children, ...props }, index) => (
         <FormItem key={index} {...props}>
           {children}

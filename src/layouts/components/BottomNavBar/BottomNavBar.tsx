@@ -74,7 +74,7 @@ const BottomNavBar = ({
       <Flex
         align="center"
         justify="space-between"
-        className="w-full fixed z-20 bottom-0 bg-white h-14 sm:h-16 px-4! md:px-8! shadow-top"
+        className="w-full fixed z-2 bottom-0 bg-white h-14 sm:h-16 px-4! md:px-8! shadow-top"
       >
         {bottomNavBar?.map(({ key, children, ...item }) => (
           <div key={key} {...item}>

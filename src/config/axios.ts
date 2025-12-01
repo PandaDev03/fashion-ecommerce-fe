@@ -5,11 +5,10 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import { AuthApi } from '~/features/auth/api/auth';
 
+import { AuthApi } from '~/features/auth/api/auth';
+import { notificationEmitter } from '~/shared/utils/notificationEmitter';
 import { PATH } from '~/shared/utils/path';
-import toast from '~/shared/utils/toast';
-import { AppStore } from '~/store';
 
 export const instance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_API_BASE_URL,
@@ -57,7 +56,7 @@ export const setupAxiosInterceptors = () => {
 
   instance.interceptors.response.use(
     (response: AxiosResponse): any => {
-      const { accessToken } = response.data.data;
+      const accessToken = response.data?.data?.accessToken;
       if (accessToken) localStorage.setItem('accessToken', accessToken);
 
       return response.data;
@@ -65,19 +64,24 @@ export const setupAxiosInterceptors = () => {
     async (error: AxiosError) => {
       const originalRequest = error.config as CustomInternalAxiosRequestConfig;
 
+      const authEndpoints = ['/auth/refresh', '/auth/sign-out'];
+      const isAuthEndpoint = authEndpoints.some((endpoint) =>
+        originalRequest.url?.includes(endpoint)
+      );
+
+      if (isAuthEndpoint) return Promise.reject(error);
+
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
 
         try {
           const newAccessToken = await refreshAccessToken();
           localStorage.setItem('accessToken', newAccessToken);
-
           if (originalRequest.headers) {
             originalRequest.headers[
               'Authorization'
             ] = `Bearer ${newAccessToken}`;
           }
-
           return instance(originalRequest);
         } catch (refreshError) {
           console.error('Refresh token failed:', refreshError);
@@ -87,7 +91,11 @@ export const setupAxiosInterceptors = () => {
           localStorage.removeItem('accessToken');
           window.location.href = PATH.HOME;
 
-          toast.warning(
+          // toast.warning(
+          //   'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
+          // );
+          notificationEmitter.emit(
+            'warning',
             'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
           );
 
@@ -118,9 +126,14 @@ const retryRequest = async <T>(
     ) {
       if (retries === 1) {
         if (!isWarningShown) {
-          toast.warning('Hết thời gian truy cập. Xin vui lòng thử lại.');
+          // toast.warning('Hết thời gian truy cập. Xin vui lòng thử lại.');
+          notificationEmitter.emit(
+            'warning',
+            'Hết thời gian truy cập. Xin vui lòng thử lại'
+          );
           isWarningShown = true;
         }
+
         return Promise.reject(error);
       }
 

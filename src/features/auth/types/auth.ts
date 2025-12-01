@@ -5,3 +5,7 @@ export interface ISignUp {
 }
 
 export type ISignIn = Pick<ISignUp, 'email' | 'password'>;
+
+export interface ISignInWithGoogle {
+  accessToken: string;
+}
