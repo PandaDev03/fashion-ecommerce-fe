@@ -522,10 +522,12 @@ const Header = ({
       ),
       label: (
         <Flex vertical>
-          <p className="uppercase text-lg font-semibold text-primary">
+          <h2 className="uppercase text-lg font-semibold text-primary">
             {currentUser?.name || '-'}
+          </h2>
+          <p className="max-w-[250px] truncate text-body">
+            {currentUser?.email || '-'}
           </p>
-          <p className="max-w-[250px] truncate">{currentUser?.email || '-'}</p>
         </Flex>
       ),
     },
