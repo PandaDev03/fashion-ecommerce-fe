@@ -2,11 +2,10 @@ import { Badge, Flex } from 'antd';
 import { memo, ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Cart, HomeOutlined, Search, User } from '~/assets/svg';
+import { Cart, HomeOutlined, Search } from '~/assets/svg';
 import { PATH } from '~/shared/utils/path';
 
 interface BottomNavBar {
-  onOpenAuthModal: () => void;
   onOpenCartDrawer: () => void;
   onOpenMenuDrawer: () => void;
 }
@@ -17,11 +16,7 @@ interface BottomNavBarItem {
   onClick?: () => void;
 }
 
-const BottomNavBar = ({
-  onOpenAuthModal,
-  onOpenCartDrawer,
-  onOpenMenuDrawer,
-}: BottomNavBar) => {
+const BottomNavBar = ({ onOpenCartDrawer, onOpenMenuDrawer }: BottomNavBar) => {
   const navigate = useNavigate();
 
   const bottomNavBar: BottomNavBarItem[] = [
@@ -62,22 +57,17 @@ const BottomNavBar = ({
       ),
       onClick: onOpenCartDrawer,
     },
-    {
-      key: 'user',
-      children: <User className="cursor-pointer" />,
-      onClick: onOpenAuthModal,
-    },
   ];
 
   return (
-    <div className="lg:hidden">
+    <div className="lg:hidden h-14 sm:h-16">
       <Flex
         align="center"
         justify="space-between"
-        className="w-full fixed z-2 bottom-0 bg-white h-14 sm:h-16 px-4! md:px-8! shadow-top"
+        className="w-full fixed z-2 bottom-0 bg-white py-3! px-4! md:px-8! shadow-top"
       >
         {bottomNavBar?.map(({ key, children, ...item }) => (
-          <div key={key} {...item}>
+          <div key={key} {...item} className="max-h-[18px]">
             {children}
           </div>
         ))}
