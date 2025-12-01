@@ -10,7 +10,7 @@ interface SwiperNavButtonProps {
 
 const SwiperNavButton = ({ ref }: SwiperNavButtonProps) => {
   const navBtnClassName =
-    'absolute w-7 h-7 lg:w-8 lg:h-8 text-sm md:text-base lg:text-lg flex items-center justify-center rounded-full bg-white top-[30%] translate-y-1/2 transition duration-250 hover:bg-gray-900 hover:[&>svg]:fill-white focus:outline-none transform xl:w-10 xl:h-10 3xl:w-12 3xl:h-12 3xl:text-2xl cursor-pointer z-20';
+    'absolute w-7 h-7 lg:w-8 lg:h-8 text-sm md:text-base lg:text-lg flex items-center justify-center rounded-full bg-white top-[30%] translate-y-1/2 transition duration-250 hover:bg-gray-900 hover:[&>svg]:fill-white focus:outline-none transform xl:w-10 xl:h-10 3xl:w-12 3xl:h-12 3xl:text-2xl cursor-pointer z-2';
 
   const goToNextSlide = () => {
     if (ref.current) ref.current?.slideNext();

@@ -1,5 +1,7 @@
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode, useContext, useEffect } from 'react';
+
 import useNotification from '../hooks/useNotification';
+import { notificationEmitter } from '../utils/notificationEmitter';
 
 interface NotificationContextType {
   toast: ReturnType<typeof useNotification>['toast'];
@@ -11,6 +13,14 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const { toast, contextHolder } = useNotification();
+
+  useEffect(() => {
+    const unsubscribe = notificationEmitter.subscribe((type, message) => {
+      toast[type](message);
+    });
+
+    return unsubscribe;
+  }, [toast]);
 
   return (
     <NotificationContext.Provider value={{ toast }}>

@@ -1,9 +1,13 @@
 import { Divider, Flex, ModalProps } from 'antd';
-import { useForm } from 'antd/es/form/Form';
-import { memo, useState } from 'react';
+import { FormInstance } from 'antd/es/form/Form';
+import { Dispatch, memo, SetStateAction } from 'react';
 
 import { LOGO } from '~/assets/svg';
-import { ISignIn, ISignUp } from '~/features/auth/types/auth';
+import {
+  ISignIn,
+  ISignInWithGoogle,
+  ISignUp,
+} from '~/features/auth/types/auth';
 import GoogleAuthButton from '~/shared/components/Button/GoogleAuthButton';
 import Modal from '~/shared/components/Modal/Modal';
 import FormSignIn from './FormSignIn';
@@ -11,31 +15,26 @@ import FormSignUp from './FormSignUp';
 
 interface AuthModalProps extends ModalProps {
   loading?: boolean;
+  isSignUpVisible: boolean;
+  signUpForm: FormInstance<ISignUp>;
+  signInForm: FormInstance<ISignIn>;
   onSignUp: (values: ISignUp) => void;
   onSignIn: (values: ISignIn) => void;
+  onSignInWithGoogle: (values: ISignInWithGoogle) => void;
+  setIsSignUpVisible: Dispatch<SetStateAction<boolean>>;
 }
 
 const AuthModal = ({
   loading,
+  signUpForm,
+  signInForm,
+  isSignUpVisible,
   onSignUp,
   onSignIn,
+  onSignInWithGoogle,
+  setIsSignUpVisible,
   ...props
 }: AuthModalProps) => {
-  const [signInForm] = useForm();
-  const [signUpForm] = useForm();
-
-  const [isSignUpVisible, setIsSignUpVisible] = useState(false);
-
-  const handleSignIn = (values: any) => {
-    onSignIn(values);
-  };
-
-  const handleSignUp = (values: ISignUp) => {
-    onSignUp(values);
-  };
-
-  const handleGoogleSignIn = () => {};
-
   return (
     <Modal
       centered
@@ -67,22 +66,14 @@ const AuthModal = ({
           </p>
         </Flex>
         {isSignUpVisible ? (
-          <FormSignUp
-            loading={loading}
-            form={signUpForm}
-            onFinish={handleSignUp}
-          />
+          <FormSignUp loading={loading} form={signUpForm} onFinish={onSignUp} />
         ) : (
-          <FormSignIn
-            loading={loading}
-            form={signInForm}
-            onFinish={handleSignIn}
-          />
+          <FormSignIn loading={loading} form={signInForm} onFinish={onSignIn} />
         )}
         <Divider>
           <span className="text-xs text-body font-normal">Hoặc</span>
         </Divider>
-        <GoogleAuthButton loading={loading} onClick={handleGoogleSignIn} />
+        <GoogleAuthButton loading={loading} onClick={onSignInWithGoogle} />
         <span className="mt-5">
           {isSignUpVisible ? (
             <>

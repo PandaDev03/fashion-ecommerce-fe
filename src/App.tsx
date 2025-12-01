@@ -5,17 +5,17 @@ import { useEffect, useRef } from 'react';
 
 import { getMe } from './features/user';
 import AppRouter from './routing/AppRouter';
-import { NotificationProvider } from './shared/contexts/NotificationContext';
+import { useToast } from './shared/contexts/NotificationContext';
 import { useAppDispatch } from './shared/hooks/useStore';
-import toast from './shared/utils/toast';
 
 const App = () => {
   const flagRef = useRef(false);
   const dispatch = useAppDispatch();
 
   const queryClient = new QueryClient();
-  const clientId = import.meta.env.VITE_APP_CLIENT_ID;
+  const clientId = import.meta.env.VITE_APP_GOOGLE_CLIENT_ID;
 
+  const toast = useToast();
   const accessToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
@@ -35,11 +35,9 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <QueryClientProvider client={queryClient}>
-        <NotificationProvider>
-          <AntApp>
-            <AppRouter />
-          </AntApp>
-        </NotificationProvider>
+        <AntApp>
+          <AppRouter />
+        </AntApp>
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );
