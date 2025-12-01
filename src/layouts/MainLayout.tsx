@@ -1,17 +1,11 @@
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Flex, MenuProps } from 'antd';
+import { Dropdown, Flex, MenuProps } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { ReactNode, useState } from 'react';
 
-import { SUBSCRIPTION_BG } from '~/assets/images';
-import {
-  EmptyCart,
-  Facebook,
-  Instagram,
-  LOGO,
-  Twitter,
-  Youtube,
-} from '~/assets/svg';
+import { PROFILE_PICTURE, SUBSCRIPTION_BG } from '~/assets/images';
+import { EmptyCart, LOGO } from '~/assets/svg';
 import { AuthApi } from '~/features/auth/api/auth';
 import AuthModal from '~/features/auth/components/AuthModal';
 import {
@@ -25,12 +19,14 @@ import Button from '~/shared/components/Button/Button';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
+import Image from '~/shared/components/Image/Image';
 import Input from '~/shared/components/Input/Input';
 import Layout from '~/shared/components/Layout/Layout';
+import Link from '~/shared/components/Link/Link';
 import Menu from '~/shared/components/Menu/Menu';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
-import { useAppDispatch } from '~/shared/hooks/useStore';
+import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { BottomNavBar, Footer, Header } from './components';
 
 const siderMenu: MenuProps['items'] = [
@@ -466,6 +462,36 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const [isMenuDrawerVisible, setIsMenuDrawerVisible] = useState(false);
   const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
 
+  const { currentUser } = useAppSelector((state) => state.user);
+
+  console.log(currentUser, Object.keys(currentUser)?.length > 0);
+
+  const menuItems: MenuProps['items'] = [
+    {
+      key: '1',
+      className: 'cursor-default! select-none! hover:bg-white!',
+      label: (
+        <p className="max-sm:max-w-[250px] truncate text-body">
+          {currentUser?.email || '-'}
+        </p>
+      ),
+    },
+    {
+      key: '2',
+      icon: <UserOutlined />,
+      label: <Link to={'/'}>Trang tài khoản</Link>,
+    },
+    {
+      key: '3',
+      className: 'group hover:bg-[#FEE2E2]! ',
+      label: <p className="group-has-hover:text-[#DC2626]">Đăng xuất</p>,
+      icon: (
+        <LogoutOutlined className="group-has-hover:[&>svg]:fill-[#DC2626]" />
+      ),
+      onClick: () => signOut(),
+    },
+  ];
+
   const { mutate: signUpMutate, isPending: isSignUpPending } = useMutation({
     mutationFn: (values: ISignUp) => AuthApi.signUp(values),
     onSuccess: async (response) => {
@@ -531,6 +557,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const handleCancelAuthModal = () => {
     setIsAuthVisible(false);
     setIsSignUpVisible(false);
+    setIsMenuDrawerVisible(false);
 
     signUpForm.resetFields();
     signInForm.resetFields();
@@ -589,7 +616,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       <Footer />
 
       <BottomNavBar
-        onOpenAuthModal={handleOpenAuthModal}
         onOpenCartDrawer={handleOpenCartDrawer}
         onOpenMenuDrawer={handleOpenMenuDrawer}
       />
@@ -614,24 +640,37 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         placement="left"
         open={isMenuDrawerVisible}
         footer={
-          <Flex justify="center" align="center" className="w-full">
-            {[Facebook, Twitter, Youtube, Instagram].map((Item, index) => (
-              <span
-                key={index}
-                className={`p-5 cursor-pointer ${
-                  Item === Facebook
-                    ? 'hover:*:fill-[#0866ff]'
-                    : Item === Twitter
-                    ? 'hover:*:fill-[#1c9be9]'
-                    : Item === Youtube
-                    ? 'hover:*:fill-[#ff0033]'
-                    : 'hover:*:fill-[#fe115c]'
-                }`}
-              >
-                <Item />
-              </span>
-            ))}
-          </Flex>
+          Object.keys(currentUser)?.length > 0 ? (
+            <Dropdown
+              trigger={['click']}
+              placement="topCenter"
+              menu={{ items: menuItems }}
+            >
+              <Flex align="center" className="cursor-pointer gap-x-3">
+                <Image
+                  width={48}
+                  height={48}
+                  className="rounded-full"
+                  fallback={PROFILE_PICTURE}
+                  src={currentUser?.avatar || PROFILE_PICTURE}
+                />
+                <Flex vertical>
+                  <h2 className="font-semibold text-primary">
+                    {currentUser?.name}
+                  </h2>
+                  <p className="max-w-[200px] truncate text-body">
+                    {currentUser?.email}
+                  </p>
+                </Flex>
+              </Flex>
+            </Dropdown>
+          ) : (
+            <Button
+              title="Đăng nhập"
+              className="w-full"
+              onClick={() => setIsAuthVisible(true)}
+            />
+          )
         }
         onClose={() => setIsMenuDrawerVisible(false)}
       >

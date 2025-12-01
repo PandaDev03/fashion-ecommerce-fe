@@ -11,6 +11,7 @@ export { ReactComponent as HomeFilled } from './home-filled.svg';
 export { ReactComponent as HomeOutlined } from './home-outlined.svg';
 export { ReactComponent as Instagram } from './instagram.svg';
 export { ReactComponent as Link } from './link.svg';
+export { ReactComponent as LogOut } from './log-out.svg';
 export { ReactComponent as LOGO } from './logo.svg';
 export { ReactComponent as MasterCard } from './mastercard.svg';
 export { ReactComponent as PlaceholderExtraLarge } from './placeholder-extra-large.svg';
