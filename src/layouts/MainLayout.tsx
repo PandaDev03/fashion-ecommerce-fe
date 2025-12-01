@@ -16,6 +16,7 @@ import { AuthApi } from '~/features/auth/api/auth';
 import AuthModal from '~/features/auth/components/AuthModal';
 import { ISignIn, ISignUp } from '~/features/auth/types/auth';
 import { getMe } from '~/features/user';
+import { resetUser } from '~/features/user/stores/userSlice';
 import Button from '~/shared/components/Button/Button';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import Form from '~/shared/components/Form/Form';
@@ -479,6 +480,15 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
   });
 
+  const { mutate: signOut, isPending: isSignOutPending } = useMutation({
+    mutationFn: () => AuthApi.signOut(),
+    onSuccess: (response) => {
+      toast.success(response?.message);
+      dispatch(resetUser());
+    },
+    onError: (error) => console.log(error),
+  });
+
   const handleOpenAuthModal = () => {
     setIsAuthVisible(true);
   };
@@ -492,8 +502,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <Layout className="max-lg:pb-14">
+    <Layout loading={isSignOutPending} className="max-lg:pb-14">
       <Header
+        onSignOut={signOut}
         onOpenAuthModal={handleOpenAuthModal}
         onOpenCartDrawer={handleOpenCartDrawer}
         onOpenMenuDrawer={handleOpenMenuDrawer}
@@ -519,7 +530,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
               layout="inline"
               form={subscriptionForm}
               onFinish={(values) => console.log(values)}
-              className="w-full shrink-0 sm:w-96 md:w-[545px] md:mt-7! z-10"
+              className="w-full shrink-0 sm:w-96 md:w-[545px] md:mt-7! z-1"
             >
               <FormItem className="w-full max-w-full md:max-w-[74%] mb-[2%]! md:mr-[2%]!">
                 <Input

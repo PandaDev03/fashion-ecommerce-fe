@@ -9,7 +9,6 @@ import { AuthApi } from '~/features/auth/api/auth';
 
 import { PATH } from '~/shared/utils/path';
 import toast from '~/shared/utils/toast';
-import { AppStore } from '~/store';
 
 export const instance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_API_BASE_URL,
@@ -57,7 +56,7 @@ export const setupAxiosInterceptors = () => {
 
   instance.interceptors.response.use(
     (response: AxiosResponse): any => {
-      const { accessToken } = response.data.data;
+      const accessToken = response.data?.data?.accessToken;
       if (accessToken) localStorage.setItem('accessToken', accessToken);
 
       return response.data;
@@ -65,19 +64,24 @@ export const setupAxiosInterceptors = () => {
     async (error: AxiosError) => {
       const originalRequest = error.config as CustomInternalAxiosRequestConfig;
 
+      const authEndpoints = ['/auth/refresh', '/auth/sign-out'];
+      const isAuthEndpoint = authEndpoints.some((endpoint) =>
+        originalRequest.url?.includes(endpoint)
+      );
+
+      if (isAuthEndpoint) return Promise.reject(error);
+
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
 
         try {
           const newAccessToken = await refreshAccessToken();
           localStorage.setItem('accessToken', newAccessToken);
-
           if (originalRequest.headers) {
             originalRequest.headers[
               'Authorization'
             ] = `Bearer ${newAccessToken}`;
           }
-
           return instance(originalRequest);
         } catch (refreshError) {
           console.error('Refresh token failed:', refreshError);

@@ -1,18 +1,20 @@
-import { Badge, Flex, Space } from 'antd';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { Badge, Dropdown, Flex, MenuProps, Space } from 'antd';
 import { memo, ReactElement, ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
+import { PROFILE_PICTURE } from '~/assets/images';
 import { ArrowDown, Cart, LOGO, Search } from '~/assets/svg';
 import Button from '~/shared/components/Button/Button';
+import Image from '~/shared/components/Image/Image';
+import Link from '~/shared/components/Link/Link';
 import Menu from '~/shared/components/Menu/Menu';
+import { useAppSelector } from '~/shared/hooks/useStore';
 import { PATH } from '~/shared/utils/path';
 import HeaderDropdown from './HeaderDropdown';
-import { useAppSelector } from '~/shared/hooks/useStore';
-import Image from '~/shared/components/Image/Image';
-import { PROFILE_PICTURE } from '~/assets/images';
-import classNames from 'classnames';
 
-interface Header {
+interface HeaderProps {
+  onSignOut: () => void;
   onOpenAuthModal: () => void;
   onOpenCartDrawer: () => void;
   onOpenMenuDrawer: () => void;
@@ -494,17 +496,49 @@ const headerMenu: Menu[] = [
 ];
 
 const Header = ({
+  onSignOut,
   onOpenAuthModal,
   onOpenCartDrawer,
   onOpenMenuDrawer,
-}: Header) => {
+}: HeaderProps) => {
   const navigate = useNavigate();
   const { currentUser } = useAppSelector((state) => state.user);
 
-  console.log(currentUser);
+  const menuItems: MenuProps['items'] = [
+    {
+      key: '1',
+      className: 'cursor-default! select-none! hover:bg-white!',
+      icon: (
+        <img
+          width={56}
+          height={56}
+          src={currentUser?.avatar ?? PROFILE_PICTURE}
+        />
+      ),
+      label: (
+        <Flex vertical>
+          <p className="uppercase text-lg font-semibold text-primary">
+            {currentUser?.name || '-'}
+          </p>
+          <p className="max-w-[250px] truncate">{currentUser?.email || '-'}</p>
+        </Flex>
+      ),
+    },
+    {
+      key: '2',
+      icon: <UserOutlined />,
+      label: <Link to={'/'}>Trang tài khoản</Link>,
+    },
+    {
+      key: '3',
+      label: 'Đăng xuất',
+      icon: <LogoutOutlined />,
+      onClick: () => onSignOut(),
+    },
+  ];
 
   return (
-    <div className="sticky top-0 left-0 shadow-md h-16 sm:h-20 lg:h-24 px-6 bg-white max-w-[1920px] z-30">
+    <div className="sticky top-0 left-0 shadow-md h-16 sm:h-20 lg:h-24 px-6 bg-white max-w-[1920px] z-100">
       <Flex
         gap={10}
         align="center"
@@ -574,7 +608,13 @@ const Header = ({
                     Object.keys(currentUser)?.length ? 'order-3' : ''
                   }`}
                 >
-                  <Image width={30} height={30} src={PROFILE_PICTURE} />
+                  <Dropdown
+                    arrow
+                    trigger={['click']}
+                    menu={{ items: menuItems }}
+                  >
+                    <Image width={30} height={30} src={PROFILE_PICTURE} />
+                  </Dropdown>
                 </div>
               )}
               <Badge showZero count={0} onClick={onOpenCartDrawer}>
