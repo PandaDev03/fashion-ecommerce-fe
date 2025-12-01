@@ -512,7 +512,12 @@ const Header = ({
         <img
           width={56}
           height={56}
-          src={currentUser?.avatar ?? PROFILE_PICTURE}
+          className="rounded-full"
+          src={currentUser?.avatar || PROFILE_PICTURE}
+          onError={(element) => {
+            element.currentTarget.src = PROFILE_PICTURE;
+            element.currentTarget.srcset = PROFILE_PICTURE;
+          }}
         />
       ),
       label: (
@@ -531,8 +536,11 @@ const Header = ({
     },
     {
       key: '3',
-      label: 'Đăng xuất',
-      icon: <LogoutOutlined />,
+      className: 'group hover:bg-[#FEE2E2]! ',
+      label: <p className="group-has-hover:text-[#DC2626]">Đăng xuất</p>,
+      icon: (
+        <LogoutOutlined className="group-has-hover:[&>svg]:fill-[#DC2626]" />
+      ),
       onClick: () => onSignOut(),
     },
   ];
@@ -613,7 +621,13 @@ const Header = ({
                     trigger={['click']}
                     menu={{ items: menuItems }}
                   >
-                    <Image width={30} height={30} src={PROFILE_PICTURE} />
+                    <Image
+                      width={30}
+                      height={30}
+                      className="rounded-full"
+                      fallback={PROFILE_PICTURE}
+                      src={currentUser?.avatar || PROFILE_PICTURE}
+                    />
                   </Dropdown>
                 </div>
               )}

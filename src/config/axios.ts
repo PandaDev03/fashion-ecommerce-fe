@@ -5,10 +5,10 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import { AuthApi } from '~/features/auth/api/auth';
 
+import { AuthApi } from '~/features/auth/api/auth';
+import { notificationEmitter } from '~/shared/utils/notificationEmitter';
 import { PATH } from '~/shared/utils/path';
-import toast from '~/shared/utils/toast';
 
 export const instance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_API_BASE_URL,
@@ -91,7 +91,11 @@ export const setupAxiosInterceptors = () => {
           localStorage.removeItem('accessToken');
           window.location.href = PATH.HOME;
 
-          toast.warning(
+          // toast.warning(
+          //   'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
+          // );
+          notificationEmitter.emit(
+            'warning',
             'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
           );
 
@@ -122,9 +126,14 @@ const retryRequest = async <T>(
     ) {
       if (retries === 1) {
         if (!isWarningShown) {
-          toast.warning('Hết thời gian truy cập. Xin vui lòng thử lại.');
+          // toast.warning('Hết thời gian truy cập. Xin vui lòng thử lại.');
+          notificationEmitter.emit(
+            'warning',
+            'Hết thời gian truy cập. Xin vui lòng thử lại'
+          );
           isWarningShown = true;
         }
+
         return Promise.reject(error);
       }
 

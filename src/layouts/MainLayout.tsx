@@ -14,7 +14,11 @@ import {
 } from '~/assets/svg';
 import { AuthApi } from '~/features/auth/api/auth';
 import AuthModal from '~/features/auth/components/AuthModal';
-import { ISignIn, ISignUp } from '~/features/auth/types/auth';
+import {
+  ISignIn,
+  ISignInWithGoogle,
+  ISignUp,
+} from '~/features/auth/types/auth';
 import { getMe } from '~/features/user';
 import { resetUser } from '~/features/user/stores/userSlice';
 import Button from '~/shared/components/Button/Button';
@@ -450,19 +454,27 @@ const siderMenu: MenuProps['items'] = [
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
   const toast = useToast();
+  const { isXl } = useBreakpoint();
   const dispatch = useAppDispatch();
 
-  const { isXl } = useBreakpoint();
   const [subscriptionForm] = useForm();
+  const [signUpForm] = useForm<ISignUp>();
+  const [signInForm] = useForm<ISignIn>();
 
   const [isAuthVisible, setIsAuthVisible] = useState(false);
+  const [isSignUpVisible, setIsSignUpVisible] = useState(false);
   const [isMenuDrawerVisible, setIsMenuDrawerVisible] = useState(false);
   const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
 
   const { mutate: signUpMutate, isPending: isSignUpPending } = useMutation({
     mutationFn: (values: ISignUp) => AuthApi.signUp(values),
-    onSuccess: (response) => {
-      toast.success(response?.data?.message);
+    onSuccess: async (response) => {
+      toast.success(response?.message);
+
+      const { email, password } = signUpForm.getFieldsValue();
+      signInMutate({ email, password });
+
+      signUpForm.resetFields();
     },
     onError: (error: any) =>
       toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
@@ -471,18 +483,33 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const { mutate: signInMutate, isPending: isSignInPending } = useMutation({
     mutationFn: (values: ISignIn) => AuthApi.signIn(values),
     onSuccess: (response) => {
-      setIsAuthVisible(false);
-
       dispatch(getMe());
       toast.success(response?.message);
+
+      handleCancelAuthModal();
     },
     onError: (error: any) =>
       toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
   });
 
+  const { mutate: signInWithGoogle, isPending: isSignInWithGooglePending } =
+    useMutation({
+      mutationFn: (values: ISignInWithGoogle) =>
+        AuthApi.signInWithGoogle(values),
+      onSuccess: (response) => {
+        dispatch(getMe());
+        toast.success(response?.message);
+
+        handleCancelAuthModal();
+      },
+      onError: (error: any) =>
+        toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
+    });
+
   const { mutate: signOut, isPending: isSignOutPending } = useMutation({
     mutationFn: () => AuthApi.signOut(),
     onSuccess: (response) => {
+      localStorage.removeItem('accessToken');
       toast.success(response?.message);
       dispatch(resetUser());
     },
@@ -499,6 +526,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
   const handleOpenCartDrawer = () => {
     setIsCartDrawerVisible(true);
+  };
+
+  const handleCancelAuthModal = () => {
+    setIsAuthVisible(false);
+    setIsSignUpVisible(false);
+
+    signUpForm.resetFields();
+    signInForm.resetFields();
   };
 
   return (
@@ -561,10 +596,17 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
       <AuthModal
         open={isAuthVisible}
-        loading={isSignUpPending || isSignInPending}
-        onCancel={() => setIsAuthVisible(false)}
+        signUpForm={signUpForm}
+        signInForm={signInForm}
+        isSignUpVisible={isSignUpVisible}
+        loading={
+          isSignUpPending || isSignInPending || isSignInWithGooglePending
+        }
+        onCancel={handleCancelAuthModal}
+        setIsSignUpVisible={setIsSignUpVisible}
         onSignUp={(values) => signUpMutate(values)}
         onSignIn={(values) => signInMutate(values)}
+        onSignInWithGoogle={(values) => signInWithGoogle(values)}
       />
 
       <Drawer
@@ -595,6 +637,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       >
         <Menu mode="inline" items={siderMenu} />
       </Drawer>
+
       <Drawer
         open={isCartDrawerVisible}
         title={<p className="font-bold text-2xl text-primary">Giỏ hàng</p>}
