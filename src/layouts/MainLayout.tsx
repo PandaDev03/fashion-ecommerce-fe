@@ -464,8 +464,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
   const { currentUser } = useAppSelector((state) => state.user);
 
-  console.log(currentUser, Object.keys(currentUser)?.length > 0);
-
   const menuItems: MenuProps['items'] = [
     {
       key: '1',
@@ -499,8 +497,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
       const { email, password } = signUpForm.getFieldsValue();
       signInMutate({ email, password });
-
-      signUpForm.resetFields();
     },
     onError: (error: any) =>
       toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
@@ -513,6 +509,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       toast.success(response?.message);
 
       handleCancelAuthModal();
+      setIsMenuDrawerVisible(false);
     },
     onError: (error: any) =>
       toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
@@ -527,6 +524,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         toast.success(response?.message);
 
         handleCancelAuthModal();
+        setIsMenuDrawerVisible(false);
       },
       onError: (error: any) =>
         toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
@@ -537,6 +535,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     onSuccess: (response) => {
       localStorage.removeItem('accessToken');
       toast.success(response?.message);
+
       dispatch(resetUser());
     },
     onError: (error) => console.log(error),
@@ -557,7 +556,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const handleCancelAuthModal = () => {
     setIsAuthVisible(false);
     setIsSignUpVisible(false);
-    setIsMenuDrawerVisible(false);
 
     signUpForm.resetFields();
     signInForm.resetFields();
@@ -639,6 +637,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         title={<LOGO />}
         placement="left"
         open={isMenuDrawerVisible}
+        rootClassName="z-[999]! [&>div]:z-[999]!"
         footer={
           Object.keys(currentUser)?.length > 0 ? (
             <Dropdown

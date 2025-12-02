@@ -19,6 +19,7 @@ const Layout = ({ className, loading = false, ...props }: ILayoutProps) => {
         fullscreen
         size="large"
         spinning={loading}
+        rootClassName="z-[2000]!"
         indicator={<LoadingOutlined spin />}
       />
       <AntLayout className={customClassName} {...props} />
