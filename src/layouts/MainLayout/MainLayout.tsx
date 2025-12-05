@@ -13,8 +13,8 @@ import {
   ISignInWithGoogle,
   ISignUp,
 } from '~/features/auth/types/auth';
-import { getMe } from '~/features/user';
 import { resetUser } from '~/features/user/stores/userSlice';
+import { getMe } from '~/features/user/stores/userThunks';
 import Button from '~/shared/components/Button/Button';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import Form from '~/shared/components/Form/Form';
@@ -27,7 +27,9 @@ import Menu from '~/shared/components/Menu/Menu';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
-import { BottomNavBar, Footer, Header } from './components';
+import BottomNavBar from './components/BottomNavBar/BottomNavBar';
+import Footer from './components/Footer/Footer';
+import Header from './components/Header/Header';
 
 const siderMenu: MenuProps['items'] = [
   {
@@ -498,8 +500,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       const { email, password } = signUpForm.getFieldsValue();
       signInMutate({ email, password });
     },
-    onError: (error: any) =>
-      toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
   });
 
   const { mutate: signInMutate, isPending: isSignInPending } = useMutation({
@@ -511,8 +511,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       handleCancelAuthModal();
       setIsMenuDrawerVisible(false);
     },
-    onError: (error: any) =>
-      toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
   });
 
   const { mutate: signInWithGoogle, isPending: isSignInWithGooglePending } =
@@ -526,8 +524,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         handleCancelAuthModal();
         setIsMenuDrawerVisible(false);
       },
-      onError: (error: any) =>
-        toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
     });
 
   const { mutate: signOut, isPending: isSignOutPending } = useMutation({
@@ -538,7 +534,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
       dispatch(resetUser());
     },
-    onError: (error) => console.log(error),
   });
 
   const handleOpenAuthModal = () => {

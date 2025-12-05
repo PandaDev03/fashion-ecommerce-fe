@@ -2,7 +2,7 @@ import { Badge, Flex } from 'antd';
 import { memo, ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Cart, HomeOutlined, Search } from '~/assets/svg';
+import { HomeOutlined, Search, ShoppingBag } from '~/assets/svg';
 import { PATH } from '~/shared/utils/path';
 
 interface BottomNavBar {
@@ -52,7 +52,7 @@ const BottomNavBar = ({ onOpenCartDrawer, onOpenMenuDrawer }: BottomNavBar) => {
       key: 'cart',
       children: (
         <Badge showZero count={0}>
-          <Cart className="cursor-pointer" />
+          <ShoppingBag className="cursor-pointer" />
         </Badge>
       ),
       onClick: onOpenCartDrawer,

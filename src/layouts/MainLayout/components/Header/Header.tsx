@@ -4,7 +4,7 @@ import { memo, ReactElement, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { PROFILE_PICTURE } from '~/assets/images';
-import { ArrowDown, Cart, LOGO, Search } from '~/assets/svg';
+import { ArrowDown, LOGO, Search, ShoppingBag } from '~/assets/svg';
 import Button from '~/shared/components/Button/Button';
 import Image from '~/shared/components/Image/Image';
 import Link from '~/shared/components/Link/Link';
@@ -634,7 +634,7 @@ const Header = ({
                 </div>
               )}
               <Badge showZero count={0} onClick={onOpenCartDrawer}>
-                <Cart className="cursor-pointer" />
+                <ShoppingBag className="cursor-pointer" />
               </Badge>
             </Flex>
           </div>
