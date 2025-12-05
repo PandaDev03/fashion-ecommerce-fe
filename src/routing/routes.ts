@@ -1,8 +1,9 @@
 import React from 'react';
 
-import AdminLayout from '~/layouts/AdminLayout';
-import MainLayout from '~/layouts/MainLayout';
 import { PATH } from '~/shared/utils/path';
+
+import AdminLayout from '~/layouts/AdminLayout/AdminLayout';
+import MainLayout from '~/layouts/MainLayout/MainLayout';
 
 export interface AppRoute {
   path: string;
@@ -49,12 +50,19 @@ const routes: AppRoute[] = [
 
   // RBAC ROUTE
   {
-    isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_DASHBOARD,
     requiredRoles: ['ADMIN', 'MANAGER'],
     element: React.lazy(
       () => import('~/pages/admin/Dashboard.tsx/AdminDashboard')
+    ),
+  },
+  {
+    layout: AdminLayout,
+    path: PATH.ADMIN_CATEGORY_MANAGEMENT,
+    requiredRoles: ['ADMIN', 'MANAGER'],
+    element: React.lazy(
+      () => import('~/pages/admin/Category/CategoryManagement')
     ),
   },
 ];

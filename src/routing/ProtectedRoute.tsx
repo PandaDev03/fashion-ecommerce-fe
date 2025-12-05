@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { currentUser } = useAppSelector((state) => state.user);
   const isAuthenticated = !!Object.keys(currentUser)?.length;
 
-  if (!isAuthenticated) return <Navigate to={PATH.LOGIN} replace />;
+  if (!isAuthenticated) return <Navigate to={PATH.HOME} replace />;
 
   return <>{children}</>;
 };
