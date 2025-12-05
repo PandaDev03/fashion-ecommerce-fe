@@ -1,0 +1,147 @@
+import queryString from 'query-string';
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import useQueryParams from './useQueryParams';
+
+interface UsePaginationProps<T, P extends { page: number; pageSize: number }> {
+  extraParams?: Partial<Omit<P, 'page' | 'pageSize'>>;
+  fetchFn: (params: P) => Promise<T> | any;
+  setFilterParams: Dispatch<SetStateAction<any>>;
+}
+
+const initPageInfo = {
+  currentPage: 1,
+  itemsPerPage: 10,
+};
+
+const usePagination = <T, P extends { page: number; pageSize: number }>({
+  extraParams,
+  fetchFn,
+  setFilterParams,
+}: UsePaginationProps<T, P>) => {
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  const { searchParams, queryParams } = useQueryParams();
+
+  const firstRender = useRef(true);
+  const isInitialMount = useRef(true);
+
+  const pageInfo = useMemo(
+    () => ({
+      page: Number(queryParams.get('page') || initPageInfo.currentPage),
+      pageSize: Number(
+        queryParams.get('pageSize') || initPageInfo.itemsPerPage
+      ),
+    }),
+    [queryParams]
+  );
+
+  const [data, setData] = useState<T>();
+  const [currentPage, setCurrentPage] = useState(pageInfo.page);
+  const [itemsPerPage, setItemsPerPage] = useState(pageInfo.pageSize);
+
+  const handlePageChange = useCallback((page: number, pageSize?: number) => {
+    setCurrentPage(page);
+    if (pageSize) setItemsPerPage(pageSize);
+    window.scrollTo(0, 0);
+  }, []);
+
+  const fetchData = useCallback(() => {
+    const urlParams = queryString.parseUrl(location.search);
+    const params = {
+      ...urlParams.query,
+      ...extraParams,
+      page: currentPage,
+      pageSize: itemsPerPage,
+    } as P;
+
+    const queryParams = Object.entries(params).reduce((prevVal, currentVal) => {
+      const [key, value] = currentVal;
+
+      if (value)
+        prevVal[key] =
+          typeof value === 'string' ? (value as string)?.trim() : value;
+
+      return prevVal;
+    }, {} as Record<string, any>);
+
+    navigate(
+      {
+        pathname: location.pathname,
+        search: queryString.stringify(queryParams, {
+          sort: (a, b) => {
+            if (a === 'page') return -1;
+            if (b === 'page') return 1;
+            if (a === 'pageSize') return -1;
+            if (b === 'pageSize') return 1;
+
+            return 0;
+          },
+        }),
+      },
+      { replace: true }
+    );
+
+    fetchFn(queryParams as P).then((res: T) => setData(res));
+  }, [currentPage, itemsPerPage, extraParams]);
+
+  const handleClearURLSearchParams = useCallback(
+    (defaultParams?: any) => {
+      const urlParams = { ...defaultParams, page: 1, pageSize: 10 };
+
+      const pageChanged =
+        currentPage !== initPageInfo.currentPage ||
+        itemsPerPage !== initPageInfo.itemsPerPage;
+
+      if (pageChanged) {
+        setCurrentPage(1);
+        setItemsPerPage(10);
+      } else fetchData();
+
+      navigate(
+        {
+          pathname: location.pathname,
+          search: queryString.stringify(urlParams),
+        },
+        { replace: true }
+      );
+    },
+    [currentPage, itemsPerPage, fetchData]
+  );
+
+  useEffect(() => {
+    if (!firstRender.current) return;
+    firstRender.current = false;
+
+    setFilterParams({ ...extraParams, ...searchParams });
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialMount.current) {
+      const timer = setTimeout(() => fetchData(), 300);
+      return () => clearTimeout(timer);
+    }
+
+    isInitialMount.current = false;
+  }, [fetchData]);
+
+  return {
+    data,
+    pageInfo,
+    handlePageChange,
+    refetch: fetchData,
+    handleClearURLSearchParams,
+  };
+};
+
+export default usePagination;
