@@ -5,6 +5,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
+import queryString from 'query-string';
 
 import { AuthApi } from '~/features/auth/api/auth';
 import { notificationEmitter } from '~/shared/utils/notificationEmitter';
@@ -18,6 +19,13 @@ export const instance: AxiosInstance = axios.create({
   },
   timeout: 5000,
   withCredentials: true,
+  paramsSerializer: (params) => {
+    return queryString.stringify(params, {
+      arrayFormat: 'none',
+      skipNull: true,
+      skipEmptyString: true,
+    });
+  },
 });
 
 interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -38,6 +46,21 @@ const revokeSession = async () => {
   } catch (error) {
     console.error('Logout failed after refresh failure:', error);
   }
+};
+
+let isRefreshing = false;
+let failedQueue: Array<(token: string | null) => void> = [];
+
+const processQueue = (
+  error: AxiosError | null,
+  token: string | null = null
+) => {
+  failedQueue.forEach((prom) => {
+    if (error) prom(null);
+    else prom(token);
+  });
+
+  failedQueue = [];
 };
 
 export const setupAxiosInterceptors = () => {
@@ -63,37 +86,49 @@ export const setupAxiosInterceptors = () => {
     },
     async (error: AxiosError) => {
       const originalRequest = error.config as CustomInternalAxiosRequestConfig;
+      const status = error.response?.status;
 
       const authEndpoints = ['/auth/refresh', '/auth/sign-out'];
       const isAuthEndpoint = authEndpoints.some((endpoint) =>
         originalRequest.url?.includes(endpoint)
       );
 
-      if (isAuthEndpoint) return Promise.reject(error);
+      if (isAuthEndpoint || status !== 401) return Promise.reject(error);
 
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      if (status === 401 && !originalRequest._retry) {
+        if (isRefreshing)
+          return new Promise((resolve, reject) => {
+            failedQueue.push((token) => {
+              if (token) {
+                originalRequest.headers!.Authorization = `Bearer ${token}`;
+                resolve(instance(originalRequest));
+              } else reject(error);
+            });
+          });
+
+        isRefreshing = true;
         originalRequest._retry = true;
 
         try {
           const newAccessToken = await refreshAccessToken();
           localStorage.setItem('accessToken', newAccessToken);
-          if (originalRequest.headers) {
-            originalRequest.headers[
-              'Authorization'
-            ] = `Bearer ${newAccessToken}`;
-          }
+
+          isRefreshing = false;
+          processQueue(null, newAccessToken);
+
+          originalRequest.headers!.Authorization = `Bearer ${newAccessToken}`;
           return instance(originalRequest);
-        } catch (refreshError) {
+        } catch (refreshError: any) {
           console.error('Refresh token failed:', refreshError);
+
+          isRefreshing = false;
+          processQueue(refreshError);
 
           await revokeSession();
 
           localStorage.removeItem('accessToken');
           window.location.href = PATH.HOME;
 
-          // toast.warning(
-          //   'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
-          // );
           notificationEmitter.emit(
             'warning',
             'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
@@ -107,8 +142,6 @@ export const setupAxiosInterceptors = () => {
     }
   );
 };
-
-let isWarningShown = false;
 
 const retryRequest = async <T>(
   config: InternalAxiosRequestConfig,
@@ -124,27 +157,15 @@ const retryRequest = async <T>(
       !error.response &&
       error.code === 'ECONNABORTED'
     ) {
-      if (retries === 1) {
-        if (!isWarningShown) {
-          // toast.warning('Hết thời gian truy cập. Xin vui lòng thử lại.');
-          notificationEmitter.emit(
-            'warning',
-            'Hết thời gian truy cập. Xin vui lòng thử lại'
-          );
-          isWarningShown = true;
-        }
-
-        return Promise.reject(error);
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return retryRequest<T>(config, retries - 1, delay * 2);
       }
 
-      if (retries === 0) {
-        isWarningShown = true;
-        return Promise.reject(error);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, delay));
-
-      return retryRequest<T>(config, retries - 1, delay * 2);
+      notificationEmitter.emit(
+        'warning',
+        'Hết thời gian truy cập. Xin vui lòng thử lại'
+      );
     }
 
     return Promise.reject(error);
