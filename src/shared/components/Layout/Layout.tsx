@@ -9,8 +9,8 @@ interface ILayoutProps extends LayoutProps {
 
 const Layout = ({ className, loading = false, ...props }: ILayoutProps) => {
   const customClassName = classNames(
-    'mx-auto max-w-[1920px] bg-white!',
-    className
+    className,
+    'mx-auto max-w-[1920px] bg-white!'
   );
 
   return (
