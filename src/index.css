@@ -9,7 +9,7 @@
   --color-header: rgb(244 244 244);
 
   --shadow-product: 0 0 #0000, 0 0 #0000, 0 6px 12px rgba(0, 0, 0, 0.08);
-  --shadow-top: 0 0 #0000, 0 0 #0000, 0 -2px 3px rgba(0, 0, 0, .06);
+  --shadow-top: 0 0 #0000, 0 0 #0000, 0 -2px 3px rgba(0, 0, 0, 0.06);
 }
 
 :root {
@@ -43,4 +43,19 @@ html {
   font-weight: 400;
   font-style: normal;
   font-variation-settings: 'wdth' 100;
+}
+
+.ant-table-thead .ant-table-cell {
+  font-size: 14px !important;
+  text-transform: uppercase;
+  color: #212121 !important;
+  border: none !important;
+}
+
+.ant-table-thead .ant-table-cell::before {
+  width: 0 !important;
+}
+
+.even-row .ant-table-cell {
+  background-color: #fcfafa;
 }
