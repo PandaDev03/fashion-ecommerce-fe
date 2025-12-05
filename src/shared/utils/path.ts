@@ -1,9 +1,15 @@
 export const PATH = {
   HOME: '/',
+  NOT_FOUND: '/*',
+
   ACCOUNT: '/account',
+
   PRODUCTS: '/products/:slugId?',
   PRODUCTS_WITHOUT_SLUG: '/products',
   PRODUCT_DETAILS: '/product/:slugId',
+
   ADMIN_DASHBOARD: '/admin/dashboard',
-  NOT_FOUND: '/*',
+  ADMIN_PROFILE: '/admin/profile',
+  ADMIN_CATEGORY_MANAGEMENT: '/admin/category-management',
+  ADMIN_PRODUCT_MANAGEMENT: '/admin/product-management',
 };

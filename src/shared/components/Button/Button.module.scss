@@ -70,16 +70,6 @@
   background-color: transparent;
 }
 
-.fill {
-  color: white;
-  border: none;
-  background-color: var(--button-primary-bg-color);
-
-  &:hover {
-    background: var(--button-primary-bg-color-hover);
-  }
-}
-
 .dashed {
   border: 1px dashed var(--button-secondary-color);
 }

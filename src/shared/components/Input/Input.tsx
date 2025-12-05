@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { memo } from 'react';
 
 const Input = ({ className, ...props }: InputProps) => {
-  const customClass = classNames('w-full px-5! py-2!', className);
+  const customClass = classNames('w-full', className);
 
   return (
     <ConfigProvider
@@ -17,7 +17,7 @@ const Input = ({ className, ...props }: InputProps) => {
         },
       }}
     >
-      <AntInput className={customClass} {...props} />
+      <AntInput size="large" className={customClass} {...props} />
     </ConfigProvider>
   );
 };

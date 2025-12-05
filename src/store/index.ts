@@ -5,16 +5,22 @@ import {
   ThunkAction,
 } from '@reduxjs/toolkit';
 
-import { productReducer } from '~/features/products';
-import { userReducer } from '~/features/user';
+import { errorMiddleware } from './errorMiddleware';
+
+import { categoryReducer } from '~/features/category/stores/categorySlice';
+import { productReducer } from '~/features/products/store/productSlice';
+import { userReducer } from '~/features/user/stores/userSlice';
 
 const rootReducer = combineReducers({
   user: userReducer,
   product: productReducer,
+  category: categoryReducer,
 });
 
 export const store = configureStore({
   reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(errorMiddleware),
 });
 
 export type AppStore = typeof store;

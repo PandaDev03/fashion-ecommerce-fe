@@ -17,7 +17,7 @@ const FormItem = ({
   childrenSelected = false,
   ...props
 }: IProps) => {
-  const customClass = classNames('w-full', className);
+  const customClass = classNames('w-full mb-3!', className);
   const customLabelClass = classNames(
     'text-[#3A3A3A]',
     labelBold ? 'font-medium' : '',

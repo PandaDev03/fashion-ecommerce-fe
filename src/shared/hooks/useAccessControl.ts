@@ -1,9 +1,11 @@
+import { shallowEqual } from 'react-redux';
 import { useAppSelector } from './useStore';
 
 const useAccessControl = () => {
   const userRole = useAppSelector((state) => state.user.currentUser?.role);
   const userPermissions = useAppSelector(
-    (state) => state.user.currentUser?.permissions || []
+    (state) => state.user.currentUser?.permissions || [],
+    shallowEqual
   );
 
   const hasPermission = (requiredPermission: string): boolean => {

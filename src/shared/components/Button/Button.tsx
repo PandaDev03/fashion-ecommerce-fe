@@ -17,7 +17,6 @@ type DisplayType =
   | 'dashed';
 
 export interface ButtonProps {
-  fill?: boolean;
   title: ReactNode;
   type?: ButtonType;
   className?: string;
@@ -39,7 +38,6 @@ const Button = ({
   disabled,
   iconBefore,
   iconAfter,
-  fill = false,
   className = '',
   type = 'button',
   borderType = 'solid',
@@ -48,7 +46,6 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const classes = cx('button', 'rounded-md transition duration-300', {
-    fill,
     [className]: className,
     [borderType]: borderType,
     [displayType]: displayType,
@@ -62,7 +59,7 @@ const Button = ({
       {...props}
     >
       <div className="flex items-center gap-3">
-        {loading && fill ? (
+        {loading && displayType === 'primary' ? (
           <Spin indicator={<LoadingOutlined />} />
         ) : (
           iconBefore
