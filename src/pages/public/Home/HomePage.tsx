@@ -29,7 +29,7 @@ import { Link } from '~/assets/svg';
 import { MAX_QUANTITY, MIN_QUANTITY } from '~/config/constants';
 import Button from '~/shared/components/Button/Button';
 import Image from '~/shared/components/Image/Image';
-import Layout from '~/shared/components/Layout/Layout';
+import { Layout } from '~/shared/components/Layout/Layout';
 import ProductModal, { Size } from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import Swiper from '~/shared/components/Swiper/Swiper';
@@ -964,7 +964,7 @@ const HomePage = () => {
   };
 
   return (
-    <Layout>
+    <Layout className="bg-white!">
       <Carousel draggable autoplaySpeed={5000} autoplay={{ dotDuration: true }}>
         <Image
           alt="banner-1"

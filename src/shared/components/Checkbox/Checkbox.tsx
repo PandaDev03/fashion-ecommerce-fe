@@ -1,7 +1,14 @@
 import { Checkbox as AntCheckbox, CheckboxProps, ConfigProvider } from 'antd';
+import { CheckboxGroupProps } from 'antd/es/checkbox';
+import classNames from 'classnames';
 import { memo } from 'react';
 
-const Checkbox = ({ ...props }: CheckboxProps) => {
+const Checkbox = memo(({ className, ...props }: CheckboxProps) => {
+  const customClassName = classNames(
+    '[&>.ant-checkbox-label]:w-full',
+    className
+  );
+
   return (
     <ConfigProvider
       theme={{
@@ -10,9 +17,13 @@ const Checkbox = ({ ...props }: CheckboxProps) => {
         },
       }}
     >
-      <AntCheckbox {...props} />
+      <AntCheckbox className={customClassName} {...props} />
     </ConfigProvider>
   );
-};
+});
 
-export default memo(Checkbox);
+const CheckboxGroup = memo(({ ...props }: CheckboxGroupProps) => {
+  return <AntCheckbox.Group {...props} />;
+});
+
+export { Checkbox, CheckboxGroup };

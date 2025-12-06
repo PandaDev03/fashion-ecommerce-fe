@@ -1,9 +1,6 @@
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { App as AntApp } from 'antd';
 import { useEffect, useRef } from 'react';
 
-import { getMe } from './features/user';
+import { getMe } from './features/user/stores/userThunks';
 import AppRouter from './routing/AppRouter';
 import { useToast } from './shared/contexts/NotificationContext';
 import { useAppDispatch } from './shared/hooks/useStore';
@@ -12,7 +9,6 @@ const App = () => {
   const flagRef = useRef(false);
   const dispatch = useAppDispatch();
 
-  const queryClient = new QueryClient();
   const clientId = import.meta.env.VITE_APP_GOOGLE_CLIENT_ID;
 
   const toast = useToast();
@@ -32,15 +28,7 @@ const App = () => {
     flagRef.current = true;
   }, [accessToken, flagRef]);
 
-  return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <QueryClientProvider client={queryClient}>
-        <AntApp>
-          <AppRouter />
-        </AntApp>
-      </QueryClientProvider>
-    </GoogleOAuthProvider>
-  );
+  return <AppRouter />;
 };
 
 export default App;

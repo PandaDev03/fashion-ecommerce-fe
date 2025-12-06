@@ -1,7 +1,7 @@
 import { Flex, Select } from 'antd';
 import { ReactNode, useState } from 'react';
 
-import { Filters } from '~/assets/svg';
+import { FilterOutlined } from '@ant-design/icons';
 import Button from '~/shared/components/Button/Button';
 import Layout from '~/shared/components/Layout/Layout';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
@@ -104,7 +104,7 @@ const ProductPage = () => {
                 displayType="outlined"
                 title={
                   <Flex align="center" className="gap-x-2.5">
-                    <Filters />
+                    <FilterOutlined />
                     <p>Bộ lọc</p>
                   </Flex>
                 }

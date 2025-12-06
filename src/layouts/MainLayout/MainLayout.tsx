@@ -13,53 +13,55 @@ import {
   ISignInWithGoogle,
   ISignUp,
 } from '~/features/auth/types/auth';
-import { getMe } from '~/features/user';
 import { resetUser } from '~/features/user/stores/userSlice';
+import { getMe } from '~/features/user/stores/userThunks';
 import Button from '~/shared/components/Button/Button';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
 import Image from '~/shared/components/Image/Image';
 import Input from '~/shared/components/Input/Input';
-import Layout from '~/shared/components/Layout/Layout';
+import { Layout } from '~/shared/components/Layout/Layout';
 import Link from '~/shared/components/Link/Link';
 import Menu from '~/shared/components/Menu/Menu';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
-import { BottomNavBar, Footer, Header } from './components';
+import BottomNavBar from './components/BottomNavBar/BottomNavBar';
+import Footer from './components/Footer/Footer';
+import Header from './components/Header/Header';
 
 const siderMenu: MenuProps['items'] = [
   {
-    key: 'men-wear',
-    label: 'Thời trang Nam',
+    key: 'fashion',
+    label: 'Thời trang',
     children: [
       {
         key: 'top-wear',
         label: 'Áo',
         children: [
           {
-            key: '1',
+            key: 't-shirt',
             label: 'Áo Thun (Áo Phông)',
           },
           {
-            key: '2',
+            key: 'casual-shirt',
             label: 'Áo Sơ mi Thường ngày',
           },
           {
-            key: '3',
+            key: 'business-shirt',
             label: 'Áo Sơ mi Công sở',
           },
           {
-            key: '4',
+            key: 'blazer-coat',
             label: 'Áo Blazer & Áo Khoác',
           },
           {
-            key: '5',
+            key: 'suit',
             label: 'Bộ Vest (Com-lê)',
           },
           {
-            key: '6',
+            key: 'jacket',
             label: 'Áo khoác (Jackets)',
           },
         ],
@@ -77,27 +79,27 @@ const siderMenu: MenuProps['items'] = [
         label: 'Trang phục phong cách Tây',
         children: [
           {
-            key: '1',
+            key: 'dress',
             label: 'Váy (Đầm)',
           },
           {
-            key: '2',
+            key: 'jumpsuit',
             label: 'Đồ Liền (Jumpsuit)',
           },
           {
-            key: '3',
+            key: 'shirt-blouse',
             label: 'Áo kiểu, Áo Thun & Áo sơ mi',
           },
           {
-            key: '4',
+            key: 'short-skirt',
             label: 'Quần Short & Chân Váy',
           },
           {
-            key: '5',
+            key: 'shrug',
             label: 'Áo khoác mỏng (Shrug)',
           },
           {
-            key: '6',
+            key: 'blazer',
             label: 'Áo Blazer',
           },
         ],
@@ -115,19 +117,19 @@ const siderMenu: MenuProps['items'] = [
         label: 'Giày Dép',
         children: [
           {
-            key: '1',
+            key: 'flat-shoes',
             label: 'Giày Đế bệt',
           },
           {
-            key: '2',
+            key: 'casual-shoes',
             label: 'Giày Thường ngày',
           },
           {
-            key: '3',
+            key: 'heels',
             label: 'Giày Cao gót',
           },
           {
-            key: '4',
+            key: 'boots',
             label: 'Giày Boots/Bốt',
           },
         ],
@@ -137,15 +139,15 @@ const siderMenu: MenuProps['items'] = [
         label: 'Đồ Thể thao & Vận động',
         children: [
           {
-            key: '1',
+            key: 'clothing',
             label: 'Quần áo',
           },
           {
-            key: '2',
+            key: 'footwear',
             label: 'Giày Dép',
           },
           {
-            key: '3',
+            key: 'sport-accessories',
             label: 'Phụ kiện Thể thao',
           },
         ],
@@ -155,15 +157,15 @@ const siderMenu: MenuProps['items'] = [
         label: 'Đồ Lót & Đồ Ngủ',
         children: [
           {
-            key: '1',
+            key: 'bra',
             label: 'Áo Ngực',
           },
           {
-            key: '2',
+            key: 'panties',
             label: 'Quần Lót',
           },
           {
-            key: '3',
+            key: 'sleep-wear',
             label: 'Đồ Ngủ',
           },
         ],
@@ -173,19 +175,19 @@ const siderMenu: MenuProps['items'] = [
         label: 'Dây lưng, Khăn choàng & Khác',
         children: [
           {
-            key: '1',
+            key: 'makeup',
             label: 'Trang điểm',
           },
           {
-            key: '2',
+            key: 'skincare',
             label: 'Chăm sóc Da',
           },
           {
-            key: '3',
+            key: 'luxury-cosmetic',
             label: 'Mỹ phẩm Cao cấp',
           },
           {
-            key: '4',
+            key: 'lipstick',
             label: 'Son môi',
           },
         ],
@@ -195,11 +197,11 @@ const siderMenu: MenuProps['items'] = [
         label: 'Thiết bị Công nghệ',
         children: [
           {
-            key: '1',
+            key: 'wearable-devices',
             label: 'Thiết bị Đeo thông minh',
           },
           {
-            key: '2',
+            key: 'headphone',
             label: 'Tai nghe',
           },
         ],
@@ -209,11 +211,11 @@ const siderMenu: MenuProps['items'] = [
         label: 'Trang Sức',
         children: [
           {
-            key: '1',
+            key: 'fashion-jewelry',
             label: 'Trang sức Thời trang',
           },
           {
-            key: '2',
+            key: 'fine-jewelry',
             label: 'Trang sức Cao cấp',
           },
         ],
@@ -228,204 +230,204 @@ const siderMenu: MenuProps['items'] = [
       },
     ],
   },
-  {
-    key: 'women-wear',
-    label: 'Thời trang Nữ',
-    children: [
-      {
-        key: 'top-wear',
-        label: 'Áo',
-        children: [
-          {
-            key: '1',
-            label: 'Áo Thun (Áo Phông)',
-          },
-          {
-            key: '2',
-            label: 'Áo Sơ mi Thường ngày',
-          },
-          {
-            key: '3',
-            label: 'Áo Sơ mi Công sở',
-          },
-          {
-            key: '4',
-            label: 'Áo Blazer & Áo Khoác',
-          },
-          {
-            key: '5',
-            label: 'Bộ Vest (Com-lê)',
-          },
-          {
-            key: '6',
-            label: 'Áo khoác (Jackets)',
-          },
-        ],
-      },
-      {
-        key: 'belt',
-        label: 'Dây lưng, Khăn choàng & Khác',
-      },
-      {
-        key: 'watches',
-        label: 'Đồng hồ & Thiết bị đeo',
-      },
-      {
-        key: 'western',
-        label: 'Trang phục phong cách Tây',
-        children: [
-          {
-            key: '1',
-            label: 'Váy (Đầm)',
-          },
-          {
-            key: '2',
-            label: 'Đồ Liền (Jumpsuit)',
-          },
-          {
-            key: '3',
-            label: 'Áo kiểu, Áo Thun & Áo sơ mi',
-          },
-          {
-            key: '4',
-            label: 'Quần Short & Chân Váy',
-          },
-          {
-            key: '5',
-            label: 'Áo khoác mỏng (Shrug)',
-          },
-          {
-            key: '6',
-            label: 'Áo Blazer',
-          },
-        ],
-      },
-      {
-        key: 'plus-size',
-        label: 'Kích cỡ Lớn (Big Size)',
-      },
-      {
-        key: 'sung-glasses',
-        label: 'Kính mát & Gọng kính',
-      },
-      {
-        key: 'foot-wear',
-        label: 'Giày Dép',
-        children: [
-          {
-            key: '1',
-            label: 'Giày Đế bệt',
-          },
-          {
-            key: '2',
-            label: 'Giày Thường ngày',
-          },
-          {
-            key: '3',
-            label: 'Giày Cao gót',
-          },
-          {
-            key: '4',
-            label: 'Giày Boots/Bốt',
-          },
-        ],
-      },
-      {
-        key: 'sport-wear',
-        label: 'Đồ Thể thao & Vận động',
-        children: [
-          {
-            key: '1',
-            label: 'Quần áo',
-          },
-          {
-            key: '2',
-            label: 'Giày Dép',
-          },
-          {
-            key: '3',
-            label: 'Phụ kiện Thể thao',
-          },
-        ],
-      },
-      {
-        key: 'lingerie',
-        label: 'Đồ Lót & Đồ Ngủ',
-        children: [
-          {
-            key: '1',
-            label: 'Áo Ngực',
-          },
-          {
-            key: '2',
-            label: 'Quần Lót',
-          },
-          {
-            key: '3',
-            label: 'Đồ Ngủ',
-          },
-        ],
-      },
-      {
-        key: 'scarves',
-        label: 'Dây lưng, Khăn choàng & Khác',
-        children: [
-          {
-            key: '1',
-            label: 'Trang điểm',
-          },
-          {
-            key: '2',
-            label: 'Chăm sóc Da',
-          },
-          {
-            key: '3',
-            label: 'Mỹ phẩm Cao cấp',
-          },
-          {
-            key: '4',
-            label: 'Son môi',
-          },
-        ],
-      },
-      {
-        key: 'gadgets',
-        label: 'Thiết bị Công nghệ',
-        children: [
-          {
-            key: '1',
-            label: 'Thiết bị Đeo thông minh',
-          },
-          {
-            key: '2',
-            label: 'Tai nghe',
-          },
-        ],
-      },
-      {
-        key: 'jewellers',
-        label: 'Trang Sức',
-        children: [
-          {
-            key: '1',
-            label: 'Trang sức Thời trang',
-          },
-          {
-            key: '2',
-            label: 'Trang sức Cao cấp',
-          },
-        ],
-      },
-      {
-        key: 'backpacks',
-        label: 'Balo',
-      },
-      {
-        key: 'handbags',
-        label: 'Túi xách & Ví',
-      },
-    ],
-  },
+  // {
+  //   key: 'women-wear',
+  //   label: 'Thời trang Nữ',
+  //   children: [
+  //     {
+  //       key: 'top-wear',
+  //       label: 'Áo',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Áo Thun (Áo Phông)',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Áo Sơ mi Thường ngày',
+  //         },
+  //         {
+  //           key: '3',
+  //           label: 'Áo Sơ mi Công sở',
+  //         },
+  //         {
+  //           key: '4',
+  //           label: 'Áo Blazer & Áo Khoác',
+  //         },
+  //         {
+  //           key: '5',
+  //           label: 'Bộ Vest (Com-lê)',
+  //         },
+  //         {
+  //           key: '6',
+  //           label: 'Áo khoác (Jackets)',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'belt',
+  //       label: 'Dây lưng, Khăn choàng & Khác',
+  //     },
+  //     {
+  //       key: 'watches',
+  //       label: 'Đồng hồ & Thiết bị đeo',
+  //     },
+  //     {
+  //       key: 'western',
+  //       label: 'Trang phục phong cách Tây',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Váy (Đầm)',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Đồ Liền (Jumpsuit)',
+  //         },
+  //         {
+  //           key: '3',
+  //           label: 'Áo kiểu, Áo Thun & Áo sơ mi',
+  //         },
+  //         {
+  //           key: '4',
+  //           label: 'Quần Short & Chân Váy',
+  //         },
+  //         {
+  //           key: '5',
+  //           label: 'Áo khoác mỏng (Shrug)',
+  //         },
+  //         {
+  //           key: '6',
+  //           label: 'Áo Blazer',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'plus-size',
+  //       label: 'Kích cỡ Lớn (Big Size)',
+  //     },
+  //     {
+  //       key: 'sung-glasses',
+  //       label: 'Kính mát & Gọng kính',
+  //     },
+  //     {
+  //       key: 'foot-wear',
+  //       label: 'Giày Dép',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Giày Đế bệt',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Giày Thường ngày',
+  //         },
+  //         {
+  //           key: '3',
+  //           label: 'Giày Cao gót',
+  //         },
+  //         {
+  //           key: '4',
+  //           label: 'Giày Boots/Bốt',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'sport-wear',
+  //       label: 'Đồ Thể thao & Vận động',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Quần áo',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Giày Dép',
+  //         },
+  //         {
+  //           key: '3',
+  //           label: 'Phụ kiện Thể thao',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'lingerie',
+  //       label: 'Đồ Lót & Đồ Ngủ',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Áo Ngực',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Quần Lót',
+  //         },
+  //         {
+  //           key: '3',
+  //           label: 'Đồ Ngủ',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'scarves',
+  //       label: 'Dây lưng, Khăn choàng & Khác',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Trang điểm',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Chăm sóc Da',
+  //         },
+  //         {
+  //           key: '3',
+  //           label: 'Mỹ phẩm Cao cấp',
+  //         },
+  //         {
+  //           key: '4',
+  //           label: 'Son môi',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'gadgets',
+  //       label: 'Thiết bị Công nghệ',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Thiết bị Đeo thông minh',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Tai nghe',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'jewellers',
+  //       label: 'Trang Sức',
+  //       children: [
+  //         {
+  //           key: '1',
+  //           label: 'Trang sức Thời trang',
+  //         },
+  //         {
+  //           key: '2',
+  //           label: 'Trang sức Cao cấp',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       key: 'backpacks',
+  //       label: 'Balo',
+  //     },
+  //     {
+  //       key: 'handbags',
+  //       label: 'Túi xách & Ví',
+  //     },
+  //   ],
+  // },
   {
     key: 'collection',
     label: 'Bộ sưu tập',
@@ -498,8 +500,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       const { email, password } = signUpForm.getFieldsValue();
       signInMutate({ email, password });
     },
-    onError: (error: any) =>
-      toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
   });
 
   const { mutate: signInMutate, isPending: isSignInPending } = useMutation({
@@ -511,8 +511,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       handleCancelAuthModal();
       setIsMenuDrawerVisible(false);
     },
-    onError: (error: any) =>
-      toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
   });
 
   const { mutate: signInWithGoogle, isPending: isSignInWithGooglePending } =
@@ -526,8 +524,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         handleCancelAuthModal();
         setIsMenuDrawerVisible(false);
       },
-      onError: (error: any) =>
-        toast.error(error?.response?.data?.message ?? 'Có lỗi xảy ra'),
     });
 
   const { mutate: signOut, isPending: isSignOutPending } = useMutation({
@@ -538,7 +534,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
       dispatch(resetUser());
     },
-    onError: (error) => console.log(error),
   });
 
   const handleOpenAuthModal = () => {
@@ -562,7 +557,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <Layout loading={isSignOutPending} className="max-lg:pb-14">
+    <Layout loading={isSignOutPending} className="max-lg:pb-14 bg-white!">
       <Header
         onSignOut={signOut}
         onOpenAuthModal={handleOpenAuthModal}
