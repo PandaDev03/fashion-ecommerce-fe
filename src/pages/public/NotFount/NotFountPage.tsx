@@ -10,7 +10,7 @@ const NotFountPage = () => {
   const navigate = useNavigate();
 
   return (
-    <Layout>
+    <Layout className="bg-white!">
       <Flex
         vertical
         align="center"
