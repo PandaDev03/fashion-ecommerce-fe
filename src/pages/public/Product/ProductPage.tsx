@@ -3,7 +3,7 @@ import { ReactNode, useState } from 'react';
 
 import { FilterOutlined } from '@ant-design/icons';
 import Button from '~/shared/components/Button/Button';
-import Layout from '~/shared/components/Layout/Layout';
+import { Layout } from '~/shared/components/Layout/Layout';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import Filter from './Filter';
 
@@ -84,7 +84,7 @@ const ProductPage = () => {
   };
 
   return (
-    <Layout className="px-4! md:px-8! 2xl:px-16!">
+    <Layout className="bg-white! px-4! md:px-8! 2xl:px-16!">
       <Flex className="pt-8! gap-x-16">
         <Filter
           isOpenFilterDrawer={isOpenFilterDrawer}

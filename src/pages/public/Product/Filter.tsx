@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { ArrowLeftOutlined } from '~/assets/svg';
 
 import Button from '~/shared/components/Button/Button';
-import Checkbox from '~/shared/components/Checkbox/Checkbox';
+import { Checkbox } from '~/shared/components/Checkbox/Checkbox';
 import Drawer from '~/shared/components/Drawer/Drawer';
 
 interface Filter {
