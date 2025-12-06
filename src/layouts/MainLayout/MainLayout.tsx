@@ -21,7 +21,7 @@ import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
 import Image from '~/shared/components/Image/Image';
 import Input from '~/shared/components/Input/Input';
-import Layout from '~/shared/components/Layout/Layout';
+import { Layout } from '~/shared/components/Layout/Layout';
 import Link from '~/shared/components/Link/Link';
 import Menu from '~/shared/components/Menu/Menu';
 import { useToast } from '~/shared/contexts/NotificationContext';
@@ -557,7 +557,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <Layout loading={isSignOutPending} className="max-lg:pb-14">
+    <Layout loading={isSignOutPending} className="max-lg:pb-14 bg-white!">
       <Header
         onSignOut={signOut}
         onOpenAuthModal={handleOpenAuthModal}

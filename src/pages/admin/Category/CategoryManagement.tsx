@@ -1,15 +1,13 @@
 import {
   CloseOutlined,
-  DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
-  ReloadOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Flex, Popconfirm, TableProps } from 'antd';
+import { Flex, Popconfirm } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import FormItem from 'antd/es/form/FormItem';
 import { ColumnType } from 'antd/es/table';
@@ -29,7 +27,7 @@ import {
 import Button from '~/shared/components/Button/Button';
 import Form from '~/shared/components/Form/Form';
 import Input from '~/shared/components/Input/Input';
-import Layout from '~/shared/components/Layout/Layout';
+import { Layout } from '~/shared/components/Layout/Layout';
 import Table from '~/shared/components/Table/Table';
 import { useBreadcrumb } from '~/shared/contexts/BreadcrumbContext';
 import { useToast } from '~/shared/contexts/NotificationContext';
@@ -39,8 +37,8 @@ import usePagination from '~/shared/hooks/usePagination';
 import useQueryParams from '~/shared/hooks/useQueryParams';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { PATH } from '~/shared/utils/path';
+import CategoryFilter from './CategoryFilter';
 import CategoryModal from './CategoryModal';
-import FilterCategory from './FilterCategory';
 
 export type ICategoryForm = ICreateCategoryParams;
 export type IFilterForm = Pick<ICategoryParams, 'parentIds' | 'createdDate'>;
@@ -315,7 +313,7 @@ const CategoryManagement = () => {
   return (
     <Layout
       loading={isDeleteCategoryPending}
-      className="border border-gray-200 rounded-lg overflow-hidden"
+      className="bg-white! border border-gray-200 rounded-lg overflow-hidden"
     >
       <Flex align="center" justify="space-between" className="py-4! px-5!">
         <Flex vertical>
@@ -360,7 +358,7 @@ const CategoryManagement = () => {
             />
           </FormItem>
         </Form>
-        <FilterCategory
+        <CategoryFilter
           form={filterForm}
           open={isFilterVisible}
           data={parentCategories}

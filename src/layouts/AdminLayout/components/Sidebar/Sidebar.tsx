@@ -16,6 +16,10 @@ const siderItems: MenuProps['items'] = [
     icon: <Cart />,
     children: [
       {
+        key: PATH.ADMIN_BRAND_MANAGEMENT,
+        label: 'Thương hiệu',
+      },
+      {
         key: PATH.ADMIN_CATEGORY_MANAGEMENT,
         label: 'Danh mục',
       },
@@ -31,6 +35,7 @@ const siderItems: MenuProps['items'] = [
 const selectedKeys = [
   [PATH.ADMIN_PROFILE],
   [PATH.ADMIN_DASHBOARD],
+  [PATH.ADMIN_BRAND_MANAGEMENT],
   [PATH.ADMIN_CATEGORY_MANAGEMENT],
   [PATH.ADMIN_PRODUCT_MANAGEMENT],
 ];

@@ -25,7 +25,7 @@ interface FilterCategoryProps {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const FilterCategory = ({
+const CategoryFilter = ({
   open,
   form,
   data,
@@ -111,4 +111,4 @@ const FilterCategory = ({
   );
 };
 
-export default memo(FilterCategory);
+export default memo(CategoryFilter);
