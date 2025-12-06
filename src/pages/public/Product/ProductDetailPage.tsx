@@ -12,7 +12,7 @@ import { MAX_QUANTITY, MIN_QUANTITY, SIZES } from '~/config/constants';
 import Button from '~/shared/components/Button/Button';
 import Collapse from '~/shared/components/Collapse/Collapse';
 import Image from '~/shared/components/Image/Image';
-import Layout from '~/shared/components/Layout/Layout';
+import { Layout } from '~/shared/components/Layout/Layout';
 import ProductModal, { Size } from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
@@ -186,7 +186,7 @@ const ProductDetailPage = () => {
   };
 
   return (
-    <Layout className="px-4! md:px-8! 2xl:px-16!">
+    <Layout className="bg-white! px-4! md:px-8! 2xl:px-16!">
       <Breadcrumb items={breadCrumbItems} className="pt-8!" />
       <div className="lg:grid grid-cols-9 items-start gap-x-10 xl:gap-x-14 pt-7 pb-10 lg:pb-14 2xl:pb-20">
         {isLg ? (
