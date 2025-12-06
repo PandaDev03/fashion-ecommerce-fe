@@ -65,6 +65,12 @@ const routes: AppRoute[] = [
       () => import('~/pages/admin/Category/CategoryManagement')
     ),
   },
+  {
+    layout: AdminLayout,
+    path: PATH.ADMIN_BRAND_MANAGEMENT,
+    requiredRoles: ['ADMIN', 'MANAGER'],
+    element: React.lazy(() => import('~/pages/admin/Brand/BrandManagement')),
+  },
 ];
 
 export default routes;

@@ -12,4 +12,5 @@ export const PATH = {
   ADMIN_PROFILE: '/admin/profile',
   ADMIN_CATEGORY_MANAGEMENT: '/admin/category-management',
   ADMIN_PRODUCT_MANAGEMENT: '/admin/product-management',
+  ADMIN_BRAND_MANAGEMENT: '/admin/brand-management',
 };

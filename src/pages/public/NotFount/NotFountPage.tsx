@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { HomeFilled, NotFound, PlaceholderLarge } from '~/assets/svg';
 import Button from '~/shared/components/Button/Button';
-import Layout from '~/shared/components/Layout/Layout';
+import { Layout } from '~/shared/components/Layout/Layout';
 import { PATH } from '~/shared/utils/path';
 
 const NotFountPage = () => {

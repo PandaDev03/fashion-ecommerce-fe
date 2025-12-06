@@ -7,24 +7,29 @@ interface ILayoutProps extends LayoutProps {
   loading?: boolean;
 }
 
-const Layout = ({ className, loading = false, ...props }: ILayoutProps) => {
-  const customClassName = classNames(
-    className,
-    'mx-auto max-w-[1920px] bg-white!'
-  );
+const Layout = memo(
+  ({ className, loading = false, ...props }: ILayoutProps) => {
+    const customClassName = classNames('mx-auto max-w-[1920px]', className);
 
-  return (
-    <>
-      <Spin
-        fullscreen
-        size="large"
-        spinning={loading}
-        rootClassName="z-[2000]!"
-        indicator={<LoadingOutlined spin />}
-      />
-      <AntLayout className={customClassName} {...props} />
-    </>
-  );
-};
+    return (
+      <>
+        <Spin
+          fullscreen
+          size="large"
+          spinning={loading}
+          rootClassName="z-[2000]!"
+          indicator={<LoadingOutlined spin />}
+        />
+        <AntLayout className={customClassName} {...props} />
+      </>
+    );
+  }
+);
 
-export default memo(Layout);
+const Content = memo(({ className, ...props }: LayoutProps) => {
+  const customClassName = classNames('bg-white py-4 px-5', className);
+
+  return <AntLayout.Content className={customClassName} {...props} />;
+});
+
+export { Content, Layout };
