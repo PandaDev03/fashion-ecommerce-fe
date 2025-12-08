@@ -56,7 +56,7 @@ const BrandManagement = () => {
 
   const brand = useAppSelector((state) => state.brand);
 
-  const { pageInfo, handlePageChange, handleClearURLSearchParams } =
+  const { pageInfo, handlePageChange, resetPaginationAndUrl } =
     usePagination({
       setFilterParams,
       extraParams: filterParams,

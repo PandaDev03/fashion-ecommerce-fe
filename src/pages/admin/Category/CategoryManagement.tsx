@@ -41,10 +41,19 @@ import CategoryFilter from './CategoryFilter';
 import CategoryModal from './CategoryModal';
 
 export type ICategoryForm = ICreateCategoryParams;
-export type IFilterForm = Pick<ICategoryParams, 'parentIds' | 'createdDate'>;
+export interface IFilterForm {
+  parentIds?: number[];
+  createdDate?: string[];
+}
+
 interface ISearchForm {
   search: string;
 }
+
+const initialFilterParams: IFilterForm = {
+  parentIds: [],
+  createdDate: [],
+};
 
 const CategoryManagement = () => {
   const toast = useToast();
@@ -69,7 +78,7 @@ const CategoryManagement = () => {
     []
   );
 
-  const { pageInfo, refetch, handlePageChange, handleClearURLSearchParams } =
+  const { pageInfo, refetch, handlePageChange, resetPaginationAndUrl } =
     usePagination({
       setFilterParams,
       extraParams: filterParams,
@@ -93,7 +102,7 @@ const CategoryManagement = () => {
         getParentCategories();
 
         handleCancelModal();
-        handleClearURLSearchParams();
+        resetPaginationAndUrl(true);
       },
     });
 
@@ -251,7 +260,7 @@ const CategoryManagement = () => {
 
     filterForm.setFields([
       { name: 'parentIds', value: queryValues?.parentIds },
-      { name: 'createdDate', value: queryValues?.createdDate },
+      // { name: 'createdDate', value: queryValues?.createdDate },
     ]);
     searchForm.setFieldValue('search', queryValues?.search);
 
@@ -292,7 +301,7 @@ const CategoryManagement = () => {
   const handleSearch = (values: ISearchForm) => {
     const { search } = values;
 
-    handleClearURLSearchParams();
+    resetPaginationAndUrl();
     setFilterParams({ search });
   };
 
@@ -300,15 +309,30 @@ const CategoryManagement = () => {
     filterForm.resetFields();
     setIsFilterVisible(false);
 
-    handleClearURLSearchParams();
-    setFilterParams({ parentIds: [], createdDate: [] });
+    resetPaginationAndUrl();
+    setFilterParams({
+      ...initialFilterParams,
+      createdFrom: undefined,
+      createdTo: undefined,
+    });
   };
 
   const handleFinishFilter = (values: IFilterForm) => {
+    const { createdDate, parentIds } = values;
+    const params: ICategoryParams = {
+      parentIds,
+      createdFrom: createdDate?.[0]
+        ? dayjs(createdDate?.[0]).startOf('day').toISOString()
+        : undefined,
+      createdTo: createdDate?.[1]
+        ? dayjs(createdDate?.[1]).endOf('day').toISOString()
+        : undefined,
+    };
+
     setIsFilterVisible(false);
 
-    handleClearURLSearchParams();
-    setFilterParams(values);
+    resetPaginationAndUrl();
+    setFilterParams(params);
   };
 
   return (

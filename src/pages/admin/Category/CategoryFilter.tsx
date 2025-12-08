@@ -83,7 +83,7 @@ const CategoryFilter = ({
           <h2 className="uppercase font-semibold text-body mt-2">Ngày tạo</h2>
         }
       >
-        <DatePicker.RangePicker className="w-full h-10" />
+        <DatePicker.RangePicker format="DD/MM/YYYY" className="w-full h-10" />
       </FormItem>
       <Divider className="my-1.5!" />
       <Flex align="center" justify="end" className="gap-x-3 py-3! px-4!">
