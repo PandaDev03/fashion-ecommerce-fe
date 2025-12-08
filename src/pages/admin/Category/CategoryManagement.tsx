@@ -258,9 +258,18 @@ const CategoryManagement = () => {
 
     const queryValues = queryParams.searchParams;
 
+    const createdFrom =
+      typeof queryValues?.createdFrom === 'string'
+        ? dayjs(queryValues?.createdFrom)
+        : undefined;
+    const createdTo =
+      typeof queryValues?.createdTo === 'string'
+        ? dayjs(queryValues?.createdTo)
+        : undefined;
+
     filterForm.setFields([
       { name: 'parentIds', value: queryValues?.parentIds },
-      // { name: 'createdDate', value: queryValues?.createdDate },
+      { name: 'createdDate', value: [createdFrom, createdTo] },
     ]);
     searchForm.setFieldValue('search', queryValues?.search);
 
