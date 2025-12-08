@@ -147,6 +147,7 @@ const CategoryManagement = () => {
       key: '5',
       width: 250,
       title: 'Mô tả',
+      className: 'truncate',
       dataIndex: 'description',
     },
     {

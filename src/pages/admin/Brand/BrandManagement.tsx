@@ -104,6 +104,7 @@ const BrandManagement = () => {
       key: '5',
       width: 250,
       title: 'Mô tả',
+      className: 'truncate',
       dataIndex: 'description',
     },
     {
@@ -142,7 +143,7 @@ const BrandManagement = () => {
           <Flex justify="center" className="gap-x-3">
             <Button
               displayType="text"
-              title={<EyeOutlined />}
+              title={<EyeOutlined className="[&>svg]:fill-blue-500" />}
               onClick={() => handleViewDetailsClick(record)}
             />
             <Button
