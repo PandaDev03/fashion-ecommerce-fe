@@ -89,11 +89,11 @@ const Header = ({ onCollapse }: HeaderProps) => {
             src={currentUser?.avatar}
             fallback={PROFILE_PICTURE}
           />
-          <Flex>
+          <Flex align="center" className="gap-x-1">
             <p className="font-semibold text-primary select-none">
               {currentUser?.name}
             </p>
-            <ArrowDown />
+            <ArrowDown className="text-xs" />
           </Flex>
         </Flex>
       </Dropdown>

@@ -8,7 +8,6 @@ import {
 } from 'antd';
 import { useState } from 'react';
 
-import { MAX_QUANTITY, MIN_QUANTITY, SIZES } from '~/config/constants';
 import Button from '~/shared/components/Button/Button';
 import Collapse from '~/shared/components/Collapse/Collapse';
 import Image from '~/shared/components/Image/Image';
@@ -17,6 +16,7 @@ import ProductModal, { Size } from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
+import { MAX_QUANTITY, MIN_QUANTITY, SIZES } from '~/shared/utils/constants';
 import { PATH } from '~/shared/utils/path';
 import { Product } from '../Home/HomePage';
 

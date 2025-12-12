@@ -12,7 +12,7 @@ interface RoleBasedRouteProps {
 const RoleBasedRoute = ({ children, requiredRoles }: RoleBasedRouteProps) => {
   const { hasAnyRole } = useAccessControl();
 
-  // if (!hasAnyRole(requiredRoles)) return <Navigate to={PATH.HOME} replace />;
+  if (!hasAnyRole(requiredRoles)) return <Navigate to={PATH.HOME} replace />;
 
   return <>{children}</>;
 };

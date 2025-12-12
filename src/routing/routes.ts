@@ -42,33 +42,36 @@ const routes: AppRoute[] = [
 
   // PROTECTED ROUTES
   {
-    path: PATH.ACCOUNT,
     isProtected: true,
+    path: PATH.ACCOUNT,
     layout: MainLayout,
     element: React.lazy(() => import('~/pages/user/Account/AccountPage')),
   },
 
   // RBAC ROUTE
   {
+    // isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_DASHBOARD,
-    requiredRoles: ['ADMIN', 'MANAGER'],
+    // requiredRoles: [],
     element: React.lazy(
       () => import('~/pages/admin/Dashboard.tsx/AdminDashboard')
     ),
   },
   {
+    // isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_CATEGORY_MANAGEMENT,
-    requiredRoles: ['ADMIN', 'MANAGER'],
+    // requiredRoles: [],
     element: React.lazy(
       () => import('~/pages/admin/Category/CategoryManagement')
     ),
   },
   {
+    // isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_BRAND_MANAGEMENT,
-    requiredRoles: ['ADMIN', 'MANAGER'],
+    // requiredRoles: [],
     element: React.lazy(() => import('~/pages/admin/Brand/BrandManagement')),
   },
 ];

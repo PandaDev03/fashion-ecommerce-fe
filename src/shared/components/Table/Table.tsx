@@ -17,7 +17,6 @@ const Table = <T extends IBaseTWithID>({
 
   const formattedColumns = columns?.map((col) => ({
     ...col,
-    className: 'truncate',
     onCell: () => ({
       style: {
         maxWidth: col?.width || 'auto',

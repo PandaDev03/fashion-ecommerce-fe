@@ -2,31 +2,25 @@ import { Divider, Dropdown, DropDownProps, Flex, FormInstance } from 'antd';
 import { Dispatch, memo, SetStateAction } from 'react';
 
 import { FilterOutlined } from '~/assets/svg';
-import { IParentCategory } from '~/features/category/types/category';
 import Button from '~/shared/components/Button/Button';
-import { Checkbox, CheckboxGroup } from '~/shared/components/Checkbox/Checkbox';
 import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
 import RangePicker from '~/shared/components/RangePicker/RangePicker';
-import { IFilterForm } from './CategoryManagement';
 
-interface FilterCategoryProps {
-  open: boolean;
-  data: IParentCategory[];
-  form: FormInstance<IFilterForm>;
+interface BrandFilterProps extends DropDownProps {
+  form: FormInstance;
   onCancel: () => void;
   onFinish: (values: any) => void;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const CategoryFilter = ({
-  open,
+const BrandFilter = ({
   form,
-  data,
-  onFinish,
   onCancel,
+  onFinish,
   setIsOpen,
-}: FilterCategoryProps) => {
+  ...props
+}: BrandFilterProps) => {
   const filterDropdownRender: DropDownProps['popupRender'] = () => (
     <Form
       form={form}
@@ -44,31 +38,6 @@ const CategoryFilter = ({
           onClick={() => form.resetFields()}
         />
       </Flex>
-      <Divider className="my-1.5!" />
-      <FormItem
-        name="parentIds"
-        className="max-w-[350px] py-1.5! px-4!"
-        label={
-          <h2 className="uppercase font-semibold text-body">Danh mục cha</h2>
-        }
-        getValueFromEvent={(checkedList) => checkedList}
-      >
-        <CheckboxGroup className="max-h-[300px] overflow-y-scroll gap-y-2">
-          {data?.map(({ id, name, childrenCount, position }) => (
-            <Checkbox
-              key={id}
-              value={id}
-              className="w-full"
-              style={{ order: position }}
-            >
-              <Flex align="center" justify="space-between" className="w-full">
-                <p>{name}</p>
-                <p>({childrenCount})</p>
-              </Flex>
-            </Checkbox>
-          ))}
-        </CheckboxGroup>
-      </FormItem>
       <Divider className="my-1.5!" />
       <FormItem
         name="createdDate"
@@ -89,20 +58,19 @@ const CategoryFilter = ({
 
   return (
     <Dropdown
-      open={open}
       trigger={['click']}
       placement="bottomRight"
       popupRender={filterDropdownRender}
       onOpenChange={(open) => setIsOpen(open)}
+      {...props}
     >
       <Button
         title="Lọc"
         displayType="outlined"
         iconBefore={<FilterOutlined />}
-        onClick={() => setIsOpen(!open)}
       />
     </Dropdown>
   );
 };
 
-export default memo(CategoryFilter);
+export default memo(BrandFilter);

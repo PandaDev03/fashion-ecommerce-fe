@@ -4,7 +4,8 @@ export interface ICategoryParams extends IPaginationParams {
   parent?: boolean;
   search?: string;
   parentIds?: number[];
-  createdDate?: string[];
+  createdFrom?: string;
+  createdTo?: string;
 }
 
 export interface ICreateCategoryParams {
