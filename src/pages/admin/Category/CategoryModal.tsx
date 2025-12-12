@@ -11,6 +11,7 @@ import Input from '~/shared/components/Input/Input';
 import Modal from '~/shared/components/Modal/Modal';
 import Select from '~/shared/components/Select/Select';
 import useDebounceCallback from '~/shared/hooks/useDebounce';
+import { generateSlug } from '~/shared/utils/function';
 import { ICategoryForm } from './CategoryManagement';
 
 interface CategoryModalProps extends ModalProps {
@@ -34,16 +35,7 @@ const CategoryModal = ({
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    const slug = value
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-
+    const slug = generateSlug(value);
     form.setFieldValue('slug', slug);
   };
 

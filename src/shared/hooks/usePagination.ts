@@ -95,8 +95,8 @@ const usePagination = <T, P extends { page: number; pageSize: number }>({
     fetchFn(queryParams as P).then((res: T) => setData(res));
   }, [currentPage, itemsPerPage, extraParams]);
 
-  const handleClearURLSearchParams = useCallback(
-    (defaultParams?: any) => {
+  const resetPaginationAndUrl = useCallback(
+    (doFetch: boolean = false, defaultParams?: any) => {
       const urlParams = { ...defaultParams, page: 1, pageSize: 10 };
 
       const pageChanged =
@@ -106,7 +106,7 @@ const usePagination = <T, P extends { page: number; pageSize: number }>({
       if (pageChanged) {
         setCurrentPage(1);
         setItemsPerPage(10);
-      } else fetchData();
+      } else if (doFetch) fetchData();
 
       navigate(
         {
@@ -140,7 +140,7 @@ const usePagination = <T, P extends { page: number; pageSize: number }>({
     pageInfo,
     handlePageChange,
     refetch: fetchData,
-    handleClearURLSearchParams,
+    resetPaginationAndUrl,
   };
 };
 

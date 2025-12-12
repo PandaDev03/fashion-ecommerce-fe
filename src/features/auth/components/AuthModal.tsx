@@ -38,8 +38,9 @@ const AuthModal = ({
   return (
     <Modal
       centered
+      footer={false}
       classNames={{
-        content: 'max-w-[450px]',
+        content: 'p-0! max-w-[450px]',
       }}
       {...props}
     >
