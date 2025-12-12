@@ -3,11 +3,10 @@ import {
   DownloadOutlined,
   EditOutlined,
   PlusOutlined,
-  QuestionCircleOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Flex, Popconfirm } from 'antd';
+import { Flex, Tooltip } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import FormItem from 'antd/es/form/FormItem';
 import { ColumnType } from 'antd/es/table';
@@ -28,6 +27,7 @@ import Button from '~/shared/components/Button/Button';
 import Form from '~/shared/components/Form/Form';
 import Input from '~/shared/components/Input/Input';
 import { Layout } from '~/shared/components/Layout/Layout';
+import PopConfirm from '~/shared/components/PopConfirm/PopConfirm';
 import Table from '~/shared/components/Table/Table';
 import { useBreadcrumb } from '~/shared/contexts/BreadcrumbContext';
 import { useToast } from '~/shared/contexts/NotificationContext';
@@ -36,11 +36,13 @@ import useDebounceCallback from '~/shared/hooks/useDebounce';
 import usePagination from '~/shared/hooks/usePagination';
 import useQueryParams from '~/shared/hooks/useQueryParams';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
+import { normalizeObjectStrings } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import CategoryFilter from './CategoryFilter';
 import CategoryModal from './CategoryModal';
 
 export type ICategoryForm = ICreateCategoryParams;
+
 export interface IFilterForm {
   parentIds?: number[];
   createdDate?: string[];
@@ -49,11 +51,6 @@ export interface IFilterForm {
 interface ISearchForm {
   search: string;
 }
-
-const initialFilterParams: IFilterForm = {
-  parentIds: [],
-  createdDate: [],
-};
 
 const CategoryManagement = () => {
   const toast = useToast();
@@ -71,6 +68,7 @@ const CategoryManagement = () => {
   const [isEditCategory, setIsEditCategory] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
+
   const [filterParams, setFilterParams] = useState<ICategoryParams>();
 
   const category = useAppSelector((state) => state.category);
@@ -156,8 +154,14 @@ const CategoryManagement = () => {
       key: '5',
       width: 250,
       title: 'Mô tả',
-      className: 'truncate',
       dataIndex: 'description',
+      render: (value) => {
+        return (
+          <Tooltip title={value}>
+            <p className="max-w-[250px] truncate">{value}</p>
+          </Tooltip>
+        );
+      },
     },
     {
       key: '4',
@@ -196,7 +200,7 @@ const CategoryManagement = () => {
       dataIndex: ['updater', 'name'],
     },
     {
-      width: 80,
+      width: 100,
       fixed: 'right',
       align: 'center',
       title: 'Thao tác',
@@ -208,20 +212,16 @@ const CategoryManagement = () => {
               title={<EditOutlined className="[&>svg]:fill-blue-500" />}
               onClick={() => handleEditCategory(record)}
             />
-            <Popconfirm
-              okText="Có"
-              cancelText="Không"
+            <PopConfirm
               placement="topLeft"
               title="Xoá mục này"
-              description="Bạn có chắc chắn muốn xoá mục này?"
-              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
               onConfirm={() => deleteCategory(record.id)}
             >
               <Button
                 displayType="text"
                 title={<CloseOutlined className="[&>svg]:fill-red-500" />}
               />
-            </Popconfirm>
+            </PopConfirm>
           </Flex>
         );
       },
@@ -243,19 +243,6 @@ const CategoryManagement = () => {
   // };
 
   useEffect(() => {
-    setTitle('Danh mục');
-    setBreadcrumb([
-      {
-        key: 'home',
-        title: 'Trang chủ',
-        href: PATH.ADMIN_DASHBOARD,
-      },
-      {
-        key: 'category',
-        title: 'Danh mục',
-      },
-    ]);
-
     const queryValues = queryParams.searchParams;
 
     const createdFrom =
@@ -272,6 +259,19 @@ const CategoryManagement = () => {
       { name: 'createdDate', value: [createdFrom, createdTo] },
     ]);
     searchForm.setFieldValue('search', queryValues?.search);
+
+    setTitle('Danh mục');
+    setBreadcrumb([
+      {
+        key: 'home',
+        title: 'Trang chủ',
+        href: PATH.ADMIN_DASHBOARD,
+      },
+      {
+        key: 'category',
+        title: 'Danh mục',
+      },
+    ]);
 
     getParentCategories();
   }, []);
@@ -300,27 +300,34 @@ const CategoryManagement = () => {
         return;
       }
 
-      updateCategory({ ...values, id: formValues?.id });
+      const normalizeParams = normalizeObjectStrings({
+        ...values,
+        id: formValues?.id,
+      });
+
+      updateCategory(normalizeParams);
       return;
     }
 
-    createCategory(values);
+    const normalizeParams = normalizeObjectStrings(values);
+    createCategory(normalizeParams);
   };
 
   const handleSearch = (values: ISearchForm) => {
     const { search } = values;
 
     resetPaginationAndUrl();
-    setFilterParams({ search });
+    setFilterParams({ ...filterParams, search });
   };
 
   const handleCancelFilter = () => {
     filterForm.resetFields();
-    setIsFilterVisible(false);
 
     resetPaginationAndUrl();
+
+    setIsFilterVisible(false);
     setFilterParams({
-      ...initialFilterParams,
+      parentIds: [],
       createdFrom: undefined,
       createdTo: undefined,
     });
@@ -385,6 +392,7 @@ const CategoryManagement = () => {
         >
           <FormItem name="search" className="mb-0!">
             <Input
+              allowClear
               placeholder="Tìm kiếm..."
               className="max-w-[300px]"
               prefix={<Search className="[&>path]:fill-[#667085] mr-1" />}

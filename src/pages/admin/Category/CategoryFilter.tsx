@@ -1,11 +1,4 @@
-import {
-  DatePicker,
-  Divider,
-  Dropdown,
-  DropDownProps,
-  Flex,
-  FormInstance,
-} from 'antd';
+import { Divider, Dropdown, DropDownProps, Flex, FormInstance } from 'antd';
 import { Dispatch, memo, SetStateAction } from 'react';
 
 import { FilterOutlined } from '~/assets/svg';
@@ -14,6 +7,7 @@ import Button from '~/shared/components/Button/Button';
 import { Checkbox, CheckboxGroup } from '~/shared/components/Checkbox/Checkbox';
 import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
+import RangePicker from '~/shared/components/RangePicker/RangePicker';
 import { IFilterForm } from './CategoryManagement';
 
 interface FilterCategoryProps {
@@ -53,13 +47,13 @@ const CategoryFilter = ({
       <Divider className="my-1.5!" />
       <FormItem
         name="parentIds"
-        className="py-1.5! px-4!"
+        className="max-w-[350px] py-1.5! px-4!"
         label={
           <h2 className="uppercase font-semibold text-body">Danh mục cha</h2>
         }
         getValueFromEvent={(checkedList) => checkedList}
       >
-        <CheckboxGroup className="max-w-[300px] max-h-[300px] overflow-y-scroll gap-y-2">
+        <CheckboxGroup className="max-h-[300px] overflow-y-scroll gap-y-2">
           {data?.map(({ id, name, childrenCount, position }) => (
             <Checkbox
               key={id}
@@ -83,7 +77,7 @@ const CategoryFilter = ({
           <h2 className="uppercase font-semibold text-body mt-2">Ngày tạo</h2>
         }
       >
-        <DatePicker.RangePicker format="DD/MM/YYYY" className="w-full h-10" />
+        <RangePicker />
       </FormItem>
       <Divider className="my-1.5!" />
       <Flex align="center" justify="end" className="gap-x-3 py-3! px-4!">

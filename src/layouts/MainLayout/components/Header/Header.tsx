@@ -587,7 +587,7 @@ const Header = ({
                       {title}
                     </Link>
                     {children && (
-                      <ArrowDown className="text-xs opacity-30 group-has-hover:rotate-180 transition duration-300 ease-in-out" />
+                      <ArrowDown className="text-xs group-has-hover:rotate-180 transition duration-300 ease-in-out" />
                     )}
                   </Space>
                 </div>

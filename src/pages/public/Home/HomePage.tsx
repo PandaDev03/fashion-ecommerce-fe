@@ -26,7 +26,7 @@ import {
   WOMEN,
 } from '~/assets/images';
 import { Link } from '~/assets/svg';
-import { MAX_QUANTITY, MIN_QUANTITY } from '~/config/constants';
+import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
 import Button from '~/shared/components/Button/Button';
 import Image from '~/shared/components/Image/Image';
 import { Layout } from '~/shared/components/Layout/Layout';
