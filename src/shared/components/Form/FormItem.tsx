@@ -1,11 +1,12 @@
-import { Form, FormItemProps } from 'antd';
+import { ConfigProvider, Form, FormItemProps } from 'antd';
 import classNames from 'classnames';
-import { ReactElement, ReactNode } from 'react';
+import { memo, ReactElement, ReactNode } from 'react';
 
 type IProps = {
   labelBold?: boolean;
   labelClassName?: string;
   childrenSelected?: boolean;
+  spacing?: 'none' | 'default';
   children: ReactElement | ReactNode | FormItemProps['children'];
 } & FormItemProps;
 
@@ -14,10 +15,13 @@ const FormItem = ({
   className,
   labelClassName,
   labelBold = true,
+  spacing = 'default',
   childrenSelected = false,
   ...props
 }: IProps) => {
-  const customClass = classNames('w-full mb-3!', className);
+  const isSpacing = spacing === 'default';
+
+  const customClass = classNames('w-full', className);
   const customLabelClass = classNames(
     'text-[#3A3A3A]',
     labelBold ? 'font-medium' : '',
@@ -25,16 +29,26 @@ const FormItem = ({
   );
 
   return (
-    <Form.Item
-      {...props}
-      className={customClass}
-      labelCol={{ span: props.label ? 24 : 0 }}
-      initialValue={childrenSelected ? 'all' : undefined}
-      label={<span className={customLabelClass}>{props.label}</span>}
+    <ConfigProvider
+      theme={{
+        token: {
+          marginXXS: isSpacing ? 4 : 0,
+          marginLG: isSpacing ? 12 : 0,
+          margin: isSpacing ? 16 : 0,
+        },
+      }}
     >
-      {children}
-    </Form.Item>
+      <Form.Item
+        {...props}
+        className={customClass}
+        labelCol={{ span: props.label ? 24 : 0 }}
+        initialValue={childrenSelected ? 'all' : undefined}
+        label={<span className={customLabelClass}>{props.label}</span>}
+      >
+        {children}
+      </Form.Item>
+    </ConfigProvider>
   );
 };
 
-export default FormItem;
+export default memo(FormItem);
