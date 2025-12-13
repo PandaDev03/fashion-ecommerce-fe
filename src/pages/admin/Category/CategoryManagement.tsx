@@ -6,20 +6,22 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Flex, Tooltip } from 'antd';
+import { Flex, Space, Tooltip } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import FormItem from 'antd/es/form/FormItem';
-import { ColumnType } from 'antd/es/table';
+import { ColumnType, TableProps } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
-import { Search } from '~/assets/svg';
+import { Search, Trash } from '~/assets/svg';
+import { IDeleteManyBrandParams } from '~/features/brand/types/brand';
 import { categoryApi } from '~/features/category/api/categoryApi';
 import { getAllCategories } from '~/features/category/stores/categoryThunks';
 import {
   ICategory,
   ICategoryParams,
   ICreateCategoryParams,
+  IDeleteManyCategoryParams,
   IParentCategory,
   IUpdateCategoryParams,
 } from '~/features/category/types/category';
@@ -70,6 +72,9 @@ const CategoryManagement = () => {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   const [filterParams, setFilterParams] = useState<ICategoryParams>();
+  const [selectedMultipleCategory, setSelectedMultipleCategory] = useState(
+    [] as ICategory[]
+  );
 
   const category = useAppSelector((state) => state.category);
   const [parentCategories, setParentCategories] = useState<IParentCategory[]>(
@@ -126,6 +131,19 @@ const CategoryManagement = () => {
 
         getParentCategories();
         refetch();
+      },
+    });
+
+  const { mutate: deleteManyCategory, isPending: isDeleteManyCategoryPending } =
+    useMutation({
+      mutationFn: (params: IDeleteManyBrandParams) =>
+        categoryApi.deleteManyCategory(params),
+      onSuccess: (response) => {
+        toast.success(response?.message);
+
+        refetch();
+        getParentCategories();
+        setSelectedMultipleCategory([]);
       },
     });
 
@@ -205,11 +223,24 @@ const CategoryManagement = () => {
       align: 'center',
       title: 'Thao tác',
       render: (_, record) => {
+        const isDisable = !!selectedMultipleCategory?.filter(
+          (category) => category.id === record.id
+        ).length;
+
         return (
           <Flex justify="center" className="gap-x-3">
             <Button
               displayType="text"
-              title={<EditOutlined className="[&>svg]:fill-blue-500" />}
+              disabled={isDisable}
+              title={
+                <EditOutlined
+                  className={
+                    isDisable
+                      ? '[&>svg]:fill-gray-400'
+                      : '[&>svg]:fill-blue-500'
+                  }
+                />
+              }
               onClick={() => handleEditCategory(record)}
             />
             <PopConfirm
@@ -219,7 +250,16 @@ const CategoryManagement = () => {
             >
               <Button
                 displayType="text"
-                title={<CloseOutlined className="[&>svg]:fill-red-500" />}
+                disabled={isDisable}
+                title={
+                  <CloseOutlined
+                    className={
+                      isDisable
+                        ? '[&>svg]:fill-gray-400'
+                        : '[&>svg]:fill-red-500'
+                    }
+                  />
+                }
               />
             </PopConfirm>
           </Flex>
@@ -228,19 +268,23 @@ const CategoryManagement = () => {
     },
   ];
 
-  // const rowSelection: TableProps<ICategory>['rowSelection'] = {
-  //   onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
-  //     console.log(
-  //       `selectedRowKeys: ${selectedRowKeys}`,
-  //       'selectedRows: ',
-  //       selectedRows
-  //     );
-  //   },
-  //   getCheckboxProps: (record: any) => ({
-  //     disabled: record.name === 'Disabled User',
-  //     name: record.name,
-  //   }),
-  // };
+  const handleRowSelectionChange = useDebounceCallback(
+    (selectedRows: ICategory[]) => {
+      setSelectedMultipleCategory(selectedRows);
+    },
+    300
+  );
+
+  const rowSelection: TableProps<ICategory>['rowSelection'] = {
+    onChange: (_, selectedRows: ICategory[]) => {
+      console.log(`selectedRows: ${selectedRows}`);
+      handleRowSelectionChange(selectedRows);
+    },
+    getCheckboxProps: (record: any) => ({
+      disabled: record.name === 'Disabled User',
+      name: record.name,
+    }),
+  };
 
   useEffect(() => {
     const queryValues = queryParams.searchParams;
@@ -275,6 +319,14 @@ const CategoryManagement = () => {
 
     getParentCategories();
   }, []);
+
+  const handleDeleteManyCategory = () => {
+    const params: IDeleteManyCategoryParams = {
+      ids: selectedMultipleCategory?.map((category) => category.id),
+    };
+
+    deleteManyCategory(params);
+  };
 
   const handleEditCategory = (record: ICategory) => {
     setIsEditCategory(true);
@@ -353,7 +405,11 @@ const CategoryManagement = () => {
 
   return (
     <Layout
-      loading={isDeleteCategoryPending}
+      loading={
+        category?.loading ||
+        isDeleteCategoryPending ||
+        isDeleteManyCategoryPending
+      }
       className="bg-white! border border-gray-200 rounded-lg overflow-hidden"
     >
       <Flex align="center" justify="space-between" className="py-4! px-5!">
@@ -386,20 +442,43 @@ const CategoryManagement = () => {
         justify="space-between"
         className="border-t border-b border-gray-200 py-4! px-5!"
       >
-        <Form
-          form={searchForm}
-          onFinish={useDebounceCallback(handleSearch, 300)}
-        >
-          <FormItem name="search" className="mb-0!">
-            <Input
-              allowClear
-              placeholder="Tìm kiếm..."
-              className="max-w-[300px]"
-              prefix={<Search className="[&>path]:fill-[#667085] mr-1" />}
-              onChange={() => searchForm.submit()}
-            />
-          </FormItem>
-        </Form>
+        <Space>
+          <Form
+            form={searchForm}
+            onFinish={useDebounceCallback(handleSearch, 300)}
+          >
+            <FormItem name="search" className="mb-0!">
+              <Input
+                allowClear
+                placeholder="Tìm kiếm..."
+                className="max-w-[300px]"
+                prefix={<Search className="[&>path]:fill-[#667085] mr-1" />}
+                onChange={() => searchForm.submit()}
+              />
+            </FormItem>
+          </Form>
+          {!!selectedMultipleCategory?.length && (
+            <PopConfirm
+              title="Xóa mục này"
+              description={
+                <p>
+                  Bạn có chắc chắn muốn xóa danh mục:{' '}
+                  <strong>
+                    {selectedMultipleCategory
+                      .map((brand) => brand.name)
+                      .join(', ')}
+                  </strong>
+                  ?
+                  <br />
+                  Hành động này không thể hoàn tác.
+                </p>
+              }
+              onConfirm={handleDeleteManyCategory}
+            >
+              <Trash className="w-4 h-4 text-red-500 cursor-pointer" />
+            </PopConfirm>
+          )}
+        </Space>
         <CategoryFilter
           form={filterForm}
           open={isFilterVisible}
@@ -415,7 +494,7 @@ const CategoryManagement = () => {
           className="w-full"
           columns={columns}
           dataSource={category?.items}
-          // rowSelection={{ type: 'checkbox', ...rowSelection }}
+          rowSelection={{ type: 'checkbox', ...rowSelection }}
           pagination={{
             current: pageInfo?.page,
             pageSize: pageInfo?.pageSize,
