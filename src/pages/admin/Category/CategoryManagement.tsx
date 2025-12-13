@@ -405,11 +405,7 @@ const CategoryManagement = () => {
 
   return (
     <Layout
-      loading={
-        category?.loading ||
-        isDeleteCategoryPending ||
-        isDeleteManyCategoryPending
-      }
+      loading={isDeleteCategoryPending || isDeleteManyCategoryPending}
       className="bg-white! border border-gray-200 rounded-lg overflow-hidden"
     >
       <Flex align="center" justify="space-between" className="py-4! px-5!">
@@ -493,6 +489,7 @@ const CategoryManagement = () => {
         <Table<ICategory>
           className="w-full"
           columns={columns}
+          loading={category?.loading}
           dataSource={category?.items}
           rowSelection={{ type: 'checkbox', ...rowSelection }}
           pagination={{
