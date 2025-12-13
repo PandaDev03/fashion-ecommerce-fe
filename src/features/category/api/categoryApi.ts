@@ -2,6 +2,7 @@ import axiosApi from '~/config/axios';
 import {
   ICategoryParams,
   ICreateCategoryParams,
+  IDeleteManyCategoryParams,
   IUpdateCategoryParams,
 } from '../types/category';
 
@@ -20,5 +21,8 @@ export const categoryApi = {
   },
   deleteCategory: async (id: string) => {
     return await axiosApi.delete(`/categories/${id}`);
+  },
+  deleteManyCategory: async (params: IDeleteManyCategoryParams) => {
+    return await axiosApi.delete('/categories/many', { data: params } as any);
   },
 };

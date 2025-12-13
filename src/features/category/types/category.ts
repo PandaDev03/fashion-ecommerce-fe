@@ -20,6 +20,10 @@ export interface IUpdateCategoryParams extends Partial<ICreateCategoryParams> {
   id: string;
 }
 
+export interface IDeleteManyCategoryParams {
+  ids: string[];
+}
+
 export interface ICategory {
   id: string;
   createdAt: Date;
