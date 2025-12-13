@@ -509,9 +509,7 @@ const BrandManagement = () => {
 
   return (
     <Layout
-      loading={
-        brand?.loading || isDeleteBrandPending || isDeleteManyBrandPending
-      }
+      loading={isDeleteBrandPending || isDeleteManyBrandPending}
       className="border border-gray-200 rounded-lg overflow-hidden"
     >
       <Content className="flex items-center justify-between">
@@ -589,6 +587,7 @@ const BrandManagement = () => {
         <Table<IBrand>
           columns={columns}
           dataSource={brand.items}
+          loading={brand?.loading}
           rowSelection={{ type: 'checkbox', ...rowSelection }}
           pagination={{
             current: pageInfo.page,

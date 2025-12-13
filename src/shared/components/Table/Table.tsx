@@ -39,16 +39,11 @@ const Table = <T extends IBaseTWithID>({
   return (
     <AntdTable
       size="middle"
+      loading={loading}
       columns={formattedColumns}
       scroll={{ x: 'max-content' }}
       rowKey={(record) => record?.id ?? 'id'}
       rowClassName={(_, index) => (index % 2 !== 0 ? 'even-row' : '')}
-      loading={
-        loading && {
-          size: 'large',
-          indicator: <LoadingOutlined className="[&>svg]:fill-[#FF5800]" />,
-        }
-      }
       pagination={
         paginationParams && {
           current: paginationParams?.current ?? 1,
