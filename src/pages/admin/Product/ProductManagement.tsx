@@ -152,7 +152,12 @@ const ProductManagement = () => {
             <Button
               displayType="text"
               title={<EditOutlined className="[&>svg]:fill-blue-500" />}
-              // onClick={() => handleEditCategory(record)}
+              onClick={() =>
+                navigate(
+                  PATH.ADMIN_PRODUCT_DETAILS.replace(':slug', record?.slug),
+                  { state: { edit: true } }
+                )
+              }
             />
             <PopConfirm
               placement="topLeft"

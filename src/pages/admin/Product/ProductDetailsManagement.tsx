@@ -11,6 +11,7 @@ import { useMutation } from '@tanstack/react-query';
 import {
   Divider,
   Flex,
+  InputNumber,
   Space,
   Tabs,
   TabsProps,
@@ -24,7 +25,7 @@ import { ColumnType, TableProps } from 'antd/es/table';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { FALLBACK_IMG, FOLDER_EMPTY } from '~/assets/images';
 import { brandApi } from '~/features/brand/api/brandApi';
@@ -112,9 +113,12 @@ const initialSelectedVariant = {} as IVariant;
 const ProductDetailsManagement = () => {
   const toast = useToast();
   const navigate = useNavigate();
-  const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
 
   const flagRef = useRef(false);
+  const editModeFlagRef = useRef(false);
+
+  const { slug } = useParams<{ slug: string }>();
 
   const { setTitle } = useTitle();
   const { setBreadcrumb } = useBreadcrumb();
@@ -200,7 +204,7 @@ const ProductDetailsManagement = () => {
           const fieldValues = productEditForm.getFieldsValue();
           const params: IUpdateProduct = {
             productId: product?.id,
-            variantId: selectedVariant.id,
+            variantId: selectedVariant?.id,
             images: newProductImages?.map((image) => ({
               ...(image?.id && { imageId: image?.id }),
               url: image?.url,
@@ -222,7 +226,7 @@ const ProductDetailsManagement = () => {
         handleCancelEdit();
 
         const newSlug = productEditForm.getFieldValue('slug');
-        refetchProductBySlug(newSlug);
+        refetchProductBySlug(true, newSlug);
       },
     });
 
@@ -273,6 +277,8 @@ const ProductDetailsManagement = () => {
       }, 0),
     [product]
   );
+
+  const hasVariant = useMemo(() => !!product?.variants?.length, [product]);
 
   const handleRowSelectionChange = useDebounceCallback(
     (selectedRows: IDataSource[]) =>
@@ -482,9 +488,9 @@ const ProductDetailsManagement = () => {
   useEffect(() => {
     if (flagRef.current) return;
 
-    refetchProductBySlug(slug);
+    refetchProductBySlug(false, slug);
     flagRef.current = true;
-  }, [slug]);
+  }, [slug, location]);
 
   useEffect(() => {
     const selectedVariant = product?.variants?.[0];
@@ -519,9 +525,27 @@ const ProductDetailsManagement = () => {
     });
 
     if (product?.id) getProductOptions({ productId: product?.id });
+
+    editModeFlagRef.current = true;
   }, [product]);
 
-  const refetchProductBySlug = (newSlug?: string) => {
+  useEffect(() => {
+    const isEditMode = location?.state?.edit;
+
+    if (isEditMode && editModeFlagRef.current) {
+      handleEdit();
+
+      navigate(location.pathname, {
+        replace: true,
+        state: { ...location.state, edit: false },
+      });
+    }
+  }, [dataSource, selectedVariant, location?.state?.edit]);
+
+  const refetchProductBySlug = async (
+    isNavigate: boolean = false,
+    newSlug?: string
+  ) => {
     const currentSlug = newSlug || slug;
 
     if (!currentSlug) {
@@ -530,9 +554,11 @@ const ProductDetailsManagement = () => {
     }
 
     getProductBySlug(currentSlug);
-    navigate(PATH.ADMIN_PRODUCT_DETAILS.replace(':slug', currentSlug), {
-      replace: true,
-    });
+    isNavigate &&
+      navigate(PATH.ADMIN_PRODUCT_DETAILS.replace(':slug', currentSlug), {
+        state: null,
+        replace: true,
+      });
   };
 
   const handleUploadPreview = async (file: UploadFile) => {
@@ -659,11 +685,6 @@ const ProductDetailsManagement = () => {
       return;
     }
 
-    if (!selectedVariant?.id) {
-      toast.error('Không tìm thấy id của sản phẩm');
-      return;
-    }
-
     const fieldValues = productEditForm.getFieldsValue();
     const params: IUpdateProduct = {
       productId: product?.id,
@@ -766,7 +787,7 @@ const ProductDetailsManagement = () => {
 
   // console.log('productOptions', productOptions);
   // console.log('fileList', fileList);
-  // console.log('selectedVariant', selectedVariant);
+  console.log('selectedVariant', selectedVariant);
 
   return (
     <Layout
@@ -791,6 +812,12 @@ const ProductDetailsManagement = () => {
                   spacing="none"
                   label="Tên sản phẩm"
                   className="max-w-[500px]"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng nhập tên sản phẩm',
+                    },
+                  ]}
                 >
                   <Input
                     placeholder="Ví dụ: Áo polo..."
@@ -1005,19 +1032,114 @@ const ProductDetailsManagement = () => {
                   </Space>
                 )}
 
-                {isProductEdit ? (
-                  <FormItem name="slug" spacing="none" label="Slug">
-                    <Input placeholder="Ví dụ: ao-polo..." />
-                  </FormItem>
-                ) : (
-                  <>
-                    <span className="text-[13px] text-body">Slug</span>
-                    <span className="text-primary">{product?.slug ?? '-'}</span>
-                  </>
-                )}
+                <Flex vertical>
+                  {isProductEdit && !hasVariant ? (
+                    <FormItem
+                      name="price"
+                      spacing="none"
+                      label="Giá"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Vui lòng nhập giá',
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={0}
+                        size="large"
+                        className="w-full!"
+                        placeholder="100,000"
+                        formatter={(value) =>
+                          `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                        }
+                      />
+                    </FormItem>
+                  ) : (
+                    <>
+                      <span className="text-[13px] text-body">Giá</span>
+                      <span className="text-primary">
+                        {product?.price
+                          ? Number(product?.price).toLocaleString('vi-VN', {
+                              style: 'currency',
+                              currency: 'VND',
+                            })
+                          : '-'}
+                      </span>
+                    </>
+                  )}
+                </Flex>
+                <Flex vertical>
+                  {isProductEdit && !hasVariant ? (
+                    <FormItem
+                      name="stock"
+                      spacing="none"
+                      label="Tồn kho"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Vui lòng nhập số lượng tồn kho',
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={0}
+                        size="large"
+                        placeholder="100"
+                        className="w-full!"
+                      />
+                    </FormItem>
+                  ) : (
+                    <>
+                      <span className="text-[13px] text-body">Tồn kho</span>
+                      <span className="text-primary">
+                        {product?.stock ?? '-'}
+                      </span>
+                    </>
+                  )}
+                </Flex>
                 <Flex vertical>
                   {isProductEdit ? (
-                    <FormItem name="categoryId" spacing="none" label="Danh mục">
+                    <FormItem
+                      name="slug"
+                      spacing="none"
+                      label="Slug"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Vui lòng nhập slug',
+                        },
+                        {
+                          pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                          message:
+                            'Chỉ chấp nhận chữ thường, số và dấu gạch ngang (-).',
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Ví dụ: ao-polo..." />
+                    </FormItem>
+                  ) : (
+                    <>
+                      <span className="text-[13px] text-body">Slug</span>
+                      <span className="text-primary">
+                        {product?.slug ?? '-'}
+                      </span>
+                    </>
+                  )}
+                </Flex>
+                <Flex vertical>
+                  {isProductEdit ? (
+                    <FormItem
+                      name="categoryId"
+                      spacing="none"
+                      label="Danh mục"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Vui lòng chọn danh mục',
+                        },
+                      ]}
+                    >
                       <Select
                         loading={isGetCategoryOptionPending}
                         options={categoryOptions?.data?.map(
@@ -1039,7 +1161,17 @@ const ProductDetailsManagement = () => {
                 </Flex>
                 <Flex vertical>
                   {isProductEdit ? (
-                    <FormItem name="brandId" spacing="none" label="Thương hiệu">
+                    <FormItem
+                      name="brandId"
+                      spacing="none"
+                      label="Thương hiệu"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Vui lòng chọn thương hiệu',
+                        },
+                      ]}
+                    >
                       <Select
                         loading={isGetBrandOptionPending}
                         options={brandOptions?.data?.map(
