@@ -46,6 +46,8 @@ export interface IUpdateProduct {
   categoryId?: string;
   brandId?: string;
   position?: number;
+  parentPrice?: number;
+  parentStock?: number;
   price?: number;
   stock?: number;
   // status?: 'active' | 'inactive';
@@ -74,7 +76,18 @@ export interface IProduct {
   status: string;
   variants: IVariant[];
   options: Option[];
-  images: string[];
+  // images: string[];
+  images: {
+    id: string;
+    url: string;
+    altText: string;
+    position: number;
+    productId: string;
+    updatedAt: string;
+    updatedBy: string;
+    createdAt: string;
+    createdBy: string;
+  }[];
   category: {
     id: string;
     name: string;

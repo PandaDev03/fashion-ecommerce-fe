@@ -67,6 +67,8 @@ import ProductVariantModal from './ProductVariantModal';
 interface IProductEditForm {
   name: string;
   slug: string;
+  parentPrice?: number;
+  parentStock?: number;
   brandId: string;
   categoryId: string;
   description: string;
@@ -202,6 +204,8 @@ const ProductDetailsManagement = () => {
           const newProductImages = [...currentProductImages, ...uploadedImages];
 
           const fieldValues = productEditForm.getFieldsValue();
+          console.log('fieldValues', fieldValues);
+
           const params: IUpdateProduct = {
             productId: product?.id,
             variantId: selectedVariant?.id,
@@ -493,8 +497,12 @@ const ProductDetailsManagement = () => {
   }, [slug, location]);
 
   useEffect(() => {
+    console.log('hasVariant', hasVariant);
+
     const selectedVariant = product?.variants?.[0];
-    const selectedImage = selectedVariant?.imageMappings?.[0]?.image;
+    const selectedImage = hasVariant
+      ? selectedVariant?.imageMappings?.[0]?.image
+      : product?.images?.[0];
 
     const dataSource: IDataSource[] = product?.variants?.map(
       ({ id, stock, status, position, optionValues, ...variant }) => ({
@@ -527,7 +535,7 @@ const ProductDetailsManagement = () => {
     if (product?.id) getProductOptions({ productId: product?.id });
 
     editModeFlagRef.current = true;
-  }, [product]);
+  }, [product, hasVariant]);
 
   useEffect(() => {
     const isEditMode = location?.state?.edit;
@@ -570,18 +578,24 @@ const ProductDetailsManagement = () => {
   };
 
   const formattedFileList = (
-    imageMappings: IVariant['imageMappings'] | undefined
+    imageMappings: IVariant['imageMappings'] | IProduct['images'] | undefined
   ) => {
     if (!imageMappings) return [];
 
-    return imageMappings.map((item: any) => ({
-      id: item?.image?.id,
-      uid: item?.image?.id,
-      name: `image-${item?.image?.position}.jpg`,
-      status: 'done',
-      url: item?.image?.url,
-      thumbUrl: item?.image?.url,
-    })) as UploadFile[];
+    return imageMappings.map((item: any) => {
+      const imageData = item?.image ? item.image : item;
+
+      console.log('imageData', imageData);
+
+      return {
+        id: imageData?.id,
+        uid: imageData?.id,
+        name: `image-${imageData?.position}.jpg`,
+        status: 'done',
+        url: imageData?.url,
+        thumbUrl: imageData?.url,
+      };
+    }) as UploadFile[];
   };
 
   const handleVariantClick = (optionId: string) => {
@@ -607,11 +621,15 @@ const ProductDetailsManagement = () => {
   };
 
   const handleEdit = () => {
-    const newFileList = formattedFileList(selectedVariant?.imageMappings);
+    const newFileList = formattedFileList(
+      hasVariant ? selectedVariant?.imageMappings : product?.images
+    );
 
     const productEditFormValues: IProductEditForm = {
       name: product?.name,
       slug: product?.slug,
+      parentStock: Number(product?.stock),
+      parentPrice: Number(product?.price),
       brandId: product?.brandId,
       categoryId: product?.categoryId,
       description: product?.description,
@@ -787,7 +805,7 @@ const ProductDetailsManagement = () => {
 
   // console.log('productOptions', productOptions);
   // console.log('fileList', fileList);
-  console.log('selectedVariant', selectedVariant);
+  // console.log('selectedVariant', selectedVariant);
 
   return (
     <Layout
@@ -799,9 +817,9 @@ const ProductDetailsManagement = () => {
       }
     >
       <Form
+        className="w-full"
         form={productEditForm}
         onFinish={handleFinishEditProduct}
-        className="w-full"
       >
         <Space size="middle" direction="vertical" className="w-full">
           <Content className="border border-gray-200 rounded-lg overflow-hidden">
@@ -1004,29 +1022,49 @@ const ProductDetailsManagement = () => {
                       }}
                     >
                       <div className="flex-none">
-                        {selectedVariant?.imageMappings?.map(({ image }) => {
-                          return (
-                            <Image
-                              width={100}
-                              height={100}
-                              key={image?.id}
-                              src={image?.url}
-                              className={classNames(
-                                'border-2 border-gray-300 rounded-lg object-cover cursor-pointer hover:border-blue-300',
-                                'transition-all duration-300 ease-in-out',
-                                selectedImage?.id === image?.id
-                                  ? 'border-blue-500!'
-                                  : ''
-                              )}
-                              onClick={() =>
-                                setSelectedImage({
-                                  id: image?.id,
-                                  url: image?.url ?? FALLBACK_IMG,
-                                })
-                              }
-                            />
-                          );
-                        })}
+                        {hasVariant
+                          ? selectedVariant?.imageMappings?.map(({ image }) => (
+                              <Image
+                                width={100}
+                                height={100}
+                                key={image?.id}
+                                src={image?.url}
+                                className={classNames(
+                                  'border-2 border-gray-300 rounded-lg object-cover cursor-pointer hover:border-blue-300',
+                                  'transition-all duration-300 ease-in-out',
+                                  selectedImage?.id === image?.id
+                                    ? 'border-blue-500!'
+                                    : ''
+                                )}
+                                onClick={() =>
+                                  setSelectedImage({
+                                    id: image?.id,
+                                    url: image?.url ?? FALLBACK_IMG,
+                                  })
+                                }
+                              />
+                            ))
+                          : product?.images?.map((image) => (
+                              <Image
+                                width={100}
+                                height={100}
+                                key={image?.id}
+                                src={image?.url}
+                                className={classNames(
+                                  'border-2 border-gray-300 rounded-lg object-cover cursor-pointer hover:border-blue-300',
+                                  'transition-all duration-300 ease-in-out',
+                                  selectedImage?.id === image?.id
+                                    ? 'border-blue-500!'
+                                    : ''
+                                )}
+                                onClick={() =>
+                                  setSelectedImage({
+                                    id: image?.id,
+                                    url: image?.url ?? FALLBACK_IMG,
+                                  })
+                                }
+                              />
+                            ))}
                       </div>
                     </Flex>
                   </Space>
@@ -1035,9 +1073,9 @@ const ProductDetailsManagement = () => {
                 <Flex vertical>
                   {isProductEdit && !hasVariant ? (
                     <FormItem
-                      name="price"
-                      spacing="none"
                       label="Giá"
+                      spacing="none"
+                      name="parentPrice"
                       rules={[
                         {
                           required: true,
@@ -1072,9 +1110,9 @@ const ProductDetailsManagement = () => {
                 <Flex vertical>
                   {isProductEdit && !hasVariant ? (
                     <FormItem
-                      name="stock"
                       spacing="none"
                       label="Tồn kho"
+                      name="parentStock"
                       rules={[
                         {
                           required: true,
