@@ -26,4 +26,9 @@ export const productAPI = {
   updateProductVariant: async (params: IUpdateProductVariant) => {
     return await axiosApi.put('/products/product-variant', params);
   },
+  deleteProductVariant: async (variantIds: string | string[]) => {
+    return await axiosApi.delete('/products/product-variant', {
+      data: { variantIds },
+    } as any);
+  },
 };

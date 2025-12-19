@@ -1,5 +1,6 @@
 import {
   CloseOutlined,
+  DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
   PlusOutlined,
@@ -8,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import {
+  Card,
   Divider,
   Flex,
   Space,
@@ -19,13 +21,13 @@ import {
   UploadProps,
 } from 'antd';
 import { useForm } from 'antd/es/form/Form';
-import { ColumnType } from 'antd/es/table';
+import { ColumnType, TableProps } from 'antd/es/table';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { FALLBACK_IMG } from '~/assets/images';
+import { FALLBACK_IMG, FOLDER_EMPTY } from '~/assets/images';
 import { brandApi } from '~/features/brand/api/brandApi';
 import { categoryApi } from '~/features/category/api/categoryApi';
 import { cloudinaryApi } from '~/features/cloudinary/api/cloudinaryApi';
@@ -60,6 +62,8 @@ import {
 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import ProductVariantModal from './ProductVariantModal';
+import useDebounceCallback from '~/shared/hooks/useDebounce';
+import { ArrowDown, Trash } from '~/assets/svg';
 
 interface IProductEditForm {
   name: string;
@@ -129,6 +133,8 @@ const ProductDetailsManagement = () => {
   const [selectedVariant, setSelectedVariant] = useState<IVariant>(
     initialSelectedVariant
   );
+  const [selectedMultipleProductVariant, setSelectedMultipleProductVariant] =
+    useState<IDataSource[]>();
 
   const [previewImage, setPreviewImage] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -236,6 +242,20 @@ const ProductDetailsManagement = () => {
     },
   });
 
+  const {
+    mutate: deleteProductVariant,
+    isPending: isDeleteProductVariantPending,
+  } = useMutation({
+    mutationFn: (variantIds: string | string[]) =>
+      productAPI.deleteProductVariant(variantIds),
+    onSuccess: (response) => {
+      setSelectedMultipleProductVariant([]);
+
+      toast.success(response?.message);
+      refetchProductBySlug();
+    },
+  });
+
   const averagePrice = useMemo(() => {
     const totalProducts = product?.variants?.length;
     const totalPrice = product?.variants?.reduce((prev, current) => {
@@ -255,6 +275,21 @@ const ProductDetailsManagement = () => {
       }, 0),
     [product]
   );
+
+  const handleRowSelectionChange = useDebounceCallback(
+    (selectedRows: IDataSource[]) =>
+      setSelectedMultipleProductVariant(selectedRows),
+    300
+  );
+
+  const rowSelection: TableProps<IDataSource>['rowSelection'] = {
+    onChange: (_, selectedRows: IDataSource[]) =>
+      handleRowSelectionChange(selectedRows),
+    getCheckboxProps: (record: any) => ({
+      disabled: record.name === 'Disabled User',
+      name: record.name,
+    }),
+  };
 
   const columns: ColumnType<IDataSource>[] = [
     {
@@ -317,15 +352,20 @@ const ProductDetailsManagement = () => {
       align: 'center',
       title: 'Thao tác',
       render: (_, record) => {
+        const isDisable =
+          !!selectedMultipleProductVariant?.filter(
+            (productVariant) => productVariant.id === record.id
+          ).length || isProductEdit;
+
         return (
           <Flex justify="center" className="gap-x-3">
             <Button
-              disabled={isProductEdit}
+              disabled={isDisable}
               displayType="text"
               title={
                 <EditOutlined
                   className={
-                    isProductEdit
+                    isDisable
                       ? '[&>svg]:fill-gray-400'
                       : '[&>svg]:fill-blue-500'
                   }
@@ -336,15 +376,15 @@ const ProductDetailsManagement = () => {
             <PopConfirm
               title="Xoá mục này"
               placement="topLeft"
-              // onConfirm={() => deleteCategory(record.id)}
+              onConfirm={() => deleteProductVariant(record?.id)}
             >
               <Button
-                disabled={isProductEdit}
+                disabled={isDisable}
                 displayType="text"
                 title={
                   <CloseOutlined
                     className={
-                      isProductEdit
+                      isDisable
                         ? '[&>svg]:fill-gray-400'
                         : '[&>svg]:fill-red-500'
                     }
@@ -373,9 +413,37 @@ const ProductDetailsManagement = () => {
           />
           <Table<IDataSource>
             columns={columns}
-            pagination={false}
             dataSource={dataSource}
+            rowSelection={{ type: 'checkbox', ...rowSelection }}
           />
+          {!!selectedMultipleProductVariant?.length && (
+            <Flex align="center" justify="end" className="gap-x-2">
+              <PopConfirm
+                title="Xóa mục này"
+                placement="topLeft"
+                description={
+                  <p>
+                    Bạn có chắc chắn muốn xóa biến thể:{' '}
+                    <strong>
+                      {selectedMultipleProductVariant
+                        .map((brand) => brand.name)
+                        .join(', ')}
+                    </strong>
+                    ?
+                    <br />
+                    Hành động này không thể hoàn tác.
+                  </p>
+                }
+                onConfirm={() => handleDeleteMultipleProductVariant()}
+              >
+                <Button
+                  title="Xóa đã chọn"
+                  disabled={isProductEdit}
+                  iconBefore={<DeleteOutlined />}
+                />
+              </PopConfirm>
+            </Flex>
+          )}
         </Space>
       ),
     },
@@ -681,6 +749,23 @@ const ProductDetailsManagement = () => {
     productVariantForm.setFieldsValue(fieldValues);
   };
 
+  const handleDeleteMultipleProductVariant = () => {
+    const params = selectedMultipleProductVariant?.map(
+      (productVariant) => productVariant?.id
+    );
+
+    if (!params?.length) {
+      toast.error('Không tìm thấy ID của biến thể để xóa');
+      return;
+    }
+
+    deleteProductVariant(params);
+  };
+
+  // const handleDeleteOptionValue = (optionValueId: string) => {
+  //   console.log(optionValueId);
+  // };
+
   // console.log('product', product);
   // console.log('fileList', fileList);
   // console.log('selectedVariant', selectedVariant);
@@ -690,11 +775,16 @@ const ProductDetailsManagement = () => {
       loading={
         isGetProductBySlugPending ||
         isUpdateProductPending ||
-        isUploadProductImgPending
+        isUploadProductImgPending ||
+        isDeleteProductVariantPending
       }
     >
-      <Form form={productEditForm} onFinish={handleFinishEditProduct}>
-        <Space size="middle" direction="vertical">
+      <Form
+        form={productEditForm}
+        onFinish={handleFinishEditProduct}
+        className="w-full"
+      >
+        <Space size="middle" direction="vertical" className="w-full">
           <Content className="border border-gray-200 rounded-lg overflow-hidden">
             <Flex align="center" justify="space-between">
               {isProductEdit ? (
@@ -823,6 +913,37 @@ const ProductDetailsManagement = () => {
                     ))}
                   </div>
                 )}
+                {/* {!!product?.variantColorData?.length && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {product?.variantColorData?.map(({ id, name, count }) => (
+                      <Flex
+                        key={id}
+                        className="group relative border border-gray-300 rounded-lg cursor-pointer overflow-hidden"
+                      >
+                        <Flex
+                          align="center"
+                          justify="center"
+                          className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#ef4444] text-white border-none cursor-pointer hover:bg-[#dc2626] opacity-0 group-has-hover:opacity-100 transition-opacity duration-300 ease-in-out"
+                          onClick={() => handleDeleteOptionValue(id)}
+                        >
+                          <CloseOutlined className="text-[8px]" />
+                        </Flex>
+                        <Flex
+                          vertical
+                          className="w-full py-4! px-2! text-center group-has-hover:[&>span]:text-white! group-has-hover:bg-primary transition-all duration-300 ease-in-out"
+                        >
+                          <span className="font-semibold text-primary">
+                            {name}
+                          </span>
+                          <span className="font-normal text-body">
+                            {count} biến thể
+                          </span>
+                        </Flex>
+                      </Flex>
+                    ))}
+                  </div>
+                )} */}
+
                 {isProductEdit ? (
                   <Dragger
                     multiple
@@ -836,13 +957,20 @@ const ProductDetailsManagement = () => {
                   />
                 ) : (
                   <Space direction="vertical" className="w-full">
-                    <Image
-                      className="rounded-lg"
-                      src={selectedImage?.url}
-                      preview={
-                        !isProductEdit && selectedImage?.url !== FALLBACK_IMG
-                      }
-                    />
+                    {selectedImage?.id ? (
+                      <Image
+                        className="rounded-lg"
+                        src={selectedImage?.url}
+                        preview={
+                          !isProductEdit && selectedImage?.url !== FALLBACK_IMG
+                        }
+                      />
+                    ) : (
+                      <Flex align="center" justify="center" vertical>
+                        <Image src={FOLDER_EMPTY} />
+                        <span className="text-body">Chưa có hình ảnh</span>
+                      </Flex>
+                    )}
                     <Flex
                       className="overflow-x-auto gap-2 pb-2 no-scrollbar"
                       style={{
