@@ -2,7 +2,7 @@ import { Flex, MenuProps } from 'antd';
 import Sider, { SiderProps } from 'antd/es/layout/Sider';
 import classNames from 'classnames';
 import { memo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 import { Cart, DashBoard, LOGO, UserCircleOutlined } from '~/assets/svg';
 import Menu from '~/shared/components/Menu/Menu';
@@ -32,12 +32,34 @@ const siderItems: MenuProps['items'] = [
   { key: PATH.ADMIN_PROFILE, label: 'Hồ sơ', icon: <UserCircleOutlined /> },
 ];
 
-const selectedKeys = [
-  [PATH.ADMIN_PROFILE],
-  [PATH.ADMIN_DASHBOARD],
-  [PATH.ADMIN_BRAND_MANAGEMENT],
-  [PATH.ADMIN_CATEGORY_MANAGEMENT],
-  [PATH.ADMIN_PRODUCT_MANAGEMENT],
+// const selectedKeys = [
+//   [PATH.ADMIN_PROFILE],
+//   [PATH.ADMIN_DASHBOARD],
+//   [PATH.ADMIN_BRAND_MANAGEMENT],
+//   [PATH.ADMIN_CATEGORY_MANAGEMENT],
+//   // [PATH.ADMIN_PRODUCT_MANAGEMENT, PATH.ADMIN_PRODUCT_DETAILS],
+//   [
+//     PATH.ADMIN_PRODUCT_MANAGEMENT,
+//     '/admin/product-management/ttd-c27-ao-polo-det-kim-2-soc-cho-nam-c27',
+//   ],
+// ];
+
+const routePatterns = [
+  { pattern: PATH.ADMIN_PROFILE, keys: [PATH.ADMIN_PROFILE] },
+  { pattern: PATH.ADMIN_DASHBOARD, keys: [PATH.ADMIN_DASHBOARD] },
+  { pattern: PATH.ADMIN_BRAND_MANAGEMENT, keys: [PATH.ADMIN_BRAND_MANAGEMENT] },
+  {
+    pattern: PATH.ADMIN_CATEGORY_MANAGEMENT,
+    keys: [PATH.ADMIN_CATEGORY_MANAGEMENT],
+  },
+  {
+    pattern: PATH.ADMIN_PRODUCT_MANAGEMENT,
+    keys: [PATH.ADMIN_PRODUCT_MANAGEMENT],
+  },
+  {
+    pattern: PATH.ADMIN_PRODUCT_DETAILS,
+    keys: [PATH.ADMIN_PRODUCT_MANAGEMENT],
+  },
 ];
 
 const Sidebar = ({ className, ...props }: SiderProps) => {
@@ -50,7 +72,11 @@ const Sidebar = ({ className, ...props }: SiderProps) => {
   );
 
   const getSelectedKey = (pathname: string) => {
-    for (const keys of selectedKeys) if (keys.includes(pathname)) return keys;
+    // for (const keys of selectedKeys) if (keys.includes(pathname)) return keys;
+    // return [pathname];
+    for (const { pattern, keys } of routePatterns) {
+      if (matchPath(pattern, pathname)) return keys;
+    }
     return [pathname];
   };
 

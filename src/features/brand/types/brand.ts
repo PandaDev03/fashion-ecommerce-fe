@@ -37,8 +37,8 @@ export interface IBrand {
   website: string;
   facebook: string;
   instagram: string;
-  creator: IUser;
-  updater: IUser;
+  creator: Omit<IUser, 'role' | 'permissions'>;
+  updater: Omit<IUser, 'role' | 'permissions'>;
 }
 
 export type BrandState = IPaginatedData<IBrand>;

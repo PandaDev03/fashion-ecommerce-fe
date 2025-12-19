@@ -56,6 +56,7 @@ const ProductModal = ({
   return (
     <Modal
       centered
+      footer={false}
       width={isLg ? 975 : 650}
       classNames={customClassNames}
       {...props}

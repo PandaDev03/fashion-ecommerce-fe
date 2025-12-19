@@ -10,6 +10,9 @@ export const brandApi = {
   getAll: async (params: IBrandParams) => {
     return await axiosApi.get('/brands', { params });
   },
+  getBrandOptions: async () => {
+    return await axiosApi.get('/brands/options');
+  },
   createBrand: async (params: ICreateBrandParams) => {
     return await axiosApi.post('/brands', params);
   },

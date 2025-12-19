@@ -11,6 +11,7 @@ export const PATH = {
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_PROFILE: '/admin/profile',
   ADMIN_CATEGORY_MANAGEMENT: '/admin/category-management',
-  ADMIN_PRODUCT_MANAGEMENT: '/admin/product-management',
   ADMIN_BRAND_MANAGEMENT: '/admin/brand-management',
+  ADMIN_PRODUCT_MANAGEMENT: '/admin/product-management',
+  ADMIN_PRODUCT_DETAILS: '/admin/product-management/:slug',
 };

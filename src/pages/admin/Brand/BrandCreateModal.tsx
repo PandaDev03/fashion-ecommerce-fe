@@ -158,7 +158,7 @@ const BrandCreateModal = ({
         width={700}
         title={
           <h2 className="capitalize text-primary text-lg">
-            Thêm thương hiệu mới
+            Thêm mới thương hiệu
           </h2>
         }
         footer={
