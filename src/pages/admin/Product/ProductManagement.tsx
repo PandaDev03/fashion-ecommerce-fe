@@ -222,7 +222,11 @@ const ProductManagement = () => {
             displayType="outlined"
             iconAfter={<DownloadOutlined />}
           />
-          <Button title="Thêm Sản phẩm" iconBefore={<PlusOutlined />} />
+          <Button
+            title="Thêm Sản phẩm"
+            iconBefore={<PlusOutlined />}
+            onClick={() => navigate(PATH.ADMIN_PRODUCT_CREATE)}
+          />
         </Flex>
       </Flex>
       <Flex

@@ -1,4 +1,3 @@
-import { LoadingOutlined } from '@ant-design/icons';
 import { Table as AntdTable, TablePaginationConfig, TableProps } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import classNames from 'classnames';

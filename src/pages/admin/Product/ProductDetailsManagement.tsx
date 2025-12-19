@@ -585,8 +585,6 @@ const ProductDetailsManagement = () => {
     return imageMappings.map((item: any) => {
       const imageData = item?.image ? item.image : item;
 
-      console.log('imageData', imageData);
-
       return {
         id: imageData?.id,
         uid: imageData?.id,
@@ -1249,12 +1247,12 @@ const ProductDetailsManagement = () => {
       {previewImage && (
         <Image
           className="hidden"
+          src={previewImage}
           preview={{
             visible: previewOpen,
             onVisibleChange: (visible: boolean) => setPreviewOpen(visible),
             afterOpenChange: (visible) => !visible && setPreviewImage(''),
           }}
-          src={previewImage}
         />
       )}
 

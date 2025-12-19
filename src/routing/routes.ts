@@ -92,6 +92,13 @@ const routes: AppRoute[] = [
       () => import('~/pages/admin/Product/ProductDetailsManagement')
     ),
   },
+  {
+    // isProtected: true,
+    layout: AdminLayout,
+    path: PATH.ADMIN_PRODUCT_CREATE,
+    // requiredRoles: [],
+    element: React.lazy(() => import('~/pages/admin/Product/ProductCreate')),
+  },
 ];
 
 export default routes;
