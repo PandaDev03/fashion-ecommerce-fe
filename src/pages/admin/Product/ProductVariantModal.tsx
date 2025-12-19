@@ -1,4 +1,4 @@
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import {
   Divider,
   Flex,
@@ -7,14 +7,7 @@ import {
   ModalProps,
   Space,
 } from 'antd';
-import {
-  ChangeEvent,
-  Dispatch,
-  memo,
-  SetStateAction,
-  useEffect,
-  useState,
-} from 'react';
+import { ChangeEvent, Dispatch, memo, SetStateAction, useState } from 'react';
 
 import { IProduct, IProductOption } from '~/features/products/types/product';
 import Button from '~/shared/components/Button/Button';
@@ -25,7 +18,6 @@ import Modal from '~/shared/components/Modal/Modal';
 import Select from '~/shared/components/Select/Select';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import { IProductVariantForm } from './ProductDetailsManagement';
-import FormList from 'antd/es/form/FormList';
 
 interface ProductVariantModalProps extends ModalProps {
   product: IProduct;
@@ -129,7 +121,13 @@ const ProductVariantModal = ({
       <Form form={form} className="pt-4" onFinish={handleFinish}>
         <Space direction="vertical" size={24} className="w-full">
           <h3 className="font-semibold text-lg">Thông tin biến thể</h3>
-          <FormItem spacing="none" name="price" label="Giá" className="w-full">
+          <FormItem
+            label="Giá"
+            name="price"
+            spacing="none"
+            className="w-full"
+            rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
+          >
             <InputNumber
               min={0}
               size="large"
@@ -142,10 +140,13 @@ const ProductVariantModal = ({
           </FormItem>
 
           <FormItem
-            spacing="none"
             name="stock"
-            label="Số lượng tồn kho"
+            spacing="none"
             className="w-full"
+            label="Số lượng tồn kho"
+            rules={[
+              { required: true, message: 'Vui lòng nhập số lượng tồn kho' },
+            ]}
           >
             <InputNumber
               min={0}
@@ -160,6 +161,7 @@ const ProductVariantModal = ({
             spacing="none"
             label="Trạng thái"
             initialValue="active"
+            rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
           >
             <Select
               size="large"
@@ -177,7 +179,12 @@ const ProductVariantModal = ({
             />
           </FormItem>
 
-          <FormItem spacing="none" name="position" label="Vị trí">
+          <FormItem
+            spacing="none"
+            name="position"
+            label="Vị trí"
+            rules={[{ required: true, message: 'Vui lòng nhập vị trí' }]}
+          >
             <InputNumber
               min={0}
               size="large"
@@ -186,7 +193,7 @@ const ProductVariantModal = ({
             />
           </FormItem>
 
-          <Space direction="vertical" size={24} className="w-full">
+          <Flex vertical className="w-full gap-y-6">
             <h4 className="font-semibold text-base m-0">Thuộc tính sản phẩm</h4>
             {productOptions?.map((option) => (
               <FormItem
@@ -195,6 +202,9 @@ const ProductVariantModal = ({
                 name={option?.id}
                 label={option?.name}
                 style={{ order: `${option?.position}` }}
+                rules={[
+                  { required: true, message: 'Vui lòng chọn thuộc tính' },
+                ]}
               >
                 <Select
                   labelInValue
@@ -309,7 +319,7 @@ const ProductVariantModal = ({
                 </Space>
               )}
             </FormList> */}
-          </Space>
+          </Flex>
         </Space>
       </Form>
     </Modal>

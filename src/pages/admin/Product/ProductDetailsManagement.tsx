@@ -9,7 +9,6 @@ import {
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import {
-  Card,
   Divider,
   Flex,
   Space,
@@ -55,6 +54,7 @@ import Dragger, { FileType } from '~/shared/components/Upload/Dragger';
 import { useBreadcrumb } from '~/shared/contexts/BreadcrumbContext';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import { useTitle } from '~/shared/contexts/TitleContext';
+import useDebounceCallback from '~/shared/hooks/useDebounce';
 import {
   generateSlug,
   getBase64,
@@ -62,8 +62,6 @@ import {
 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import ProductVariantModal from './ProductVariantModal';
-import useDebounceCallback from '~/shared/hooks/useDebounce';
-import { ArrowDown, Trash } from '~/assets/svg';
 
 interface IProductEditForm {
   name: string;
@@ -766,7 +764,7 @@ const ProductDetailsManagement = () => {
   //   console.log(optionValueId);
   // };
 
-  // console.log('product', product);
+  // console.log('productOptions', productOptions);
   // console.log('fileList', fileList);
   // console.log('selectedVariant', selectedVariant);
 
