@@ -11,7 +11,7 @@ import {
 } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { ColumnType } from 'antd/es/table';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Button from '~/shared/components/Button/Button';
@@ -66,6 +66,18 @@ interface IDataSource {
   //   optionValues: any[];
 }
 
+export interface IProductVariantOption {
+  name: string;
+  value: string;
+}
+
+const initialProductVariantOptions: IProductVariantOption[] = [
+  {
+    name: '',
+    value: '',
+  },
+];
+
 const ProductCreate = () => {
   const toast = useToast();
   const navigate = useNavigate();
@@ -76,6 +88,8 @@ const ProductCreate = () => {
   const { setTitle } = useTitle();
   const { setBreadcrumb } = useBreadcrumb();
 
+  const productVariantOptionRef = useRef(false);
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isVariantModalVisible, setIsVariantModalVisible] = useState(false);
 
@@ -83,6 +97,10 @@ const ProductCreate = () => {
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [dataSource, setDataSource] = useState<IDataSource[]>([]);
+
+  const [productVariantOptions, setProductVariantOptions] = useState<
+    IProductVariantOption[]
+  >(initialProductVariantOptions);
 
   useEffect(() => {
     setTitle('Thêm mới sản phẩm');
@@ -97,6 +115,10 @@ const ProductCreate = () => {
         title: 'Thêm mới sản phẩm',
       },
     ]);
+
+    productVariantForm.setFieldsValue({
+      attributes: [{ name: '', value: '' }],
+    });
   }, []);
 
   const columns: ColumnType<IDataSource>[] = [
@@ -164,7 +186,7 @@ const ProductCreate = () => {
           <PopConfirm
             title="Xoá mục này"
             placement="topLeft"
-            // onConfirm={() => deleteProductVariant(record?.id)}
+            onConfirm={() => handleDeleteProductVariant(record?.id)}
           >
             <Button
               displayType="text"
@@ -225,26 +247,63 @@ const ProductCreate = () => {
   };
 
   const handleCancelProductVariant = () => {
-    productVariantForm.resetFields();
+    // productVariantForm.setFieldsValue({
+    //   price: undefined,
+    //   stock: undefined,
+    //   position: undefined,
+    //   status: 'active',
+    //   attributes: productVariantOptions,
+    // });
+    productVariantForm.setFields([
+      { name: 'price', value: undefined, errors: [] },
+      { name: 'stock', value: undefined, errors: [] },
+      { name: 'position', value: undefined, errors: [] },
+      { name: 'status', value: 'active', errors: [] },
+      { name: 'attributes', value: productVariantOptions, errors: [] },
+      // { name: 'name', value: productVariantOptions, errors: [] },
+      // { name: 'value', value: productVariantOptions, errors: [] },
+    ]);
+
     setIsVariantModalVisible(false);
   };
 
+  const handleDeleteProductVariant = (id: string) => {
+    const newDataSource: IDataSource[] = dataSource?.filter(
+      (data) => data?.id !== id
+    );
+
+    setDataSource(newDataSource);
+    !newDataSource?.length &&
+      setProductVariantOptions(initialProductVariantOptions);
+  };
+
+  console.log('productVariantOptions', productVariantOptions);
+
   const handleFinishProductVariant = (values: IProductVariantCreateForm) => {
     console.log(values);
-    const { attributes, ...rest } = values;
+    const { attributes } = values;
 
-    const newDataSource: IDataSource[] = attributes?.map((attribute) => ({
+    if (!productVariantOptionRef.current) {
+      const options: IProductVariantOption[] = attributes?.map((attribute) => ({
+        name: attribute?.name,
+        value: '',
+      }));
+
+      console.log('options', options);
+
+      setProductVariantOptions(options);
+      productVariantOptionRef.current = true;
+    }
+
+    const newDataSource: IDataSource = {
+      ...values,
       id: `new-${Date.now()}-${Math.random()}`,
-      name: `${attribute?.name} - ${attribute?.value}`,
-      ...rest,
-    }));
+      name: attributes?.map((attribute) => attribute?.value).join(' - '),
+    };
 
-    console.log('newDataSource', newDataSource);
-
-    setDataSource((prev) => [...prev, ...newDataSource]);
-
-    productVariantForm.resetFields();
-    setIsVariantModalVisible(false);
+    setDataSource((prev) => [...prev, { ...newDataSource }]);
+    handleCancelProductVariant();
+    // setIsVariantModalVisible(false);
   };
 
   const handleFinishCreate = (values: ICreateForm) => {
@@ -417,6 +476,7 @@ const ProductCreate = () => {
       <ProductVariantCreateModal
         form={productVariantForm}
         open={isVariantModalVisible}
+        productVariantOptions={productVariantOptions}
         onCancel={handleCancelProductVariant}
         onFinish={handleFinishProductVariant}
       />

@@ -1,7 +1,7 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Flex, FormInstance, InputNumber, ModalProps, Space } from 'antd';
 import FormList from 'antd/es/form/FormList';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 
 import Button from '~/shared/components/Button/Button';
 import Form from '~/shared/components/Form/Form';
@@ -9,9 +9,13 @@ import FormItem from '~/shared/components/Form/FormItem';
 import Input from '~/shared/components/Input/Input';
 import Modal from '~/shared/components/Modal/Modal';
 import Select from '~/shared/components/Select/Select';
-import { IProductVariantCreateForm } from './ProductCreate';
+import {
+  IProductVariantCreateForm,
+  IProductVariantOption,
+} from './ProductCreate';
 
 interface ProductVariantCreateModalProps extends ModalProps {
+  productVariantOptions: IProductVariantOption[];
   form: FormInstance<IProductVariantCreateForm>;
   onFinish: (values: IProductVariantCreateForm) => void;
 }
@@ -19,14 +23,28 @@ interface ProductVariantCreateModalProps extends ModalProps {
 const ProductVariantCreateModal = ({
   form,
   open,
+  productVariantOptions,
   onFinish,
   ...props
 }: ProductVariantCreateModalProps) => {
+  const isDisable = useMemo(
+    () => !!productVariantOptions?.filter((option) => option?.name)?.length,
+    [productVariantOptions]
+  );
+
   useEffect(() => {
+    if (!open) return;
+
+    // console.log(form.getFieldsValue());
+    // console.log('productVariantOptions', productVariantOptions);
+    const fieldValues = form.getFieldsValue();
+
     form.setFieldsValue({
-      attributes: [{ name: '', value: '' }],
+      ...fieldValues,
+      status: 'active',
+      attributes: productVariantOptions,
     });
-  }, [open]);
+  }, [open, productVariantOptions]);
 
   return (
     <Modal
@@ -147,6 +165,7 @@ const ProductVariantCreateModal = ({
                       </FormItem>
 
                       <Button
+                        disabled={isDisable}
                         displayType="outlined"
                         title={<DeleteOutlined />}
                         onClick={() => remove(name)}
@@ -155,6 +174,7 @@ const ProductVariantCreateModal = ({
                   ))}
 
                   <Button
+                    disabled={isDisable}
                     displayType="primary"
                     iconBefore={<PlusOutlined />}
                     title="Thêm dòng thuộc tính mới"
