@@ -1,4 +1,9 @@
-import { CloseOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  EditOutlined,
+  PlusOutlined,
+  SaveOutlined,
+} from '@ant-design/icons';
 import {
   Flex,
   InputNumber,
@@ -17,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '~/shared/components/Button/Button';
 import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
+import Image from '~/shared/components/Image/Image';
 import Input from '~/shared/components/Input/Input';
 import TextArea from '~/shared/components/Input/TextArea';
 import { Content } from '~/shared/components/Layout/Layout';
@@ -30,7 +36,6 @@ import { useTitle } from '~/shared/contexts/TitleContext';
 import { generateSlug, getBase64 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import ProductVariantCreateModal from './ProductVariantCreateModal';
-import Image from '~/shared/components/Image/Image';
 
 export interface ICreateForm {
   name: string;
@@ -63,12 +68,23 @@ interface IDataSource {
   stock: number;
   status: string;
   position: number;
+  attributes: { name: string; value: string }[];
   //   optionValues: any[];
 }
 
 export interface IProductVariantOption {
   name: string;
   value: string;
+}
+
+interface IProductVariantOptionValue {
+  id: string;
+  name: string;
+  // options: {
+  //   name: string;
+  //   value: string;
+  // }[];
+  files: UploadFile[];
 }
 
 const initialProductVariantOptions: IProductVariantOption[] = [
@@ -90,17 +106,23 @@ const ProductCreate = () => {
 
   const productVariantOptionRef = useRef(false);
 
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [isProductVariantEdit, setIsProductVariantEdit] = useState(false);
   const [isVariantModalVisible, setIsVariantModalVisible] = useState(false);
 
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [dataSource, setDataSource] = useState<IDataSource[]>([]);
 
+  const [selectedVariantId, setSelectedVariantId] = useState('');
+
   const [productVariantOptions, setProductVariantOptions] = useState<
     IProductVariantOption[]
   >(initialProductVariantOptions);
+
+  const [productVariantOptionValues, setProductVariantOptionValues] =
+    useState<IProductVariantOptionValue[]>();
 
   useEffect(() => {
     setTitle('Thêm mới sản phẩm');
@@ -120,6 +142,38 @@ const ProductCreate = () => {
       attributes: [{ name: '', value: '' }],
     });
   }, []);
+
+  useEffect(() => {
+    const colorMap = new Map<string, UploadFile[]>();
+
+    dataSource.forEach((variant) => {
+      const colorAttr = variant?.attributes?.find(
+        (attr) => attr.name.trim().toLowerCase() === 'màu sắc'
+      );
+
+      if (colorAttr?.value) {
+        const colorName = colorAttr.value;
+
+        if (!colorMap.has(colorName)) {
+          const existingFiles =
+            productVariantOptionValues?.find((v) => v.name === colorName)
+              ?.files || [];
+
+          colorMap.set(colorName, existingFiles);
+        }
+      }
+    });
+
+    const newOptionValues: IProductVariantOptionValue[] = Array.from(
+      colorMap
+    ).map(([name, files]) => ({
+      id: `new-${Date.now()}-${Math.random()}`,
+      name,
+      files,
+    }));
+
+    setProductVariantOptionValues(newOptionValues);
+  }, [dataSource]);
 
   const columns: ColumnType<IDataSource>[] = [
     {
@@ -182,7 +236,16 @@ const ProductCreate = () => {
       align: 'center',
       title: 'Thao tác',
       render: (_, record) => (
-        <Flex align="center" justify="center">
+        <Flex align="center" justify="center" className="gap-x-2">
+          <Button
+            displayType="text"
+            title={
+              <EditOutlined
+                className="[&>svg]:fill-blue-500"
+                onClick={() => handleEditProductVariant(record?.id)}
+              />
+            }
+          />
           <PopConfirm
             title="Xoá mục này"
             placement="topLeft"
@@ -205,21 +268,27 @@ const ProductCreate = () => {
     productCreateForm.setFieldValue('slug', slug);
   };
 
-  const handleUploadChange: UploadProps['onChange'] = (info) => {
+  const handleMainUploadChange: UploadProps['onChange'] = (info) => {
     const { fileList: newFileList } = info;
 
-    if (info.file.status === 'removed') {
-      setFileList(newFileList);
-      return;
-    }
+    if (selectedVariantId) {
+      setProductVariantOptionValues((prev) =>
+        prev?.map((item) =>
+          item.id === selectedVariantId ? { ...item, files: newFileList } : item
+        )
+      );
+    } else setFileList(newFileList);
+  };
 
-    setFileList((prevList) => {
-      const uniqueNewFiles = newFileList.filter(
-        (newFile) => !prevList.some((oldFile) => oldFile.uid === newFile.uid)
+  const getCurrentFileList = () => {
+    if (selectedVariantId) {
+      const currentGroup = productVariantOptionValues?.find(
+        (v) => v.id === selectedVariantId
       );
 
-      return [...prevList, ...uniqueNewFiles];
-    });
+      return currentGroup?.files || [];
+    }
+    return fileList;
   };
 
   const handleBeforeUpload = (file: FileType) => {
@@ -246,23 +315,31 @@ const ProductCreate = () => {
     setPreviewOpen(true);
   };
 
+  const handleAddProductVariant = () => {
+    productVariantForm.setFieldValue('status', 'active');
+    setIsVariantModalVisible(true);
+  };
+
+  const handleEditProductVariant = (id: string) => {
+    const currentDataSource = dataSource?.find((data) => data?.id === id);
+
+    if (!currentDataSource) {
+      toast.error('Không tìm thấy biến thể cần chỉnh sửa');
+      return;
+    }
+
+    productVariantForm.setFieldsValue(currentDataSource);
+
+    setIsProductVariantEdit(true);
+    setIsVariantModalVisible(true);
+  };
+
   const handleCancelProductVariant = () => {
-    // productVariantForm.setFieldsValue({
-    //   price: undefined,
-    //   stock: undefined,
-    //   position: undefined,
-    //   status: 'active',
-    //   attributes: productVariantOptions,
-    // });
-    productVariantForm.setFields([
-      { name: 'price', value: undefined, errors: [] },
-      { name: 'stock', value: undefined, errors: [] },
-      { name: 'position', value: undefined, errors: [] },
-      { name: 'status', value: 'active', errors: [] },
-      { name: 'attributes', value: productVariantOptions, errors: [] },
-      // { name: 'name', value: productVariantOptions, errors: [] },
-      // { name: 'value', value: productVariantOptions, errors: [] },
-    ]);
+    const attributes: IProductVariantCreateForm['attributes'] =
+      productVariantOptions?.map(({ name }) => ({ name, value: '' }));
+
+    productVariantForm.resetFields();
+    productVariantForm.setFieldValue('attributes', attributes);
 
     setIsVariantModalVisible(false);
   };
@@ -273,41 +350,137 @@ const ProductCreate = () => {
     );
 
     setDataSource(newDataSource);
-    !newDataSource?.length &&
+    if (!newDataSource?.length) {
       setProductVariantOptions(initialProductVariantOptions);
+      productVariantOptionRef.current = false;
+    }
   };
 
-  console.log('productVariantOptions', productVariantOptions);
+  const handleValidateProductVariantForm = (variantName?: string) => {
+    const isDuplicate = dataSource.some((data) => {
+      if (isProductVariantEdit) {
+        const editingId = productVariantForm.getFieldsValue(true)?.id;
+        if (!editingId) {
+          toast.error('Không tìm thấy ID của biến thể');
+          return;
+        }
+
+        return data.name === variantName && data.id !== editingId;
+      }
+
+      return data.name === variantName;
+    });
+
+    return isDuplicate;
+  };
 
   const handleFinishProductVariant = (values: IProductVariantCreateForm) => {
-    console.log(values);
+    // console.log('values', values);
     const { attributes } = values;
 
     if (!productVariantOptionRef.current) {
-      const options: IProductVariantOption[] = attributes?.map((attribute) => ({
-        name: attribute?.name,
-        value: '',
-      }));
-
-      console.log('options', options);
+      const options: IProductVariantOption[] = attributes?.map(
+        ({ name, value }) => ({
+          name,
+          value,
+        })
+      );
 
       setProductVariantOptions(options);
       productVariantOptionRef.current = true;
     }
 
-    const newDataSource: IDataSource = {
-      ...values,
-      id: `new-${Date.now()}-${Math.random()}`,
-      name: attributes?.map((attribute) => attribute?.value).join(' - '),
-    };
+    const variantName = attributes
+      ?.map((attribute) => attribute?.value)
+      .join(' - ');
 
-    setDataSource((prev) => [...prev, { ...newDataSource }]);
+    if (handleValidateProductVariantForm(variantName)) {
+      toast.error(`Biến thể "${variantName}" đã tồn tại!`);
+      return;
+    }
+
+    if (isProductVariantEdit) {
+      const editingId = productVariantForm.getFieldsValue(true)?.id;
+
+      setDataSource((prev) =>
+        prev?.map((data) =>
+          data?.id === editingId
+            ? {
+                ...data,
+                ...values,
+                name: variantName,
+              }
+            : data
+        )
+      );
+      setIsProductVariantEdit(false);
+    } else {
+      const newDataSource: IDataSource = {
+        ...values,
+        id: `new-${Date.now()}-${Math.random()}`,
+        name: variantName,
+      };
+
+      setDataSource((prev) =>
+        [...prev, { ...newDataSource }].sort(
+          (a, b) => a?.position - b?.position
+        )
+      );
+    }
+
     handleCancelProductVariant();
-    // setIsVariantModalVisible(false);
   };
 
+  // console.log('dataSource', dataSource);
+  // console.log('productVariantOptions', productVariantOptions);
+  // console.log('productVariantOptionValues', productVariantOptionValues);
+  // console.log('selectedVariantId', selectedVariantId);
+
   const handleFinishCreate = (values: ICreateForm) => {
-    console.log(values);
+    // 1. Chuẩn bị danh sách các biến thể đã được gắn ảnh
+    const finalVariants = dataSource.map((variant) => {
+      // Tìm xem biến thể này có màu sắc là gì
+      const colorAttr = variant.attributes?.find(
+        (attr) => attr.name.trim().toLowerCase() === 'màu sắc'
+      );
+
+      // Tìm bộ ảnh tương ứng với màu sắc đó
+      const matchingColorGroup = productVariantOptionValues?.find(
+        (group) => group.name === colorAttr?.value
+      );
+
+      return {
+        price: variant.price,
+        stock: variant.stock,
+        status: variant.status,
+        position: variant.position,
+        // Chuyển đổi attributes sang format backend yêu cầu (optionName/value)
+        optionValues: variant.attributes.map((attr) => ({
+          optionName: attr.name,
+          value: attr.value,
+        })),
+        // Chỉ lấy file object hoặc URL để gửi lên server
+        images:
+          matchingColorGroup?.files.map((file) => ({
+            url: file.url || file.thumbUrl, // Nếu là ảnh đã có
+            originFile: file.originFileObj, // Nếu là ảnh mới upload (dùng để upload lên S3/Cloudinary)
+          })) || [],
+      };
+    });
+
+    // 2. Ráp vào object tổng
+    const payload = {
+      name: values.name,
+      slug: values.slug,
+      status: values.status,
+      categoryId: values.categoryId,
+      brandId: values.brandId,
+      description: values.description,
+      variants: finalVariants,
+    };
+
+    console.log('Dữ liệu cuối cùng gửi API:', payload);
+    // Gọi API tại đây
   };
 
   return (
@@ -439,16 +612,44 @@ const ProductCreate = () => {
                   <h2 className="font-semibold text-xl text-primary mb-3">
                     Hình ảnh
                   </h2>
+                  {productVariantOptionValues &&
+                    productVariantOptionValues.length > 0 && (
+                      <Flex wrap="wrap" gap={8} className="mb-4">
+                        {productVariantOptionValues.map(({ id, name }) => (
+                          <Button
+                            key={id}
+                            title={name}
+                            displayType={
+                              selectedVariantId === id ? 'primary' : 'outlined'
+                            }
+                            onClick={() =>
+                              setSelectedVariantId(
+                                selectedVariantId === id ? '' : id
+                              )
+                            }
+                          />
+                        ))}
+                      </Flex>
+                    )}
                   <Dragger
                     multiple
                     name="files"
-                    fileList={fileList}
                     listType="picture-card"
+                    fileList={getCurrentFileList()}
                     hint="Hỗ trợ tệp tin: PNG, JPG, JPEG, WEBP"
-                    onChange={handleUploadChange}
+                    onChange={handleMainUploadChange}
                     onPreview={handleUploadPreview}
                     beforeUpload={handleBeforeUpload}
                   />
+                  <p className="mt-2 text-gray-500 text-xs italic text-center">
+                    {selectedVariantId
+                      ? `Đang tải ảnh cho màu: ${
+                          productVariantOptionValues?.find(
+                            (v) => v.id === selectedVariantId
+                          )?.name
+                        }`
+                      : 'Tải lên ảnh chung cho sản phẩm (không theo biến thể)'}
+                  </p>
                 </Space>
               </Content>
               <Content className="bg-white! border border-gray-200 rounded-lg overflow-hidden col-span-3">
@@ -460,7 +661,7 @@ const ProductCreate = () => {
                     className="w-full"
                     title="Thêm biến thể mới"
                     iconBefore={<PlusOutlined />}
-                    onClick={() => setIsVariantModalVisible(true)}
+                    onClick={handleAddProductVariant}
                   />
                   <Table<IDataSource>
                     columns={columns}
@@ -476,6 +677,7 @@ const ProductCreate = () => {
       <ProductVariantCreateModal
         form={productVariantForm}
         open={isVariantModalVisible}
+        isEdit={isProductVariantEdit}
         productVariantOptions={productVariantOptions}
         onCancel={handleCancelProductVariant}
         onFinish={handleFinishProductVariant}

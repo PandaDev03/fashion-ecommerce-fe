@@ -15,6 +15,7 @@ import {
 } from './ProductCreate';
 
 interface ProductVariantCreateModalProps extends ModalProps {
+  isEdit: boolean;
   productVariantOptions: IProductVariantOption[];
   form: FormInstance<IProductVariantCreateForm>;
   onFinish: (values: IProductVariantCreateForm) => void;
@@ -23,6 +24,7 @@ interface ProductVariantCreateModalProps extends ModalProps {
 const ProductVariantCreateModal = ({
   form,
   open,
+  isEdit,
   productVariantOptions,
   onFinish,
   ...props
@@ -35,14 +37,21 @@ const ProductVariantCreateModal = ({
   useEffect(() => {
     if (!open) return;
 
-    // console.log(form.getFieldsValue());
-    // console.log('productVariantOptions', productVariantOptions);
-    const fieldValues = form.getFieldsValue();
+    const { attributes, ...fieldValues } = form.getFieldsValue();
+    const combinedValues = productVariantOptions?.map((option) => {
+      const value = attributes?.find(
+        (attr) => attr?.name === option?.name
+      )?.value;
+
+      return {
+        name: option?.name,
+        value,
+      };
+    });
 
     form.setFieldsValue({
       ...fieldValues,
-      status: 'active',
-      attributes: productVariantOptions,
+      attributes: combinedValues,
     });
   }, [open, productVariantOptions]);
 
@@ -52,7 +61,9 @@ const ProductVariantCreateModal = ({
       width={650}
       open={open}
       title={
-        <h2 className="capitalize text-primary text-lg">Thêm Mới Biến Thể</h2>
+        <h2 className="capitalize text-primary text-lg">
+          {isEdit ? 'Chỉnh sửa biến thể' : 'Thêm mới biến thể'}
+        </h2>
       }
       onOk={() => form.submit()}
       {...props}
@@ -151,7 +162,10 @@ const ProductVariantCreateModal = ({
                           { required: true, message: 'Nhập tên thuộc tính' },
                         ]}
                       >
-                        <Input placeholder="Tên (VD: Chất liệu)" />
+                        <Input
+                          disabled={isDisable}
+                          placeholder="Tên (VD: Chất liệu)"
+                        />
                       </FormItem>
 
                       <FormItem
