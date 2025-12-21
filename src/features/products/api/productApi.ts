@@ -17,6 +17,14 @@ export const productAPI = {
   getProductOptions: async (params: IGetProductOptionParams) => {
     return await axiosApi.get('/products/product-option', { params });
   },
+  createProduct: async (data: FormData) => {
+    return await axiosApi.post('/products', data, {
+      headers: {
+        timeout: 15000,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
   createProductVariant: async (params: ICreateProductVariant) => {
     return await axiosApi.post('/products/product-variant', params);
   },

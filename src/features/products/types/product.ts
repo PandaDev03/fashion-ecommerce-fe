@@ -10,6 +10,30 @@ export interface IGetProductOptionParams {
   productId?: string;
 }
 
+export interface ICreateProduct {
+  variables: {
+    name: string;
+    slug: string;
+    description?: string;
+    categoryId: string;
+    brandId: string;
+    price?: number;
+    stock?: number;
+    status: string;
+    variants?: {
+      price: number;
+      stock: number;
+      status: string;
+      position?: number;
+      optionValues: {
+        optionName: string;
+        value: string;
+      }[];
+    }[];
+  };
+  files: FormData;
+}
+
 export interface ICreateProductVariant {
   productId: string;
   price: number;

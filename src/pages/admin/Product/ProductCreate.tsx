@@ -7,7 +7,6 @@ import {
 import {
   Flex,
   InputNumber,
-  Layout,
   Space,
   Tag,
   Upload,
@@ -25,7 +24,7 @@ import FormItem from '~/shared/components/Form/FormItem';
 import Image from '~/shared/components/Image/Image';
 import Input from '~/shared/components/Input/Input';
 import TextArea from '~/shared/components/Input/TextArea';
-import { Content } from '~/shared/components/Layout/Layout';
+import { Content, Layout } from '~/shared/components/Layout/Layout';
 import PopConfirm from '~/shared/components/PopConfirm/PopConfirm';
 import Select from '~/shared/components/Select/Select';
 import Table from '~/shared/components/Table/Table';
@@ -36,6 +35,11 @@ import { useTitle } from '~/shared/contexts/TitleContext';
 import { generateSlug, getBase64 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import ProductVariantCreateModal from './ProductVariantCreateModal';
+import { ICreateProduct } from '~/features/products/types/product';
+import { useMutation } from '@tanstack/react-query';
+import { productAPI } from '~/features/products/api/productApi';
+import { brandApi } from '~/features/brand/api/brandApi';
+import { categoryApi } from '~/features/category/api/categoryApi';
 
 export interface ICreateForm {
   name: string;
@@ -124,6 +128,32 @@ const ProductCreate = () => {
   const [productVariantOptionValues, setProductVariantOptionValues] =
     useState<IProductVariantOptionValue[]>();
 
+  const {
+    data: brandOptions,
+    mutate: getBrandOptions,
+    isPending: isGetBrandOptionPending,
+  } = useMutation({
+    mutationFn: () => brandApi.getBrandOptions(),
+  });
+
+  const {
+    data: categoryOptions,
+    mutate: getCategoryOptions,
+    isPending: isGetCategoryOptionPending,
+  } = useMutation({
+    mutationFn: () => categoryApi.getCategoryOptions(),
+  });
+
+  const { mutate: createProduct, isPending } = useMutation({
+    mutationFn: (data: FormData) => productAPI.createProduct(data),
+    onSuccess: (response) => {
+      console.log(response);
+
+      toast.success(response?.message);
+      navigate(PATH.ADMIN_PRODUCT_MANAGEMENT);
+    },
+  });
+
   useEffect(() => {
     setTitle('Thêm mới sản phẩm');
     setBreadcrumb([
@@ -141,6 +171,9 @@ const ProductCreate = () => {
     productVariantForm.setFieldsValue({
       attributes: [{ name: '', value: '' }],
     });
+
+    getBrandOptions();
+    getCategoryOptions();
   }, []);
 
   useEffect(() => {
@@ -431,60 +464,79 @@ const ProductCreate = () => {
     handleCancelProductVariant();
   };
 
-  // console.log('dataSource', dataSource);
-  // console.log('productVariantOptions', productVariantOptions);
-  // console.log('productVariantOptionValues', productVariantOptionValues);
-  // console.log('selectedVariantId', selectedVariantId);
-
   const handleFinishCreate = (values: ICreateForm) => {
-    // 1. Chuẩn bị danh sách các biến thể đã được gắn ảnh
-    const finalVariants = dataSource.map((variant) => {
-      // Tìm xem biến thể này có màu sắc là gì
-      const colorAttr = variant.attributes?.find(
-        (attr) => attr.name.trim().toLowerCase() === 'màu sắc'
-      );
+    console.log('fileList', fileList);
+    console.log('productVariantOptionValues', productVariantOptionValues);
 
-      // Tìm bộ ảnh tương ứng với màu sắc đó
-      const matchingColorGroup = productVariantOptionValues?.find(
-        (group) => group.name === colorAttr?.value
-      );
+    const isHasVariant = !!dataSource?.length;
 
-      return {
-        price: variant.price,
-        stock: variant.stock,
-        status: variant.status,
-        position: variant.position,
-        // Chuyển đổi attributes sang format backend yêu cầu (optionName/value)
-        optionValues: variant.attributes.map((attr) => ({
-          optionName: attr.name,
-          value: attr.value,
-        })),
-        // Chỉ lấy file object hoặc URL để gửi lên server
-        images:
-          matchingColorGroup?.files.map((file) => ({
-            url: file.url || file.thumbUrl, // Nếu là ảnh đã có
-            originFile: file.originFileObj, // Nếu là ảnh mới upload (dùng để upload lên S3/Cloudinary)
-          })) || [],
-      };
-    });
+    const formData = new FormData();
 
-    // 2. Ráp vào object tổng
-    const payload = {
-      name: values.name,
-      slug: values.slug,
-      status: values.status,
-      categoryId: values.categoryId,
-      brandId: values.brandId,
-      description: values.description,
-      variants: finalVariants,
-    };
+    formData.append('name', values?.name);
+    formData.append('slug', values?.slug);
+    formData.append('price', values?.price?.toString());
+    formData.append('stock', values?.stock?.toString());
+    formData.append('status', values?.status);
+    formData.append('categoryId', values?.categoryId);
+    formData.append('brandId', values?.brandId);
 
-    console.log('Dữ liệu cuối cùng gửi API:', payload);
-    // Gọi API tại đây
+    if (values?.description) formData.append('description', values.description);
+
+    if (isHasVariant) {
+      const fileMap = new Map<string, File>();
+
+      const finalVariants: ICreateProduct['variables']['variants'] =
+        dataSource.map((variant) => {
+          const colorAttr = variant.attributes?.find(
+            (attr) => attr.name.trim().toLowerCase() === 'màu sắc'
+          );
+
+          const matchingColorGroup = productVariantOptionValues?.find(
+            (group) => group.name === colorAttr?.value
+          );
+
+          return {
+            price: variant.price,
+            stock: variant.stock,
+            status: variant.status,
+            position: variant.position,
+            optionValues: variant.attributes.map((attr) => ({
+              optionName: attr.name,
+              value: attr.value,
+            })),
+            images:
+              matchingColorGroup?.files.map((file) => ({
+                uid: file?.originFileObj?.uid,
+              })) || [],
+          };
+        });
+
+      productVariantOptionValues?.forEach((colorGroup) => {
+        colorGroup.files.forEach((file) => {
+          if (file.originFileObj && !fileMap.has(file.uid)) {
+            fileMap.set(file.uid, file.originFileObj);
+          }
+        });
+      });
+
+      fileMap.forEach((file, uid) => {
+        const renamedFile = new File([file], uid, { type: file.type });
+        formData.append('files', renamedFile);
+      });
+
+      formData.append('variants', JSON.stringify(finalVariants));
+      console.log('finalVariants', finalVariants);
+    } else {
+      fileList.forEach((file) => {
+        if (file.originFileObj) formData.append('files', file.originFileObj);
+      });
+    }
+
+    createProduct(formData);
   };
 
   return (
-    <Layout>
+    <Layout loading={isPending}>
       <Space size="middle" direction="vertical" className="w-full">
         <Flex align="center" justify="end" className="gap-x-4">
           <Button
@@ -510,9 +562,9 @@ const ProductCreate = () => {
                     spacing="none"
                     name="name"
                     label="Tên sản phẩm"
-                    // rules={[
-                    //   { required: true, message: 'Vui lòng nhập tên sản phẩm' },
-                    // ]}
+                    rules={[
+                      { required: true, message: 'Vui lòng nhập tên sản phẩm' },
+                    ]}
                   >
                     <Input
                       placeholder="Ví dụ: Áo polo"
@@ -523,14 +575,14 @@ const ProductCreate = () => {
                     spacing="none"
                     name="slug"
                     label="Slug"
-                    // rules={[
-                    //   { required: true, message: 'Vui lòng nhập slug' },
-                    //   {
-                    //     pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-                    //     message:
-                    //       'Chỉ chấp nhận chữ thường, số và dấu gạch ngang (-).',
-                    //   },
-                    // ]}
+                    rules={[
+                      { required: true, message: 'Vui lòng nhập slug' },
+                      {
+                        pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                        message:
+                          'Chỉ chấp nhận chữ thường, số và dấu gạch ngang (-).',
+                      },
+                    ]}
                   >
                     <Input placeholder="Ví dụ: ao-polo" />
                   </FormItem>
@@ -538,8 +590,8 @@ const ProductCreate = () => {
                     spacing="none"
                     name="price"
                     label="Giá"
-                    extra="Bỏ qua nếu sản phẩm có biến thể"
-                    // rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
+                    // extra="Bỏ qua nếu sản phẩm có biến thể"
+                    rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
                   >
                     <InputNumber
                       min={0}
@@ -555,8 +607,8 @@ const ProductCreate = () => {
                     spacing="none"
                     name="stock"
                     label="Tồn kho"
-                    extra="Bỏ qua nếu sản phẩm có biến thể"
-                    // rules={[{ required: true, message: 'Vui lòng tồn kho' }]}
+                    // extra="Bỏ qua nếu sản phẩm có biến thể"
+                    rules={[{ required: true, message: 'Vui lòng tồn kho' }]}
                   >
                     <InputNumber
                       min={0}
@@ -569,11 +621,24 @@ const ProductCreate = () => {
                     spacing="none"
                     name="status"
                     label="Trạng thái"
-                    // rules={[
-                    //   { required: true, message: 'Vui lòng chọn trạng thái' },
-                    // ]}
+                    rules={[
+                      { required: true, message: 'Vui lòng chọn trạng thái' },
+                    ]}
                   >
-                    <Select placeholder="Chọn trạng thái" />
+                    <Select
+                      size="large"
+                      placeholder="Chọn trạng thái"
+                      options={[
+                        {
+                          label: 'Hoạt động',
+                          value: 'active',
+                        },
+                        {
+                          label: 'Tạm ngừng',
+                          value: 'inactive',
+                        },
+                      ]}
+                    />
                   </FormItem>
                 </Space>
                 <Space direction="vertical" className="col-span-1">
@@ -581,21 +646,35 @@ const ProductCreate = () => {
                     spacing="none"
                     name="categoryId"
                     label="Danh mục"
-                    // rules={[
-                    //   { required: true, message: 'Vui lòng chọn danh mục' },
-                    // ]}
+                    rules={[
+                      { required: true, message: 'Vui lòng chọn danh mục' },
+                    ]}
                   >
-                    <Select placeholder="Chọn danh mục" />
+                    <Select
+                      placeholder="Chọn danh mục"
+                      loading={isGetCategoryOptionPending}
+                      options={categoryOptions?.data?.map((opt: any) => ({
+                        label: opt?.name,
+                        value: opt?.id,
+                      }))}
+                    />
                   </FormItem>
                   <FormItem
                     spacing="none"
                     name="brandId"
                     label="Thương hiệu"
-                    // rules={[
-                    //   { required: true, message: 'Vui lòng chọn thương hiệu' },
-                    // ]}
+                    rules={[
+                      { required: true, message: 'Vui lòng chọn thương hiệu' },
+                    ]}
                   >
-                    <Select placeholder="Chọn thương hiệu" />
+                    <Select
+                      placeholder="Chọn thương hiệu"
+                      loading={isGetBrandOptionPending}
+                      options={brandOptions?.data?.map((opt: any) => ({
+                        label: opt?.name,
+                        value: opt?.id,
+                      }))}
+                    />
                   </FormItem>
                   <FormItem spacing="none" name="description" label="Mô tả">
                     <TextArea
