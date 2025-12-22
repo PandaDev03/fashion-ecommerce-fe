@@ -13,13 +13,7 @@ interface ISwiper extends SwiperProps {
   ref?: RefObject<SwiperTypes | null>;
 }
 
-const Swiper = ({
-  ref,
-  arrows,
-  modules,
-  children,
-  ...props
-}: ISwiper) => {
+const Swiper = ({ ref, arrows, modules, children, ...props }: ISwiper) => {
   const swiperRef = useRef<SwiperTypes>(null);
 
   const handleSwiperInit = (swiper: SwiperTypes) => {

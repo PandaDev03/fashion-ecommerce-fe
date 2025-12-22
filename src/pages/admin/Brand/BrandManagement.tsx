@@ -282,7 +282,7 @@ const BrandManagement = () => {
       title: 'Thao tác',
       render: (_, record) => {
         const isDisable = !!selectedMultipleBrand?.filter(
-          (brand) => brand.id === record.id
+          (brand) => brand?.id === record?.id
         ).length;
 
         return (
