@@ -4,9 +4,9 @@ export const PATH = {
 
   ACCOUNT: '/account',
 
-  PRODUCTS: '/products/:slugId?',
+  PRODUCTS: '/products/:slug?',
   PRODUCTS_WITHOUT_SLUG: '/products',
-  PRODUCT_DETAILS: '/product/:slugId',
+  PRODUCT_DETAILS: '/product/:slug',
 
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_PROFILE: '/admin/profile',

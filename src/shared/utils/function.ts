@@ -76,3 +76,14 @@ export const removeAccents = (str: string) => {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 };
+
+export const convertToVND = (price?: number | string) => {
+  if (!price) return '-';
+
+  const formattedPrice = typeof price === 'string' ? Number(price) : price;
+
+  return formattedPrice?.toLocaleString('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  });
+};
