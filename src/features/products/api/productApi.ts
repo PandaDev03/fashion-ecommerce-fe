@@ -28,24 +28,32 @@ export const productAPI = {
     });
   },
   createProductVariant: async (params: ICreateProductVariant) => {
-    return await axiosApi.post('/products/product-variant', params);
+    return await axiosApi.post('/products/product-variant', params, {
+      timeout: 20000,
+    });
   },
 
   updateProduct: async (params: IUpdateProduct) => {
-    return await axiosApi.put('/products', params);
+    return await axiosApi.put('/products', params, { timeout: 20000 } as any);
   },
   updateProductVariant: async (params: IUpdateProductVariant) => {
-    return await axiosApi.put('/products/product-variant', params);
+    return await axiosApi.put('/products/product-variant', params, {
+      timeout: 20000,
+    } as any);
   },
 
   deleteProduct: async (id: string) => {
-    return await axiosApi.delete(`/products/${id}`);
+    return await axiosApi.delete(`/products/${id}`, { timeout: 20000 } as any);
   },
   deleteManyProduct: async (params: IDeleteManyProduct) => {
-    return await axiosApi.delete('/products/many', { data: params } as any);
+    return await axiosApi.delete('/products/many', {
+      data: params,
+      timeout: 20000,
+    } as any);
   },
   deleteProductVariant: async (variantIds: string | string[]) => {
     return await axiosApi.delete('/products/product-variant', {
+      timeout: 20000,
       data: { variantIds },
     } as any);
   },
