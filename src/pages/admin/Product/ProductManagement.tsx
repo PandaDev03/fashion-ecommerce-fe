@@ -373,6 +373,7 @@ const ProductManagement = () => {
         <Table<IProduct>
           className="w-full"
           columns={columns}
+          loading={product?.loading}
           dataSource={product?.items}
           rowSelection={{ type: 'checkbox', ...rowSelection }}
           pagination={{

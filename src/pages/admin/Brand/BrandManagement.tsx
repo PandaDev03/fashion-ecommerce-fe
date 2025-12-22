@@ -586,11 +586,11 @@ const BrandManagement = () => {
       <Content>
         <Table<IBrand>
           columns={columns}
-          dataSource={brand.items}
           loading={brand?.loading}
+          dataSource={brand?.items}
           rowSelection={{ type: 'checkbox', ...rowSelection }}
           pagination={{
-            current: pageInfo.page,
+            current: pageInfo?.page,
             pageSize: pageInfo?.pageSize,
             total: brand?.pageInfo?.totalItems,
             onChange: handlePageChange,

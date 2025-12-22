@@ -12,7 +12,7 @@ const signInFormItems: FormItemProps[] = [
   {
     name: 'email',
     label: 'Email',
-    children: <Input />,
+    children: <Input placeholder="example@gmail.com" />,
     rules: [
       { required: true, message: 'Vui lòng nhập email' },
       { type: 'email', message: 'Email không đúng định dạng' },
@@ -21,7 +21,7 @@ const signInFormItems: FormItemProps[] = [
   {
     name: 'password',
     label: 'Mật khẩu',
-    children: <InputPassword type="password" />,
+    children: <InputPassword type="password" placeholder="Tối thiểu 8 ký tự" />,
     rules: [
       { required: true, message: 'Vui lòng nhập mật khẩu' },
       { min: 8, message: 'Mật khẩu phải có ít nhât 8 ký tự' },
