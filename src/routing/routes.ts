@@ -74,6 +74,31 @@ const routes: AppRoute[] = [
     // requiredRoles: [],
     element: React.lazy(() => import('~/pages/admin/Brand/BrandManagement')),
   },
+  {
+    // isProtected: true,
+    layout: AdminLayout,
+    path: PATH.ADMIN_PRODUCT_MANAGEMENT,
+    // requiredRoles: [],
+    element: React.lazy(
+      () => import('~/pages/admin/Product/ProductManagement')
+    ),
+  },
+  {
+    // isProtected: true,
+    layout: AdminLayout,
+    path: PATH.ADMIN_PRODUCT_DETAILS,
+    // requiredRoles: [],
+    element: React.lazy(
+      () => import('~/pages/admin/Product/ProductDetailsManagement')
+    ),
+  },
+  {
+    // isProtected: true,
+    layout: AdminLayout,
+    path: PATH.ADMIN_PRODUCT_CREATE,
+    // requiredRoles: [],
+    element: React.lazy(() => import('~/pages/admin/Product/ProductCreate')),
+  },
 ];
 
 export default routes;

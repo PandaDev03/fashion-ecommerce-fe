@@ -36,7 +36,9 @@ export const removeUrlPrefix = <T extends Record<string, any>>(data: T) => {
   return cleanedUrl;
 };
 
-export const normalizeUrlWithHttps = (url: string | undefined): string | undefined => {
+export const normalizeUrlWithHttps = (
+  url: string | undefined
+): string | undefined => {
   if (!url || url.trim() === '') return undefined;
 
   const trimmedUrl = url.trim();
@@ -66,4 +68,11 @@ export const normalizeObjectStrings = <T extends Record<string, any>>(
   }, {} as Record<string, any>);
 
   return normalizedObj as T;
+};
+
+export const removeAccents = (str: string) => {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 };

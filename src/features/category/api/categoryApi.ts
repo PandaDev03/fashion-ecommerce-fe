@@ -13,6 +13,9 @@ export const categoryApi = {
   getAllParents: async () => {
     return await axiosApi.get('/categories/parents');
   },
+  getCategoryOptions: async () => {
+    return await axiosApi.get('/categories/options');
+  },
   createCategory: async (params: ICreateCategoryParams) => {
     return await axiosApi.post('/categories', params);
   },

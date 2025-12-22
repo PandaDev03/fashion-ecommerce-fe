@@ -15,7 +15,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
 
   return (
     <Layout>
-      <Flex align="start" className="w-full h-screen!">
+      <Flex align="start" className="w-full min-h-screen!">
         <Sidebar collapsed={collapsed} />
         <Space direction="vertical" className="w-full overflow-hidden">
           <Header onCollapse={() => setCollapsed(!collapsed)} />

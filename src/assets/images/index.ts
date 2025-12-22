@@ -8,6 +8,7 @@ export { default as BANNER_6_WOMEN_COLLECTION } from './banner-6-women-collectio
 export { default as BANNER_8_WINTER_COLLECTION } from './banner-8-winter-collection.jpg';
 export { default as FALLBACK_IMG } from './fallback_img.png';
 export { default as FILE_NOT_FOUND_ILLUSTRATION } from './file_not_found_illustration.jpg';
+export { default as FOLDER_EMPTY } from './folder-empty.png';
 export { default as GOOGLE_LOGO } from './google_logo.png';
 export { default as KIDS } from './kids.png';
 export { default as MAN } from './man.png';
