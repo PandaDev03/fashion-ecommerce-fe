@@ -85,6 +85,10 @@ export interface IUpdateProduct {
   }>;
 }
 
+export interface IDeleteManyProduct {
+  ids: string[];
+}
+
 export interface IProduct {
   id: string;
   createdAt: string;

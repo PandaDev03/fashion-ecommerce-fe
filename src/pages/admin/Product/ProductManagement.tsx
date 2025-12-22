@@ -6,16 +6,21 @@ import {
   PlusOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
+import { useMutation } from '@tanstack/react-query';
 import { Flex, Space, Tooltip } from 'antd';
 import { useForm } from 'antd/es/form/Form';
-import { ColumnType } from 'antd/es/table';
+import { ColumnType, TableProps } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-
 import { useNavigate } from 'react-router-dom';
-import { Search } from '~/assets/svg';
+
+import { Search, Trash } from '~/assets/svg';
+import { productAPI } from '~/features/products/api/productApi';
 import { getProducts } from '~/features/products/store/productThunks';
-import { IProduct } from '~/features/products/types/product';
+import {
+  IDeleteManyProduct,
+  IProduct,
+} from '~/features/products/types/product';
 import Button from '~/shared/components/Button/Button';
 import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
@@ -24,6 +29,7 @@ import { Layout } from '~/shared/components/Layout/Layout';
 import PopConfirm from '~/shared/components/PopConfirm/PopConfirm';
 import Table from '~/shared/components/Table/Table';
 import { useBreadcrumb } from '~/shared/contexts/BreadcrumbContext';
+import { useToast } from '~/shared/contexts/NotificationContext';
 import { useTitle } from '~/shared/contexts/TitleContext';
 import useDebounceCallback from '~/shared/hooks/useDebounce';
 import usePagination from '~/shared/hooks/usePagination';
@@ -35,6 +41,8 @@ const ProductManagement = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
+  const toast = useToast();
+
   const { setTitle } = useTitle();
   const { setBreadcrumb } = useBreadcrumb();
 
@@ -42,15 +50,37 @@ const ProductManagement = () => {
   const [filterForm] = useForm();
 
   const [isFilterVisible, setIsFilterVisible] = useState(false);
+
   const [filterParams, setFilterParams] = useState();
+  const [selectedMultipleProduct, setSelectedMultipleProduct] = useState<
+    IProduct[]
+  >([]);
 
   const product = useAppSelector((state) => state.product);
 
-  const { pageInfo, handlePageChange } = usePagination({
+  const { pageInfo, handlePageChange, refetch } = usePagination({
     setFilterParams,
     extraParams: filterParams,
     fetchFn: (params) => dispatch(getProducts(params)).unwrap(),
   });
+
+  const { mutate: deleteProduct, isPending: isDeleteProductPending } =
+    useMutation({
+      mutationFn: (id: string) => productAPI.deleteProduct(id),
+      onSuccess: (response) => {
+        toast.success(response?.message);
+        refetch();
+      },
+    });
+
+  const { mutate: deleteManyProduct, isPending: isDeleteManyProductPending } =
+    useMutation({
+      mutationFn: (id: IDeleteManyProduct) => productAPI.deleteManyProduct(id),
+      onSuccess: (response) => {
+        toast.success(response?.message);
+        refetch();
+      },
+    });
 
   const columns: ColumnType<IProduct>[] = [
     {
@@ -138,11 +168,24 @@ const ProductManagement = () => {
       align: 'center',
       title: 'Thao tác',
       render: (_, record) => {
+        const isDisable = !!selectedMultipleProduct?.filter(
+          (product) => product?.id === record?.id
+        ).length;
+
         return (
           <Flex justify="center" className="gap-x-3">
             <Button
+              disabled={isDisable}
               displayType="text"
-              title={<EyeOutlined className="[&>svg]:fill-blue-500" />}
+              title={
+                <EyeOutlined
+                  className={
+                    isDisable
+                      ? '[&>svg]:fill-gray-400'
+                      : '[&>svg]:fill-blue-500'
+                  }
+                />
+              }
               onClick={() =>
                 navigate(
                   PATH.ADMIN_PRODUCT_DETAILS.replace(':slug', record.slug)
@@ -151,7 +194,16 @@ const ProductManagement = () => {
             />
             <Button
               displayType="text"
-              title={<EditOutlined className="[&>svg]:fill-blue-500" />}
+              disabled={isDisable}
+              title={
+                <EditOutlined
+                  className={
+                    isDisable
+                      ? '[&>svg]:fill-gray-400'
+                      : '[&>svg]:fill-blue-500'
+                  }
+                />
+              }
               onClick={() =>
                 navigate(
                   PATH.ADMIN_PRODUCT_DETAILS.replace(':slug', record?.slug),
@@ -162,11 +214,20 @@ const ProductManagement = () => {
             <PopConfirm
               placement="topLeft"
               title="Xoá mục này"
-              // onConfirm={() => deleteCategory(record.id)}
+              onConfirm={() => deleteProduct(record?.id)}
             >
               <Button
                 displayType="text"
-                title={<CloseOutlined className="[&>svg]:fill-red-500" />}
+                disabled={isDisable}
+                title={
+                  <CloseOutlined
+                    className={
+                      isDisable
+                        ? '[&>svg]:fill-gray-400'
+                        : '[&>svg]:fill-red-500'
+                    }
+                  />
+                }
               />
             </PopConfirm>
           </Flex>
@@ -174,6 +235,22 @@ const ProductManagement = () => {
       },
     },
   ];
+
+  const handleRowSelectionChange = useDebounceCallback(
+    (selectedRows: IProduct[]) => setSelectedMultipleProduct(selectedRows),
+    300
+  );
+
+  const rowSelection: TableProps<IProduct>['rowSelection'] = {
+    onChange: (_, selectedRows: IProduct[]) => {
+      console.log('selectedRows: ', selectedRows);
+      handleRowSelectionChange(selectedRows);
+    },
+    getCheckboxProps: (record: any) => ({
+      disabled: record.name === 'Disabled User',
+      name: record.name,
+    }),
+  };
 
   useEffect(() => {
     setTitle('Sản phẩm');
@@ -202,8 +279,19 @@ const ProductManagement = () => {
     console.log(values);
   };
 
+  const handleDeleteProduct = () => {
+    const params: IDeleteManyProduct = {
+      ids: selectedMultipleProduct?.map((product) => product?.id),
+    };
+
+    deleteManyProduct(params);
+  };
+
   return (
-    <Layout className="bg-white! border border-gray-200 rounded-lg overflow-hidden">
+    <Layout
+      loading={isDeleteProductPending || isDeleteManyProductPending}
+      className="bg-white! border border-gray-200 rounded-lg overflow-hidden"
+    >
       <Flex align="center" justify="space-between" className="py-4! px-5!">
         <Flex vertical>
           <h2 className="font-semibold capitalize text-lg text-primary">
@@ -249,15 +337,15 @@ const ProductManagement = () => {
               />
             </FormItem>
           </Form>
-          {/* {!!selectedMultipleCategory?.length && (
+          {!!selectedMultipleProduct?.length && (
             <PopConfirm
               title="Xóa mục này"
               description={
                 <p>
-                  Bạn có chắc chắn muốn xóa danh mục:{' '}
+                  Bạn có chắc chắn muốn xóa sản phẩm:{' '}
                   <strong>
-                    {selectedMultipleCategory
-                      .map((brand) => brand.name)
+                    {selectedMultipleProduct
+                      .map((product) => product?.name)
                       .join(', ')}
                   </strong>
                   ?
@@ -265,11 +353,11 @@ const ProductManagement = () => {
                   Hành động này không thể hoàn tác.
                 </p>
               }
-              onConfirm={handleDeleteManyCategory}
+              onConfirm={handleDeleteProduct}
             >
               <Trash className="w-4 h-4 text-red-500 cursor-pointer" />
             </PopConfirm>
-          )} */}
+          )}
         </Space>
         <ProductFilter
           form={filterForm}
@@ -286,7 +374,7 @@ const ProductManagement = () => {
           className="w-full"
           columns={columns}
           dataSource={product?.items}
-          // rowSelection={{ type: 'checkbox', ...rowSelection }}
+          rowSelection={{ type: 'checkbox', ...rowSelection }}
           pagination={{
             current: pageInfo?.page,
             pageSize: pageInfo?.pageSize,
