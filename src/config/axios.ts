@@ -17,8 +17,7 @@ export const instance: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  // timeout: 5000,
-  timeout: 20000,
+  timeout: 5000,
   withCredentials: true,
   paramsSerializer: (params) => {
     return queryString.stringify(params, {
