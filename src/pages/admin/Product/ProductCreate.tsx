@@ -147,8 +147,6 @@ const ProductCreate = () => {
   const { mutate: createProduct, isPending } = useMutation({
     mutationFn: (data: FormData) => productAPI.createProduct(data),
     onSuccess: (response) => {
-      console.log(response);
-
       toast.success(response?.message);
       navigate(PATH.ADMIN_PRODUCT_MANAGEMENT);
     },
@@ -199,13 +197,18 @@ const ProductCreate = () => {
 
     const newOptionValues: IProductVariantOptionValue[] = Array.from(
       colorMap
-    ).map(([name, files]) => ({
-      id: `new-${Date.now()}-${Math.random()}`,
-      name,
-      files,
-    }));
+    ).map(([name, files]) => {
+      const newOptionValueId = `new-opt-val-${Date.now()}-${Math.random()}`;
+
+      return {
+        id: newOptionValueId,
+        name,
+        files,
+      };
+    });
 
     setProductVariantOptionValues(newOptionValues);
+    setSelectedVariantId(newOptionValues?.[0]?.id);
   }, [dataSource]);
 
   const columns: ColumnType<IDataSource>[] = [
@@ -408,7 +411,6 @@ const ProductCreate = () => {
   };
 
   const handleFinishProductVariant = (values: IProductVariantCreateForm) => {
-    // console.log('values', values);
     const { attributes } = values;
 
     if (!productVariantOptionRef.current) {
@@ -436,21 +438,23 @@ const ProductCreate = () => {
       const editingId = productVariantForm.getFieldsValue(true)?.id;
 
       setDataSource((prev) =>
-        prev?.map((data) =>
-          data?.id === editingId
-            ? {
-                ...data,
-                ...values,
-                name: variantName,
-              }
-            : data
-        )
+        prev
+          ?.map((data) =>
+            data?.id === editingId
+              ? {
+                  ...data,
+                  ...values,
+                  name: variantName,
+                }
+              : data
+          )
+          .sort((a, b) => a?.position - b?.position)
       );
       setIsProductVariantEdit(false);
     } else {
       const newDataSource: IDataSource = {
         ...values,
-        id: `new-${Date.now()}-${Math.random()}`,
+        id: `new-data-source-${Date.now()}-${Math.random()}`,
         name: variantName,
       };
 
@@ -465,11 +469,7 @@ const ProductCreate = () => {
   };
 
   const handleFinishCreate = (values: ICreateForm) => {
-    console.log('fileList', fileList);
-    console.log('productVariantOptionValues', productVariantOptionValues);
-
     const isHasVariant = !!dataSource?.length;
-
     const formData = new FormData();
 
     formData.append('name', values?.name);
@@ -485,6 +485,20 @@ const ProductCreate = () => {
     if (isHasVariant) {
       const fileMap = new Map<string, File>();
 
+      productVariantOptionValues?.forEach((colorGroup) => {
+        colorGroup.files.forEach((file) => {
+          if (file.originFileObj && !fileMap.has(file.uid)) {
+            fileMap.set(file.uid, file.originFileObj);
+          }
+        });
+      });
+
+      fileList.forEach((file) => {
+        if (file.originFileObj && !fileMap.has(file.uid)) {
+          fileMap.set(file.uid, file.originFileObj);
+        }
+      });
+
       const finalVariants: ICreateProduct['variables']['variants'] =
         dataSource.map((variant) => {
           const colorAttr = variant.attributes?.find(
@@ -495,6 +509,11 @@ const ProductCreate = () => {
             (group) => group.name === colorAttr?.value
           );
 
+          const variantFiles =
+            matchingColorGroup && matchingColorGroup.files.length > 0
+              ? matchingColorGroup.files
+              : fileList;
+
           return {
             price: variant.price,
             stock: variant.stock,
@@ -504,20 +523,11 @@ const ProductCreate = () => {
               optionName: attr.name,
               value: attr.value,
             })),
-            images:
-              matchingColorGroup?.files.map((file) => ({
-                uid: file?.originFileObj?.uid,
-              })) || [],
+            images: variantFiles.map((file) => ({
+              uid: file?.uid,
+            })),
           };
         });
-
-      productVariantOptionValues?.forEach((colorGroup) => {
-        colorGroup.files.forEach((file) => {
-          if (file.originFileObj && !fileMap.has(file.uid)) {
-            fileMap.set(file.uid, file.originFileObj);
-          }
-        });
-      });
 
       fileMap.forEach((file, uid) => {
         const renamedFile = new File([file], uid, { type: file.type });
@@ -525,7 +535,6 @@ const ProductCreate = () => {
       });
 
       formData.append('variants', JSON.stringify(finalVariants));
-      console.log('finalVariants', finalVariants);
     } else {
       fileList.forEach((file) => {
         if (file.originFileObj) formData.append('files', file.originFileObj);
@@ -727,6 +736,8 @@ const ProductCreate = () => {
                             (v) => v.id === selectedVariantId
                           )?.name
                         }`
+                      : dataSource?.length
+                      ? 'Tải ảnh chung cho biến thể'
                       : 'Tải lên ảnh chung cho sản phẩm (không theo biến thể)'}
                   </p>
                 </Space>

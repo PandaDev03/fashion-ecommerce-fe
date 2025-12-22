@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Divider,
   Flex,
@@ -7,7 +7,15 @@ import {
   ModalProps,
   Space,
 } from 'antd';
-import { ChangeEvent, Dispatch, memo, SetStateAction, useState } from 'react';
+import FormList from 'antd/es/form/FormList';
+import {
+  ChangeEvent,
+  Dispatch,
+  memo,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react';
 
 import { IProduct, IProductOption } from '~/features/products/types/product';
 import Button from '~/shared/components/Button/Button';
@@ -21,6 +29,7 @@ import { IProductVariantForm } from './ProductDetailsManagement';
 
 interface ProductVariantModalProps extends ModalProps {
   product: IProduct;
+  isProductVariantEdit: boolean;
   productOptions: IProductOption[];
   form: FormInstance<IProductVariantForm>;
   setProductOptions: Dispatch<SetStateAction<IProductOption[]>>;
@@ -32,6 +41,7 @@ const ProductVariantModal = ({
   open,
   product,
   productOptions,
+  isProductVariantEdit,
   onFinish,
   setProductOptions,
   ...props
@@ -39,24 +49,65 @@ const ProductVariantModal = ({
   const toast = useToast();
   const [newOption, setNewOption] = useState('');
 
+  useEffect(() => {
+    if (!open) return;
+
+    !isProductVariantEdit &&
+      form.setFieldsValue({
+        status: 'active',
+        attributes: [{ name: '', value: '' }],
+      });
+  }, [open, isProductVariantEdit]);
+
   const handleFinish = (values: IProductVariantForm) => {
-    const { price, stock, status, position, ...optionSelections } = values;
-
-    const optionValues = Object.entries(optionSelections).map(
-      ([optionId, valueId]) => ({
-        optionId,
-        isNew: false,
-        optionValueId: valueId,
-      })
-    );
-
-    const submitData = {
-      productId: product.id,
+    const {
       price,
       stock,
       status,
       position,
+      attributes,
       optionValues,
+      ...optionSelections
+    } = values;
+
+    let finalOptionValues: IProductVariantForm['optionValues'] = [];
+
+    if (attributes && attributes?.length > 0) {
+      finalOptionValues = attributes?.map((attr) => ({
+        isNew: true,
+        isNewOption: true,
+        optionName: attr?.name,
+        value: attr?.value,
+      }));
+    } else {
+      const selections = optionSelections as Record<
+        string,
+        { label: string; value: string }
+      >;
+
+      finalOptionValues = Object.entries(selections).map(
+        ([optionId, value]) => {
+          const isNew = value?.value?.startsWith('temp_');
+
+          return {
+            optionId,
+            isNew,
+            isNewOption: false,
+            ...(isNew
+              ? { value: value?.label }
+              : { optionValueId: value?.value }),
+          };
+        }
+      );
+    }
+
+    const submitData = {
+      price,
+      stock,
+      status,
+      position,
+      productId: product.id,
+      optionValues: finalOptionValues,
     };
     onFinish(submitData);
   };
@@ -79,7 +130,6 @@ const ProductVariantModal = ({
     }
 
     const currentOption = productOptions?.find(({ id }) => id === optionId);
-
     if (!currentOption) return;
 
     const maxValuePosition = currentOption?.values?.reduce((max, item) => {
@@ -110,10 +160,12 @@ const ProductVariantModal = ({
   return (
     <Modal
       centered
-      width={550}
+      width={650}
       open={open}
       title={
-        <h2 className="capitalize text-primary text-lg">Thêm Mới Biến Thể</h2>
+        <h2 className="capitalize text-primary text-lg">
+          {isProductVariantEdit ? 'Cập nhật biến thể' : 'Thêm mới biến thể'}
+        </h2>
       }
       onOk={() => form.submit()}
       {...props}
@@ -160,7 +212,6 @@ const ProductVariantModal = ({
             name="status"
             spacing="none"
             label="Trạng thái"
-            initialValue="active"
             rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
           >
             <Select
@@ -195,54 +246,109 @@ const ProductVariantModal = ({
 
           <Flex vertical className="w-full gap-y-6">
             <h4 className="font-semibold text-base m-0">Thuộc tính sản phẩm</h4>
-            {productOptions?.map((option) => (
-              <FormItem
-                spacing="none"
-                key={option?.id}
-                name={option?.id}
-                label={option?.name}
-                style={{ order: `${option?.position}` }}
-                rules={[
-                  { required: true, message: 'Vui lòng chọn thuộc tính' },
-                ]}
-              >
-                <Select
-                  labelInValue
-                  placeholder={
-                    <span>
-                      Chọn
-                      <span className="lowercase"> {option?.name}</span>
-                    </span>
-                  }
-                  options={option?.values?.map((value) => ({
-                    label: value?.value,
-                    value: value?.id,
-                  }))}
-                  popupRender={(menu) => (
-                    <>
-                      {menu}
-                      <Divider style={{ margin: '8px 0' }} />
+            {productOptions && !!productOptions?.length ? (
+              productOptions?.map((option) => (
+                <FormItem
+                  spacing="none"
+                  key={option?.id}
+                  name={option?.id}
+                  label={option?.name}
+                  style={{ order: `${option?.position}` }}
+                  rules={[
+                    { required: true, message: 'Vui lòng chọn thuộc tính' },
+                  ]}
+                >
+                  <Select
+                    labelInValue
+                    placeholder={
+                      <span>
+                        Chọn
+                        <span className="lowercase"> {option?.name}</span>
+                      </span>
+                    }
+                    options={option?.values?.map((value) => ({
+                      label: value?.value,
+                      value: value?.id,
+                    }))}
+                    popupRender={(menu) => (
+                      <>
+                        {menu}
+                        <Divider style={{ margin: '8px 0' }} />
+                        <Flex
+                          align="center"
+                          className="gap-x-2"
+                          style={{ padding: '0 8px 4px' }}
+                        >
+                          <Input
+                            value={newOption}
+                            className="w-full"
+                            onChange={handleNameChange}
+                          />
+                          <Button
+                            title="Thêm mới"
+                            iconBefore={<PlusOutlined />}
+                            onClick={() => handleAddItem(option?.id)}
+                          />
+                        </Flex>
+                      </>
+                    )}
+                  />
+                </FormItem>
+              ))
+            ) : (
+              <FormList name="attributes">
+                {(fields, { add, remove }) => (
+                  <Space size="middle" direction="vertical" className="w-full">
+                    {fields.map(({ key, name, ...restField }) => (
                       <Flex
-                        align="center"
-                        className="gap-x-2"
-                        style={{ padding: '0 8px 4px' }}
+                        align="end"
+                        className="px-2! py-3! border border-dashed border-primary rounded-lg gap-x-2"
                       >
-                        <Input
-                          value={newOption}
-                          className="w-full"
-                          onChange={handleNameChange}
-                        />
+                        <FormItem
+                          {...restField}
+                          spacing="none"
+                          label="Tên thuộc tính"
+                          name={[name, 'name']}
+                          rules={[
+                            { required: true, message: 'Nhập tên thuộc tính' },
+                          ]}
+                        >
+                          <Input
+                            // disabled={isDisable}
+                            placeholder="Tên (VD: Chất liệu)"
+                          />
+                        </FormItem>
+
+                        <FormItem
+                          {...restField}
+                          spacing="none"
+                          label="Giá trị"
+                          name={[name, 'value']}
+                          rules={[{ required: true, message: 'Nhập giá trị' }]}
+                        >
+                          <Input placeholder="Nhập giá trị mới" />
+                        </FormItem>
+
                         <Button
-                          title="Thêm mới"
-                          iconBefore={<PlusOutlined />}
-                          onClick={() => handleAddItem(option?.id)}
+                          // disabled={isDisable}
+                          displayType="outlined"
+                          title={<DeleteOutlined />}
+                          onClick={() => remove(name)}
                         />
                       </Flex>
-                    </>
-                  )}
-                />
-              </FormItem>
-            ))}
+                    ))}
+
+                    <Button
+                      // disabled={isDisable}
+                      displayType="primary"
+                      iconBefore={<PlusOutlined />}
+                      title="Thêm dòng thuộc tính mới"
+                      onClick={() => add()}
+                    />
+                  </Space>
+                )}
+              </FormList>
+            )}
             {/* <FormList name="attributes">
               {(fields, { add, remove }) => (
                 <Space size="middle" direction="vertical" className="w-full">

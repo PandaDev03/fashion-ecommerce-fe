@@ -79,13 +79,18 @@ export interface IProductVariantForm {
   stock: number;
   status?: string;
   position?: number;
+  attributes?: { name: string; value: string }[];
   optionValues: {
     isNew: boolean;
-    optionId: string;
-    optionValueId: {
-      label: string;
-      value: string;
-    };
+    isNewOption: boolean;
+    optionName?: string;
+    optionId?: string;
+    value?: string;
+    optionValueId?: string;
+    // optionValueId?: {
+    //   label: string;
+    //   value: string;
+    // };
   }[];
 }
 
@@ -144,8 +149,11 @@ const ProductDetailsManagement = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [fileList, setFileList] = useState<IUploadVariantImage[]>([]);
 
-  const [dataSource, setDataSource] = useState<IDataSource[]>();
+  const [dataSource, setDataSource] = useState<IDataSource[]>([]);
   const [product, setProduct] = useState<IProduct>(initialProduct);
+
+  console.log('dataSource', dataSource);
+  console.log('productOptions', productOptions);
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({
@@ -263,24 +271,32 @@ const ProductDetailsManagement = () => {
   });
 
   const averagePrice = useMemo(() => {
-    const totalProducts = product?.variants?.length;
+    const totalProductVariants = product?.variants?.length;
+    if (!totalProductVariants)
+      return Number(product?.price).toLocaleString('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      });
+
     const totalPrice = product?.variants?.reduce((prev, current) => {
       return (prev += Number(current?.price));
     }, 0);
 
-    return (totalPrice / totalProducts || 0).toLocaleString('vi-VN', {
+    return (totalPrice / totalProductVariants || 0).toLocaleString('vi-VN', {
       style: 'currency',
       currency: 'VND',
     });
   }, [product]);
 
-  const totalStock = useMemo(
-    () =>
-      product?.variants?.reduce((prev, current) => {
-        return (prev += current?.stock);
-      }, 0),
-    [product]
-  );
+  const totalStock = useMemo(() => {
+    const isHasVariant = product?.variants?.length;
+
+    if (!isHasVariant) return product?.stock;
+
+    return product?.variants?.reduce((prev, current) => {
+      return (prev += current?.stock);
+    }, 0);
+  }, [product]);
 
   const hasVariant = useMemo(() => !!product?.variants?.length, [product]);
 
@@ -497,8 +513,6 @@ const ProductDetailsManagement = () => {
   }, [slug, location]);
 
   useEffect(() => {
-    console.log('hasVariant', hasVariant);
-
     const selectedVariant = product?.variants?.[0];
     const selectedImage = hasVariant
       ? selectedVariant?.imageMappings?.[0]?.image
@@ -728,24 +742,9 @@ const ProductDetailsManagement = () => {
       return;
     }
 
-    const { optionValues } = values;
-
     const params: ICreateProductVariant = {
       ...values,
       productId: product?.id,
-      optionValues: optionValues?.map((optionVal) => {
-        const isNewOption =
-          optionVal?.optionValueId?.value?.startsWith('temp_');
-
-        return {
-          isNew: isNewOption,
-          optionId: optionVal?.optionId,
-          ...(!isNewOption && {
-            optionValueId: optionVal?.optionValueId?.value,
-          }),
-          ...(isNewOption && { value: optionVal?.optionValueId?.label }),
-        };
-      }),
     };
 
     const { id: productVariantId } = productVariantForm.getFieldsValue(true);
@@ -914,8 +913,11 @@ const ProductDetailsManagement = () => {
               className="bg-white py-4! px-5! border border-gray-200 rounded-lg overflow-hidden gap-y-2"
             >
               <span className="text-body">Trạng thái</span>
-              <Tag color="green" className="max-w-max">
-                Đang bán
+              <Tag
+                className="max-w-max"
+                color={product?.status === 'active' ? 'green' : 'default'}
+              >
+                {product?.status === 'active' ? 'Đáng bán' : 'Tạm ngừng'}
               </Tag>
             </Flex>
           </div>
@@ -1261,6 +1263,7 @@ const ProductDetailsManagement = () => {
         form={productVariantForm}
         open={isVariantModalVisible}
         productOptions={productOptions}
+        isProductVariantEdit={isProductVariantEdit}
         loading={isCreateProductVariantPending || isUpdateProductVariantPending}
         setProductOptions={setProductOptions}
         onCancel={handleCancelVariantModal}

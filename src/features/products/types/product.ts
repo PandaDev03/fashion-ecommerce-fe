@@ -41,10 +41,12 @@ export interface ICreateProductVariant {
   status?: string;
   position?: number;
   optionValues: {
-    optionId: string;
+    isNewOption?: boolean;
+    optionId?: string;
+    optionName?: string;
     optionValueId?: string;
     value?: string;
-    isNew: boolean;
+    isNew?: boolean;
   }[];
 }
 
@@ -55,10 +57,10 @@ export interface IUpdateProductVariant {
   status?: string;
   position?: number;
   optionValues: {
-    optionId: string;
+    optionId?: string;
     optionValueId?: string;
     value?: string;
-    isNew: boolean;
+    isNew?: boolean;
   }[];
 }
 
