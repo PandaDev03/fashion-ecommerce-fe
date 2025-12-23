@@ -397,7 +397,7 @@ const ProductDetailPage = () => {
             </p>
             <Flex className="flex items-center mt-5!">
               <p className="text-primary font-bold text-base md:text-xl lg:text-2xl 2xl:text-4xl ltr:pr-2 rtl:pl-2 ltr:md:pr-0 rtl:md:pl-0 ltr:lg:pr-2 rtl:lg:pl-2 ltr:2xl:pr-0 rtl:2xl:pl-0">
-                {convertToVND(productDetails?.price)}
+                {convertToVND(selectedVariant?.price)}
               </p>
             </Flex>
 

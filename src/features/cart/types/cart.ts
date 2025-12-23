@@ -43,3 +43,12 @@ export interface ILocalCartItem {
   quantity: number;
   addedAt: number;
 }
+
+export interface IUpdateQuantity {
+  variantId: string;
+  quantity: number;
+}
+
+export interface IDeleteCartItem {
+  variantId: string;
+}
