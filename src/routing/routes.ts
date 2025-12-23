@@ -14,13 +14,6 @@ export interface AppRoute {
 }
 
 const routes: AppRoute[] = [
-  // NOT FOUND
-  {
-    path: PATH.NOT_FOUND,
-    layout: MainLayout,
-    element: React.lazy(() => import('~/pages/public/NotFount/NotFountPage')),
-  },
-
   // PUBLIC ROUTES
   {
     path: PATH.HOME,
@@ -98,6 +91,13 @@ const routes: AppRoute[] = [
     path: PATH.ADMIN_PRODUCT_CREATE,
     // requiredRoles: [],
     element: React.lazy(() => import('~/pages/admin/Product/ProductCreate')),
+  },
+
+  // NOT FOUND
+  {
+    path: PATH.NOT_FOUND,
+    layout: MainLayout,
+    element: React.lazy(() => import('~/pages/public/NotFount/NotFountPage')),
   },
 ];
 

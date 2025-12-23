@@ -478,8 +478,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems } = useAppSelector((state) => state.cart);
 
-  console.log(cartItems);
-
   const menuItems: MenuProps['items'] = [
     {
       key: '1',
