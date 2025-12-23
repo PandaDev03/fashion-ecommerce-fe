@@ -481,12 +481,12 @@ const headerMenu: Menu[] = [
   {
     key: 'contact',
     title: 'Liên hệ',
-    href: '',
+    href: '/lien-he',
   },
   {
     key: 'cart',
     title: 'Giỏ hàng',
-    href: '',
+    href: '/cart',
   },
   {
     key: 'order',

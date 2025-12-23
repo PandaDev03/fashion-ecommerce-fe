@@ -39,6 +39,23 @@ const routes: AppRoute[] = [
       () => import('~/pages/public/Product/ProductDetailPage')
     ),
   },
+  {
+    path: PATH.CART,
+    layout: MainLayout,
+    element: React.lazy(() => import('~/pages/public/Cart/CartPage')),
+  },
+  {
+    path: PATH.CHECKOUT,
+    layout: MainLayout,
+    element: React.lazy(
+      () => import("~/pages/public/Checkout/CheckoutPage")
+    ),
+  },
+  {
+    path: PATH.CONTACT,
+    layout: MainLayout,
+    element: React.lazy(() => import('~/pages/public/Contact/ContactPage')),
+  },
 
   // PROTECTED ROUTES
   {
