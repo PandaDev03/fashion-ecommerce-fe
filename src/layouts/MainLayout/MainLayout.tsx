@@ -1,8 +1,15 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Dropdown, Flex, MenuProps } from 'antd';
+import {
+  Dropdown,
+  Flex,
+  InputNumber,
+  InputNumberProps,
+  MenuProps,
+  Space,
+} from 'antd';
 import { useForm } from 'antd/es/form/Form';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { PROFILE_PICTURE, SUBSCRIPTION_BG } from '~/assets/images';
 import { EmptyCart, LOGO } from '~/assets/svg';
@@ -30,6 +37,8 @@ import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import BottomNavBar from './components/BottomNavBar/BottomNavBar';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
+import { getCartItems } from '~/features/cart/stores/cartThunks';
+import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 
 const siderMenu: MenuProps['items'] = [
   {
@@ -465,6 +474,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
 
   const { currentUser } = useAppSelector((state) => state.user);
+  const { items: cartItems } = useAppSelector((state) => state.cart);
+
+  console.log('cartItems', cartItems);
 
   const menuItems: MenuProps['items'] = [
     {
@@ -491,6 +503,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       onClick: () => signOut(),
     },
   ];
+
+  const isEmptyCart = useMemo(() => !cartItems?.length, [cartItems]);
 
   const { mutate: signUpMutate, isPending: isSignUpPending } = useMutation({
     mutationFn: (values: ISignUp) => AuthApi.signUp(values),
@@ -535,6 +549,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       dispatch(resetUser());
     },
   });
+
+  useEffect(() => {
+    dispatch(getCartItems());
+  }, []);
+
+  const handleInputNumberChange: InputNumberProps['onChange'] = (value) => {
+    console.log('changed', value);
+  };
 
   const handleOpenAuthModal = () => {
     setIsAuthVisible(true);
@@ -676,6 +698,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         title={<p className="font-bold text-2xl text-primary">Giỏ hàng</p>}
         footer={
           <Button
+            disabled={isEmptyCart}
             className="w-full py-4! px-5!"
             title={
               <Flex align="center" gap={25}>
@@ -687,17 +710,49 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         }
         onClose={() => setIsCartDrawerVisible(false)}
       >
-        <Flex
-          vertical
-          align="center"
-          justify="center"
-          className="h-full px-5 pt-8 pb-5"
-        >
-          <EmptyCart />
-          <p className="font-semibold text-lg text-primary">
-            Giỏ hàng của bạn đang trống
-          </p>
-        </Flex>
+        {isEmptyCart ? (
+          <Flex
+            vertical
+            align="center"
+            justify="center"
+            className="h-full px-5 pt-8 pb-5"
+          >
+            <EmptyCart />
+            <p className="font-semibold text-lg text-primary">
+              Giỏ hàng của bạn đang trống
+            </p>
+          </Flex>
+        ) : (
+          <Space size="middle" direction="vertical">
+            {cartItems?.map((item) => (
+              <Space align="start" key={item?.id}>
+                <Image
+                  width={112}
+                  src={item?.images?.[0]?.url}
+                  className="rounded-lg object-cover"
+                />
+                <Space direction="vertical">
+                  <p className="font-semibold text-primary max-w-50 truncate">
+                    {item?.name}
+                  </p>
+                  <p className="text-body">
+                    {item?.variant?.optionValues
+                      ?.map((optVal) => optVal?.optionValue?.value)
+                      .join(' - ')}
+                  </p>
+                  <Flex vertical gap="middle">
+                    <QuantitySelector
+                      className="shrink-0"
+                      quantity={item?.quantity}
+                      onDecrease={() => {}}
+                      onIncrease={() => {}}
+                    />
+                  </Flex>
+                </Space>
+              </Space>
+            ))}
+          </Space>
+        )}
       </Drawer>
     </Layout>
   );

@@ -14,6 +14,8 @@ import classNames from 'classnames';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { addToCart } from '~/features/cart/stores/cartSlice';
+import { ICart } from '~/features/cart/types/cart';
 import { productAPI } from '~/features/products/api/productApi';
 import { IProduct, IVariant } from '~/features/products/types/product';
 import Button from '~/shared/components/Button/Button';
@@ -23,6 +25,8 @@ import { Content, Layout } from '~/shared/components/Layout/Layout';
 import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
+import { useToast } from '~/shared/contexts/NotificationContext';
+import { useAppDispatch } from '~/shared/hooks/useStore';
 import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
 import { convertToVND } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
@@ -150,7 +154,10 @@ const collapseItems: CollapseProps['items'] = [
 ];
 
 const ProductDetailPage = () => {
+  const toast = useToast();
+  const dispath = useAppDispatch();
   const { slug } = useParams<{ slug: string }>();
+
   const carouselRef = useRef<CarouselRef>(null);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -266,6 +273,34 @@ const ProductDetailPage = () => {
 
   const handleIncrease = () => {
     setQuantity((prev) => prev + (prev === MAX_QUANTITY ? 0 : 1));
+  };
+
+  const handleAddToCart = () => {
+    if (
+      !selectedVariant ||
+      !productDetails ||
+      !Object.keys(selectedVariant)?.length ||
+      !Object.keys(productDetails)?.length
+    ) {
+      toast.error('Không tìm thấy sản phẩm để thêm vào giỏ hàng');
+      return;
+    }
+
+    const cartItem: ICart = {
+      id: productDetails?.id,
+      name: productDetails?.name,
+      slug: productDetails?.slug,
+      description: productDetails?.description,
+      price: productDetails?.price,
+      stock: productDetails?.stock,
+      status: productDetails?.status,
+      category: productDetails?.category,
+      brand: productDetails?.brand,
+      images: productDetails?.images,
+      variant: selectedVariant,
+      quantity,
+    };
+    dispath(addToCart(cartItem));
   };
 
   const handleSelectedProduct = (product: Product) => {
@@ -490,6 +525,7 @@ const ProductDetailPage = () => {
                   title="Thêm vào giỏ hàng"
                   className="w-full py-3!"
                   disabled={!selectedVariant}
+                  onClick={handleAddToCart}
                 />
               </Flex>
             </div>

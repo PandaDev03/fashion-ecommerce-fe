@@ -1,6 +1,6 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Badge, Dropdown, Flex, MenuProps, Space } from 'antd';
-import { memo, ReactElement, ReactNode } from 'react';
+import { memo, ReactElement, ReactNode, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { PROFILE_PICTURE } from '~/assets/images';
@@ -504,6 +504,13 @@ const Header = ({
   const navigate = useNavigate();
   const { currentUser } = useAppSelector((state) => state.user);
 
+  const { items: cartItems } = useAppSelector((state) => state.cart);
+
+  const totalQuantity = useMemo(
+    () => cartItems?.reduce((prev, current) => (prev += current?.quantity), 0),
+    [cartItems]
+  );
+
   const menuItems: MenuProps['items'] = [
     {
       key: '1',
@@ -546,7 +553,7 @@ const Header = ({
       onClick: () => onSignOut(),
     },
   ];
-
+  
   return (
     <div className="sticky top-0 left-0 shadow-md h-16 sm:h-20 lg:h-24 px-6 bg-white max-w-[1920px] z-100">
       <Flex
@@ -633,7 +640,7 @@ const Header = ({
                   </Dropdown>
                 </div>
               )}
-              <Badge showZero count={0} onClick={onOpenCartDrawer}>
+              <Badge showZero count={totalQuantity} onClick={onOpenCartDrawer}>
                 <ShoppingBag className="cursor-pointer" />
               </Badge>
             </Flex>

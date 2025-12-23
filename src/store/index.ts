@@ -11,9 +11,11 @@ import { categoryReducer } from '~/features/category/stores/categorySlice';
 import { productReducer } from '~/features/products/store/productSlice';
 import { userReducer } from '~/features/user/stores/userSlice';
 import { brandReducer } from '~/features/brand/store/brandReducer';
+import { cartReducer } from '~/features/cart/stores/cartSlice';
 
 const rootReducer = combineReducers({
   user: userReducer,
+  cart: cartReducer,
   brand: brandReducer,
   product: productReducer,
   category: categoryReducer,

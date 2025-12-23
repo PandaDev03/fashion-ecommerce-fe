@@ -6,6 +6,7 @@ import { memo } from 'react';
 interface QuantitySelectorProps {
   quantity: number;
   className?: string;
+  size?: 'small' | 'middle';
   onDecrease: () => void;
   onIncrease: () => void;
 }
@@ -13,6 +14,7 @@ interface QuantitySelectorProps {
 const QuantitySelector = ({
   quantity,
   className,
+  size = 'middle',
   onDecrease,
   onIncrease,
 }: QuantitySelectorProps) => {

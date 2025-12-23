@@ -106,7 +106,6 @@ export interface IProduct {
   status: string;
   variants: IVariant[];
   options: Option[];
-  // images: string[];
   images: {
     id: string;
     url: string;
