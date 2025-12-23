@@ -7,7 +7,7 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Flex, Space, Tooltip } from 'antd';
+import { Flex, Space, Tag, Tooltip } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { ColumnType, TableProps } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -20,6 +20,7 @@ import { getProducts } from '~/features/products/store/productThunks';
 import {
   IDeleteManyProduct,
   IProduct,
+  IProductParams,
 } from '~/features/products/types/product';
 import Button from '~/shared/components/Button/Button';
 import Form from '~/shared/components/Form/Form';
@@ -33,36 +34,51 @@ import { useToast } from '~/shared/contexts/NotificationContext';
 import { useTitle } from '~/shared/contexts/TitleContext';
 import useDebounceCallback from '~/shared/hooks/useDebounce';
 import usePagination from '~/shared/hooks/usePagination';
+import useQueryParams from '~/shared/hooks/useQueryParams';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { PATH } from '~/shared/utils/path';
 import ProductFilter from './ProductFilter';
 
+export interface IFilterForm {
+  search?: string;
+  status?: string;
+  brandId?: string;
+  categoryId?: string;
+  createdDate?: string[];
+}
+
+interface ISearchForm {
+  search: string;
+}
+
 const ProductManagement = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const queryParams = useQueryParams();
 
   const toast = useToast();
 
   const { setTitle } = useTitle();
   const { setBreadcrumb } = useBreadcrumb();
 
-  const [searchForm] = useForm();
-  const [filterForm] = useForm();
+  const [searchForm] = useForm<ISearchForm>();
+  const [filterForm] = useForm<IFilterForm>();
 
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
-  const [filterParams, setFilterParams] = useState();
+  const [filterParams, setFilterParams] = useState<IProductParams>();
   const [selectedMultipleProduct, setSelectedMultipleProduct] = useState<
     IProduct[]
   >([]);
 
   const product = useAppSelector((state) => state.product);
 
-  const { pageInfo, handlePageChange, refetch } = usePagination({
-    setFilterParams,
-    extraParams: filterParams,
-    fetchFn: (params) => dispatch(getProducts(params)).unwrap(),
-  });
+  const { pageInfo, handlePageChange, refetch, resetPaginationAndUrl } =
+    usePagination({
+      setFilterParams,
+      extraParams: filterParams,
+      fetchFn: (params) => dispatch(getProducts(params)).unwrap(),
+    });
 
   const { mutate: deleteProduct, isPending: isDeleteProductPending } =
     useMutation({
@@ -139,25 +155,36 @@ const ProductManagement = () => {
     {
       key: '7',
       width: 150,
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      render: (status) => (
+        <Tag color={status === 'active' ? 'green' : 'red'}>
+          {status === 'active' ? 'Hoạt động' : 'Tạm ngừng'}
+        </Tag>
+      ),
+    },
+    {
+      key: '8',
+      width: 150,
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       render: (value) => dayjs(value).format('DD/MM/YYYY HH:mm:ss'),
     },
     {
-      key: '8',
+      key: '9',
       width: 150,
       title: 'Người tạo',
       dataIndex: ['creator', 'name'],
     },
     {
-      key: '9',
+      key: '10',
       width: 150,
       title: 'Ngày chỉnh sửa',
       dataIndex: 'updatedAt',
       render: (value) => dayjs(value).format('DD/MM/YYYY HH:mm:ss'),
     },
     {
-      key: '10',
+      key: '11',
       width: 150,
       title: 'Người chỉnh sửa',
       dataIndex: ['updater', 'name'],
@@ -253,6 +280,36 @@ const ProductManagement = () => {
   };
 
   useEffect(() => {
+    const queryValues = queryParams.searchParams;
+
+    const createdFrom =
+      typeof queryValues?.createdFrom === 'string'
+        ? dayjs(queryValues?.createdFrom)
+        : undefined;
+    const createdTo =
+      typeof queryValues?.createdTo === 'string'
+        ? dayjs(queryValues?.createdTo)
+        : undefined;
+
+    const brandId = Array.isArray(queryValues?.brandId)
+      ? queryValues?.brandId[0]
+      : queryValues?.brandId ?? '';
+    const categoryId = Array.isArray(queryValues?.categoryId)
+      ? queryValues?.categoryId[0]
+      : queryValues?.categoryId ?? '';
+    const status = Array.isArray(queryValues?.status)
+      ? queryValues?.status[0]
+      : queryValues?.status ?? '';
+
+    searchForm.setFieldValue('search', queryValues?.search);
+    filterForm.setFieldValue('createdDate', [createdFrom, createdTo]);
+
+    filterForm.setFieldsValue({
+      ...(status && { status: status }),
+      ...(brandId && { brandId: brandId }),
+      ...(categoryId && { categoryId: categoryId }),
+    });
+
     setTitle('Sản phẩm');
     setBreadcrumb([
       {
@@ -267,16 +324,44 @@ const ProductManagement = () => {
     ]);
   }, []);
 
-  const handleSearch = (values: any) => {
-    console.log(values);
-  };
+  const handleSearch = (values: ISearchForm) => {
+    const { search } = values;
 
+    resetPaginationAndUrl();
+    setFilterParams({ ...filterParams, search });
+  };
   const handleCancelFilter = () => {
+    filterForm.resetFields();
+
+    resetPaginationAndUrl();
+
     setIsFilterVisible(false);
+    setFilterParams({
+      brandId: undefined,
+      categoryId: undefined,
+      status: undefined,
+      createdFrom: undefined,
+      createdTo: undefined,
+    });
   };
 
-  const handleFinishFilter = (values: any) => {
-    console.log(values);
+  const handleFinishFilter = (values: IFilterForm) => {
+    const { createdDate, ...rest } = values;
+
+    const params: IProductParams = {
+      createdFrom: createdDate?.[0]
+        ? dayjs(createdDate?.[0]).startOf('day').toISOString()
+        : undefined,
+      createdTo: createdDate?.[1]
+        ? dayjs(createdDate?.[1]).endOf('day').toISOString()
+        : undefined,
+      ...rest,
+    };
+
+    setIsFilterVisible(false);
+
+    resetPaginationAndUrl();
+    setFilterParams(params);
   };
 
   const handleDeleteProduct = () => {
@@ -362,7 +447,6 @@ const ProductManagement = () => {
         <ProductFilter
           form={filterForm}
           open={isFilterVisible}
-          data={[]}
           setIsOpen={setIsFilterVisible}
           onCancel={handleCancelFilter}
           onFinish={handleFinishFilter}

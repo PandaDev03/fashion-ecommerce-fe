@@ -2,8 +2,11 @@ import { IUser } from '~/shared/types/user';
 
 export interface IProductParams extends IPaginationParams {
   search?: string;
+  status?: string;
   brandId?: string;
   categoryId?: string;
+  createdFrom?: string;
+  createdTo?: string;
 }
 
 export interface IGetProductOptionParams {
