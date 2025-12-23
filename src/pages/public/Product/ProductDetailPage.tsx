@@ -28,20 +28,6 @@ import { convertToVND } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import { Product } from '../Home/HomePage';
 
-interface IColorImage {
-  sizeId?: string;
-  colorId: string;
-  colorName: string;
-  variant?: IVariant;
-  image?: IVariant['imageMappings'][number];
-}
-
-interface ISize {
-  id: string;
-  value: string;
-  position: number;
-}
-
 const newArrivals: Product[] = [
   {
     key: '1',
@@ -163,46 +149,23 @@ const collapseItems: CollapseProps['items'] = [
   },
 ];
 
-const breadCrumbItems: BreadcrumbProps['items'] = [
-  {
-    key: 'home',
-    title: 'Trang chủ',
-    href: '/',
-  },
-  {
-    key: 'products',
-    title: 'Sản phẩm',
-    href: PATH.PRODUCTS_WITHOUT_SLUG,
-  },
-  {
-    key: 'product-details',
-    title: 'Túi Nike',
-  },
-];
-
 const ProductDetailPage = () => {
   const { slug } = useParams<{ slug: string }>();
-
-  const flagRef = useRef(false);
-  const selectedRef = useRef(false);
   const carouselRef = useRef<CarouselRef>(null);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [quantity, setQuantity] = useState(MIN_QUANTITY);
-
-  const [sizes, setSizes] = useState<ISize[]>();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [colorImages, setColorImages] = useState<IColorImage[]>();
+  const [quantity, setQuantity] = useState(MIN_QUANTITY);
 
   const [selectedColorId, setSelectedColorId] = useState('');
   const [selectedSizeId, setSelectedSizeId] = useState('');
-
   const [selectedVariant, setSelectedVariant] = useState<IVariant>();
   const [selectedProduct, setSelectedProduct] = useState<Product>(
     {} as Product
   );
 
   const [productDetails, setProductDetails] = useState<IProduct>();
+  const [productOptions, setProductOptions] = useState<IProduct['options']>([]);
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({
@@ -210,110 +173,91 @@ const ProductDetailPage = () => {
       onSuccess: (response) => setProductDetails(response?.data),
     });
 
+  const breadCrumbItems: BreadcrumbProps['items'] = [
+    {
+      key: 'home',
+      title: 'Trang chủ',
+      href: PATH.HOME,
+    },
+    {
+      key: 'products',
+      title: 'Sản phẩm',
+      href: PATH.PRODUCTS_WITHOUT_SLUG,
+    },
+    {
+      key: 'product-details',
+      title: productDetails?.name,
+    },
+  ];
+
+  const getOptionValueImage = (optionValueId: string) => {
+    const variant = productDetails?.variants?.find((v) =>
+      v.optionValues?.some((ov) => ov.optionValueId === optionValueId)
+    );
+
+    return variant?.imageMappings?.[0]?.image?.url;
+  };
+
+  const isColorOption = (optionName: string) => {
+    const colorKeywords = ['màu', 'color', 'colour'];
+
+    return colorKeywords.some((keyword) =>
+      optionName.toLowerCase().includes(keyword)
+    );
+  };
+
   useEffect(() => {
     if (slug) getProductBySlug(slug);
   }, [slug]);
 
   useEffect(() => {
-    if (!productDetails?.variantColorData) return;
+    if (!productDetails) return;
 
-    const colorImages: IColorImage[] = productDetails?.variantColorData?.map(
-      (colorGroup) => {
-        const variant = productDetails?.variants?.find((variant) =>
-          variant?.optionValues?.some(
-            (optVal) => optVal?.optionValueId === colorGroup?.id
-          )
-        );
-
-        const sizeId = variant?.optionValues?.find(
-          (optVal) => optVal?.optionValueId !== colorGroup?.id
-        )?.optionValueId;
-
-        return {
-          sizeId,
-          variant,
-          colorId: colorGroup?.id,
-          colorName: colorGroup?.name,
-          image: variant?.imageMappings?.[0],
-        };
-      }
+    const initSelectedColorOption = productDetails?.options?.find((option) =>
+      isColorOption(option?.name)
     );
+    const initiSelectedColorId = initSelectedColorOption?.values?.[0]?.id || '';
 
-    const firstColor = colorImages?.[0];
+    const initSelectedSizeOption = productDetails?.options?.find(
+      (option) => option?.id !== initSelectedColorOption?.id
+    );
+    const initiSelectedSizeId = initSelectedSizeOption?.values?.[0]?.id || '';
 
-    setColorImages(colorImages || []);
-    setSelectedColorId(firstColor?.colorId);
-    setSelectedVariant(firstColor?.variant);
-    firstColor?.sizeId && setSelectedSizeId(firstColor?.sizeId);
+    setSelectedColorId(initiSelectedColorId);
+    setSelectedSizeId(initiSelectedSizeId);
+    setProductOptions(productDetails?.options);
   }, [productDetails]);
 
   useEffect(() => {
-    if (!selectedRef.current) {
-      if (selectedColorId && selectedSizeId) selectedRef.current = true;
-      return;
-    }
+    if (!productDetails) return;
 
     if (selectedColorId && selectedSizeId) {
-      const variant = productDetails?.variants?.find((variant) => {
-        const hasColor = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValue?.id === selectedColorId
+      const selectedVariant = productDetails?.variants?.find((variant) => {
+        const isMatchColorId = variant?.optionValues?.some(
+          (optVal) => optVal?.optionValueId === selectedColorId
         );
-        const hasSize = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValue?.id === selectedSizeId
+        const isMatchSizeId = variant?.optionValues?.some(
+          (optVal) => optVal?.optionValueId === selectedSizeId
         );
 
-        return hasColor && hasSize;
+        return isMatchColorId && isMatchSizeId;
       });
 
-      setSelectedVariant(variant);
+      setSelectedVariant(selectedVariant);
+    } else if (selectedSizeId) {
+      const selectedVariant = productDetails?.variants?.find((variant) =>
+        variant?.optionValues?.some(
+          (optVal) => optVal?.optionValueId === selectedSizeId
+        )
+      );
+
+      setSelectedVariant(selectedVariant);
     } else setSelectedVariant(undefined);
-  }, [selectedRef, selectedColorId, selectedSizeId, productDetails]);
-
-  useEffect(() => {
-    if (selectedColorId) {
-      if (flagRef.current) return;
-
-      handleSetSizes(selectedColorId);
-      flagRef.current = true;
-    }
-  }, [selectedColorId, flagRef]);
+  }, [selectedColorId, selectedSizeId, productDetails]);
 
   const goToSlide = (index: number) => {
     carouselRef.current?.goTo(index);
     setCurrentSlide(index);
-  };
-
-  const handleSetSizes = (colorId: string) => {
-    const variantWithColor = productDetails?.variants?.filter((variant) =>
-      variant?.optionValues?.some(
-        (optVal) => optVal?.optionValue?.id === colorId
-      )
-    );
-
-    const sizes: ISize[] = (
-      variantWithColor?.map((variant) => {
-        const sizeOption = variant?.optionValues?.find(
-          (optVal) => optVal?.optionValue?.id !== colorId
-        );
-
-        return {
-          id: sizeOption?.optionValue?.id ?? '',
-          value: sizeOption?.optionValue?.value ?? '',
-          position: sizeOption?.optionValue?.position ?? 0,
-        };
-      }) || []
-    ).filter((size) => size.id !== '');
-
-    setSizes(sizes?.sort((a, b) => a.position - b.position));
-  };
-
-  const handleColorClick = (colorId: string) => {
-    handleSetSizes(colorId);
-    setSelectedColorId(colorId);
-  };
-
-  const handleSizeClick = (sizeId: string) => {
-    setSelectedSizeId(sizeId);
   };
 
   const handleDecrease = () => {
@@ -334,72 +278,80 @@ const ProductDetailPage = () => {
       loading={isGetProductBySlugPending}
       className="bg-white! px-4! md:px-8! 2xl:px-16!"
     >
-      <Content className="mx-auto max-w-7xl">
+      <Content className="mx-auto max-w-full lg:max-w-7xl max-lg:px-0!">
         <Breadcrumb items={breadCrumbItems} className="pt-8!" />
-        <div className="lg:grid grid-cols-9 items-start gap-x-10 xl:gap-x-14 pt-7 pb-10 lg:pb-14 2xl:pb-20">
-          <Space direction="vertical" className="col-span-4">
-            <div className="flex gap-4">
-              <div className="flex flex-col gap-3 shrink-0">
-                {selectedVariant?.imageMappings?.map(({ image }, index) => (
-                  <div
-                    key={image?.id}
-                    onClick={() => goToSlide(index)}
-                    className={classNames(
-                      'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden',
-                      currentSlide === index
-                        ? 'border-black'
-                        : 'border-gray-200'
-                    )}
-                  >
-                    <img
+        <div className="md:grid grid-cols-9 items-start gap-x-10 xl:gap-x-14 pt-7 pb-10 lg:pb-14 2xl:pb-20">
+          <Flex className="md:col-span-4 gap-4 max-lg:flex-col-reverse">
+            <Flex
+              className="gap-1 shrink-0 overflow-x-scroll no-scrollbar select-none lg:flex-col lg:gap-3"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
+              {selectedVariant?.imageMappings?.map(({ image }, index) => (
+                <div
+                  key={image?.id}
+                  className={classNames(
+                    'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
+                    currentSlide === index ? 'border-black' : 'border-gray-200'
+                  )}
+                  onClick={() => goToSlide(index)}
+                >
+                  <img
+                    alt="thumbnail"
+                    src={image?.url}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </Flex>
+            <div className="relative max-h-max flex-1 overflow-hidden rounded-lg select-none">
+              {selectedVariant &&
+                selectedVariant?.imageMappings?.length > 1 && (
+                  <>
+                    <button
+                      aria-label="Previous slide"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
+                      onClick={() => carouselRef.current?.prev()}
+                    >
+                      <LeftOutlined />
+                    </button>
+
+                    <button
+                      aria-label="Next slide"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
+                      onClick={() => carouselRef.current?.next()}
+                    >
+                      <RightOutlined />
+                    </button>
+                  </>
+                )}
+
+              <Carousel
+                autoplay
+                draggable
+                dots={false}
+                arrows={false}
+                ref={carouselRef}
+                autoplaySpeed={3000}
+                afterChange={(current) => setCurrentSlide(current)}
+              >
+                {selectedVariant?.imageMappings?.map(({ image }) => (
+                  <div key={image?.id} className="outline-none">
+                    <Image
+                      preview
+                      width="100%"
                       src={image?.url}
-                      alt="thumbnail"
-                      className="w-full h-full object-cover"
+                      alt="main product"
+                      className="w-full aspect-3/4 object-cover bg-gray-100"
                     />
                   </div>
                 ))}
-              </div>
-              <div className="relative flex-1 overflow-hidden rounded-lg">
-                <button
-                  aria-label="Previous slide"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
-                  onClick={() => carouselRef.current?.prev()}
-                >
-                  <LeftOutlined />
-                </button>
-
-                <button
-                  aria-label="Next slide"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
-                  onClick={() => carouselRef.current?.next()}
-                >
-                  <RightOutlined />
-                </button>
-
-                <Carousel
-                  autoplay
-                  draggable
-                  dots={false}
-                  arrows={false}
-                  ref={carouselRef}
-                  autoplaySpeed={3000}
-                  afterChange={(current) => setCurrentSlide(current)}
-                >
-                  {selectedVariant?.imageMappings?.map(({ image }) => (
-                    <div key={image?.id} className="outline-none">
-                      <Image
-                        preview
-                        width="100%"
-                        src={image?.url}
-                        alt="main product"
-                        className="w-full aspect-3/4 object-cover bg-gray-100"
-                      />
-                    </div>
-                  ))}
-                </Carousel>
-              </div>
+              </Carousel>
             </div>
-          </Space>
+          </Flex>
 
           <div className="col-span-5 pt-8 lg:pt-0">
             <h2 className="text-primary text-lg md:text-xl lg:text-2xl 2xl:text-3xl font-bold hover:text-black mb-3.5">
@@ -416,7 +368,61 @@ const ProductDetailPage = () => {
 
             <Divider />
 
-            {productDetails?.variantColorData?.length && (
+            {productOptions?.map(({ id, name, values }) => {
+              const isColorOpt = isColorOption(name);
+
+              return (
+                <div key={id} className="mb-4">
+                  <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
+                    {name}
+                  </h3>
+                  <Flex className="gap-x-3">
+                    {values?.map((val) => {
+                      const imageUrl = isColorOpt
+                        ? getOptionValueImage(val?.id)
+                        : null;
+
+                      const isSelected = isColorOpt
+                        ? selectedColorId === val?.id
+                        : selectedSizeId === val?.id;
+
+                      return (
+                        <Flex
+                          align="center"
+                          justify="center"
+                          key={val?.id}
+                          className={classNames(
+                            'border p-1! uppercase cursor-pointer overflow-hidden transition-all duration-300 ease-in-out',
+                            isColorOpt
+                              ? 'rounded-full'
+                              : 'rounded-md w-9 md:w-11 h-9 md:h-11',
+                            isSelected ? 'border-black' : 'border-[#e5e5e5]'
+                          )}
+                          onClick={() => {
+                            isColorOpt
+                              ? setSelectedColorId(val?.id)
+                              : setSelectedSizeId(val?.id);
+                          }}
+                        >
+                          {isColorOpt && imageUrl ? (
+                            <Image
+                              width={36}
+                              height={36}
+                              src={imageUrl}
+                              className="rounded-full object-cover"
+                            />
+                          ) : (
+                            <span>{val?.value}</span>
+                          )}
+                        </Flex>
+                      );
+                    })}
+                  </Flex>
+                </div>
+              );
+            })}
+
+            {/* {!!productDetails?.variantColorData?.length && (
               <div className="mb-4">
                 <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
                   Màu sắc
@@ -446,29 +452,31 @@ const ProductDetailPage = () => {
                 </Flex>
               </div>
             )}
-            <div className="mb-4">
-              <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
-                Kích cỡ
-              </h3>
-              <Flex className="gap-x-3">
-                {sizes?.map(({ id, value }) => (
-                  <Flex
-                    key={id}
-                    align="center"
-                    justify="center"
-                    className={classNames(
-                      'w-9 md:w-11 h-9 md:h-11 border rounded-md p-1! uppercase cursor-pointer transition-all duration-300 ease-in-out',
-                      selectedSizeId === id
-                        ? 'border-black'
-                        : 'border-[#e5e5e5]'
-                    )}
-                    onClick={() => handleSizeClick(id)}
-                  >
-                    {value}
-                  </Flex>
-                ))}
-              </Flex>
-            </div>
+            {!!sizes?.length && (
+              <div className="mb-4">
+                <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
+                  Kích cỡ
+                </h3>
+                <Flex className="gap-x-3">
+                  {sizes?.map(({ id, value }) => (
+                    <Flex
+                      key={id}
+                      align="center"
+                      justify="center"
+                      className={classNames(
+                        'w-9 md:w-11 h-9 md:h-11 border rounded-md p-1! uppercase cursor-pointer transition-all duration-300 ease-in-out',
+                        selectedSizeId === id
+                          ? 'border-black'
+                          : 'border-[#e5e5e5]'
+                      )}
+                      onClick={() => handleSizeClick(id)}
+                    >
+                      {value}
+                    </Flex>
+                  ))}
+                </Flex>
+              </div>
+            )} */}
 
             <div className="pt-2 md:pt-4">
               <Flex align="center" className="w-full mb-4! gap-x-3 sm:gap-x-4">

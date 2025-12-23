@@ -956,36 +956,6 @@ const ProductDetailsManagement = () => {
                     ))}
                   </div>
                 )}
-                {/* {!!product?.variantColorData?.length && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {product?.variantColorData?.map(({ id, name, count }) => (
-                      <Flex
-                        key={id}
-                        className="group relative border border-gray-300 rounded-lg cursor-pointer overflow-hidden"
-                      >
-                        <Flex
-                          align="center"
-                          justify="center"
-                          className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#ef4444] text-white border-none cursor-pointer hover:bg-[#dc2626] opacity-0 group-has-hover:opacity-100 transition-opacity duration-300 ease-in-out"
-                          onClick={() => handleDeleteOptionValue(id)}
-                        >
-                          <CloseOutlined className="text-[8px]" />
-                        </Flex>
-                        <Flex
-                          vertical
-                          className="w-full py-4! px-2! text-center group-has-hover:[&>span]:text-white! group-has-hover:bg-primary transition-all duration-300 ease-in-out"
-                        >
-                          <span className="font-semibold text-primary">
-                            {name}
-                          </span>
-                          <span className="font-normal text-body">
-                            {count} biến thể
-                          </span>
-                        </Flex>
-                      </Flex>
-                    ))}
-                  </div>
-                )} */}
 
                 {isProductEdit ? (
                   <Dragger
