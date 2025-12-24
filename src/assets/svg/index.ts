@@ -30,6 +30,7 @@ export { ReactComponent as PlaceholderSmall } from './placeholder-small.svg';
 export { ReactComponent as Search } from './search.svg';
 export { ReactComponent as Share } from './share.svg';
 export { ReactComponent as ShoppingBag } from './shopping-bag.svg';
+export { ReactComponent as SuccessFill } from './success-fill.svg';
 export { ReactComponent as Trash } from './trash.svg';
 export { ReactComponent as Twitter } from './twitter.svg';
 export { ReactComponent as UserCircleOutlined } from './user-circle-outlined.svg';

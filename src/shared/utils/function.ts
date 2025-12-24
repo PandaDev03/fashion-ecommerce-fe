@@ -1,5 +1,7 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import { FileType } from '../components/Upload/Dragger';
-import { DEFAULT_URL_FIELDS } from './constants';
+import { DEFAULT_URL_FIELDS, GUEST_USER_KEY } from './constants';
 
 export const generateSlug = (name: string) => {
   if (!name) return undefined;
@@ -86,4 +88,23 @@ export const convertToVND = (price?: number | string) => {
     style: 'currency',
     currency: 'VND',
   });
+};
+
+export const getOrCreateGuestUserId = (): string => {
+  let userId = localStorage.getItem(GUEST_USER_KEY);
+
+  if (!userId) {
+    userId = uuidv4();
+    localStorage.setItem(GUEST_USER_KEY, userId);
+  }
+
+  return userId;
+};
+
+export const getGuestUserId = (): string | null => {
+  return localStorage.getItem(GUEST_USER_KEY);
+};
+
+export const clearGuestUserId = (): void => {
+  localStorage.removeItem(GUEST_USER_KEY);
 };

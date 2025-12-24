@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Divider, Dropdown, Flex, MenuProps, Space } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   FALLBACK_IMG,
@@ -23,7 +24,6 @@ import {
 } from '~/features/cart/stores/cartSlice';
 import { getCartItems } from '~/features/cart/stores/cartThunks';
 import { resetUser } from '~/features/user/stores/userSlice';
-import { getMe } from '~/features/user/stores/userThunks';
 import Button from '~/shared/components/Button/Button';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import Form from '~/shared/components/Form/Form';
@@ -38,6 +38,7 @@ import { useToast } from '~/shared/contexts/NotificationContext';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { convertToVND } from '~/shared/utils/function';
+import { PATH } from '~/shared/utils/path';
 import BottomNavBar from './components/BottomNavBar/BottomNavBar';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
@@ -462,9 +463,11 @@ const siderMenu: MenuProps['items'] = [
 ];
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
   const toast = useToast();
   const { isXl } = useBreakpoint();
-  const dispatch = useAppDispatch();
 
   const [subscriptionForm] = useForm();
   const [signUpForm] = useForm<ISignUp>();
@@ -529,7 +532,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const { mutate: signInMutate, isPending: isSignInPending } = useMutation({
     mutationFn: (values: ISignIn) => AuthApi.signIn(values),
     onSuccess: (response) => {
-      dispatch(getMe());
       toast.success(response?.message);
 
       handleCancelAuthModal();
@@ -542,7 +544,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       mutationFn: (values: ISignInWithGoogle) =>
         AuthApi.signInWithGoogle(values),
       onSuccess: (response) => {
-        dispatch(getMe());
         toast.success(response?.message);
 
         handleCancelAuthModal();
@@ -590,6 +591,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
   const handleDeleteCartItem = (variantId: string) => {
     dispatch(deleteCartItem({ variantId }));
+  };
+
+  const handleCheckout = () => {
+    setIsCartDrawerVisible(false);
+    navigate(PATH.CHECKOUT);
   };
 
   return (
@@ -721,6 +727,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 {!isEmptyCart && <p>{convertToVND(totalPrice)}</p>}
               </Flex>
             }
+            onClick={handleCheckout}
           />
         }
         onClose={() => setIsCartDrawerVisible(false)}
@@ -743,8 +750,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
               <>
                 <div className="grid grid-cols-9 gap-x-3">
                   <img
-                    src={item?.images?.[0]?.url}
                     className="col-span-3 rounded-lg object-cover"
+                    src={item?.variant?.imageMappings?.[0]?.image?.url}
                     onError={(element) => {
                       element.currentTarget.src = FALLBACK_IMG;
                       element.currentTarget.srcset = FALLBACK_IMG;

@@ -15,6 +15,7 @@ const AppRouter = () => {
       <Routes>
         {routes.map((route, index) => {
           const Layout = route.layout;
+          const SubLayout = route.subLayout;
           const Component = route.element;
 
           let fallBackUI;
@@ -23,9 +24,17 @@ const AppRouter = () => {
 
           let element = (
             <Layout>
-              <Suspense fallback={fallBackUI}>
-                <Component />
-              </Suspense>
+              {SubLayout ? (
+                <SubLayout>
+                  <Suspense fallback={fallBackUI}>
+                    <Component />
+                  </Suspense>
+                </SubLayout>
+              ) : (
+                <Suspense fallback={fallBackUI}>
+                  <Component />
+                </Suspense>
+              )}
             </Layout>
           );
 

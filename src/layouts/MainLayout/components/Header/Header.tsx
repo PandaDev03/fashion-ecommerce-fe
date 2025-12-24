@@ -542,6 +542,7 @@ const Header = ({
       key: '2',
       icon: <UserOutlined />,
       label: <Link to={'/'}>Trang tài khoản</Link>,
+      onClick: () => navigate(PATH.ACCOUNT),
     },
     {
       key: '3',
@@ -553,7 +554,7 @@ const Header = ({
       onClick: () => onSignOut(),
     },
   ];
-  
+
   return (
     <div className="sticky top-0 left-0 shadow-md h-16 sm:h-20 lg:h-24 px-6 bg-white max-w-[1920px] z-100">
       <Flex

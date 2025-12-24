@@ -2,6 +2,7 @@ import React from 'react';
 
 import { PATH } from '~/shared/utils/path';
 
+import AccountLayout from '~/layouts/AccountLayout/AccountLayout';
 import AdminLayout from '~/layouts/AdminLayout/AdminLayout';
 import MainLayout from '~/layouts/MainLayout/MainLayout';
 
@@ -10,6 +11,7 @@ export interface AppRoute {
   isProtected?: boolean;
   requiredRoles?: string[];
   layout: React.ComponentType<any>;
+  subLayout?: React.ComponentType<any>;
   element: React.LazyExoticComponent<React.ComponentType<any>>;
 }
 
@@ -32,12 +34,23 @@ const routes: AppRoute[] = [
       () => import('~/pages/public/Product/ProductDetailPage')
     ),
   },
+  {
+    path: PATH.CHECKOUT,
+    layout: MainLayout,
+    element: React.lazy(() => import('~/pages/public/Checkout/CheckoutPage')),
+  },
+  {
+    path: PATH.ORDER,
+    layout: MainLayout,
+    element: React.lazy(() => import('~/pages/public/Order/OrderPage')),
+  },
 
   // PROTECTED ROUTES
   {
     isProtected: true,
     path: PATH.ACCOUNT,
     layout: MainLayout,
+    subLayout: AccountLayout,
     element: React.lazy(() => import('~/pages/user/Account/AccountPage')),
   },
 

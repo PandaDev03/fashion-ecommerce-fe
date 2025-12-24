@@ -84,6 +84,10 @@ const cartSlice = createSlice({
       state.items = newCartItems;
       state.pageInfo.totalItems = state.items.length;
     },
+    clearCart: (state) => {
+      state = initialState;
+      localStorage.removeItem(CART_STORAGE_KEY);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -103,4 +107,5 @@ const cartSlice = createSlice({
 });
 
 export const cartReducer = cartSlice.reducer;
-export const { addToCart, updateQuantity, deleteCartItem } = cartSlice.actions;
+export const { addToCart, updateQuantity, deleteCartItem, clearCart } =
+  cartSlice.actions;
