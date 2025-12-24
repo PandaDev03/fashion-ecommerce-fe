@@ -542,7 +542,7 @@ const Header = ({
       key: '2',
       icon: <UserOutlined />,
       label: <Link to={'/'}>Trang tài khoản</Link>,
-      onClick: () => navigate(PATH.ACCOUNT),
+      onClick: () => navigate(PATH.ACCOUNT_DETAILS),
     },
     {
       key: '3',

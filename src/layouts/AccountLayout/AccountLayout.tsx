@@ -56,8 +56,9 @@ const AccountLayout = ({ children }: { children: ReactNode }) => {
         <div className="py-16 lg:py-20 px-0 xl:max-w-7xl mx-auto flex md:flex-row w-full">
           <div className="flex flex-col md:flex-row w-full">
             <div className="flex flex-col pb-2 md:w-2/6 2xl:w-4/12 ltr:md:pr-8 rtl:md:pl-8 ltr:lg:pr-12 rtl:lg:pl-12 ltr:xl:pr-16 rtl:xl:pl-16 ltr:2xl:pr-20 rtl:2xl:pl-20 md:pb-0">
-              {sidebarItems.map((item) => (
+              {sidebarItems.map((item, index) => (
                 <Flex
+                  key={index}
                   align="center"
                   className={classNames(
                     'cursor-pointer text-sm lg:text-base py-3.5! px-4! lg:px-5! rounded mb-2! transition-all duration-300 ease-in-out',

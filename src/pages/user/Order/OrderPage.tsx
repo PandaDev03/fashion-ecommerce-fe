@@ -1,6 +1,6 @@
 import { EyeOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Flex, Tag } from 'antd';
+import { Flex, Space, Tag } from 'antd';
 import { ColumnType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
@@ -11,11 +11,13 @@ import { IOrder } from '~/features/order/types/order';
 import Button from '~/shared/components/Button/Button';
 import { Layout } from '~/shared/components/Layout/Layout';
 import Table from '~/shared/components/Table/Table';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { convertToVND } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 
 const AccountOrderPage = () => {
   const navigate = useNavigate();
+  const { isLg } = useBreakpoint();
 
   const [orders, setOrders] = useState<IOrder[]>([]);
 
@@ -89,10 +91,61 @@ const AccountOrderPage = () => {
 
   return (
     <Layout loading={isPending} className="bg-white!">
-      <h2 className="mb-6 text-lg font-bold md:text-xl xl:text-2xl text-primary xl:mb-8">
+      <h2 className="mb-6 text-lg font-bold md:text-xl xl:text-2xl text-primary xl:mb-8 capitalize">
         Đơn đặt hàng
       </h2>
-      <Table<IOrder> columns={columns} dataSource={orders} />
+      {isLg ? (
+        <Table<IOrder> columns={columns} dataSource={orders} />
+      ) : (
+        <Space size="middle" direction="vertical">
+          {orders?.map((order) => (
+            <Flex
+              vertical
+              className="px-4! pt-5! pb-6! gap-y-7 text-sm font-semibold border border-gray-300 rounded-md text-primary"
+            >
+              <>
+                <Flex align="center" justify="space-between">
+                  <p className="uppercase">Mã đơn hàng</p>
+                  <p className="font-normal">{order?.orderNumber || '-'}</p>
+                </Flex>
+                <Flex align="center" justify="space-between">
+                  <p className="uppercase">Ngày đặt hàng</p>
+                  <p className="font-normal">
+                    {order?.createdAt
+                      ? dayjs(order?.createdAt).format('DD/MM/YYYY HH:mm:ss')
+                      : '-'}
+                  </p>
+                </Flex>
+                <Flex align="center" justify="space-between">
+                  <p className="uppercase">Trạng thái</p>
+                  <p className="font-normal">
+                    {order?.status
+                      ? order?.status === 'pending'
+                        ? 'Đang xử lý'
+                        : 'Hoàn thành'
+                      : '-'}
+                  </p>
+                </Flex>
+                <Flex align="center" justify="space-between">
+                  <p className="uppercase">Tổng</p>
+                  <p className="font-normal">{convertToVND(order?.total)}</p>
+                </Flex>
+                <Flex align="center" justify="space-between">
+                  <p className="uppercase">Thao tác</p>
+                  <Button
+                    title="Xem chi tiết"
+                    onClick={() =>
+                      navigate(
+                        PATH.ORDER.replace(':orderNumber', order?.orderNumber)
+                      )
+                    }
+                  />
+                </Flex>
+              </>
+            </Flex>
+          ))}
+        </Space>
+      )}
     </Layout>
   );
 };

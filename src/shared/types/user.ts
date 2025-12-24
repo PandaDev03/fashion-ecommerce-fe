@@ -12,6 +12,7 @@ export interface IUser {
   phone: string;
   avatar: string;
   role: string;
+  accountType: 'system' | 'google';
   permissions: string[];
 }
 
