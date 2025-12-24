@@ -28,6 +28,7 @@ export { ReactComponent as PlaceholderLarge } from './placeholder-large.svg';
 export { ReactComponent as PlaceholderMedium } from './placeholder-medium.svg';
 export { ReactComponent as PlaceholderSmall } from './placeholder-small.svg';
 export { ReactComponent as Search } from './search.svg';
+export { ReactComponent as SettingOutlined } from './setting.svg';
 export { ReactComponent as Share } from './share.svg';
 export { ReactComponent as ShoppingBag } from './shopping-bag.svg';
 export { ReactComponent as SuccessFill } from './success-fill.svg';

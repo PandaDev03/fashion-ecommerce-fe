@@ -8,6 +8,9 @@ export const orderApi = {
   migrateOrder: async (params: IMigrateOrder) => {
     return await axiosApi.post('/orders/migrate', params);
   },
+  getOrderByUserId: async () => {
+    return await axiosApi.get('/orders/user');
+  },
   getOrderByNumber: async (orderNumber: string) => {
     return await axiosApi.get(`/orders/number/${orderNumber}`);
   },

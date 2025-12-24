@@ -495,7 +495,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     {
       key: '2',
       icon: <UserOutlined />,
-      label: <Link to={'/'}>Trang tài khoản</Link>,
+      label: <Link to={PATH.ACCOUNT_DETAILS}>Trang tài khoản</Link>,
     },
     {
       key: '3',

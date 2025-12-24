@@ -48,10 +48,28 @@ const routes: AppRoute[] = [
   // PROTECTED ROUTES
   {
     isProtected: true,
-    path: PATH.ACCOUNT,
+    path: PATH.ACCOUNT_ORDERS,
     layout: MainLayout,
     subLayout: AccountLayout,
-    element: React.lazy(() => import('~/pages/user/Account/AccountPage')),
+    element: React.lazy(() => import('~/pages/user/Order/OrderPage')),
+  },
+  {
+    isProtected: true,
+    path: PATH.ACCOUNT_DETAILS,
+    layout: MainLayout,
+    subLayout: AccountLayout,
+    element: React.lazy(
+      () => import('~/pages/user/Account/AccountDetailsPage')
+    ),
+  },
+  {
+    isProtected: true,
+    path: PATH.ACCOUNT_CHANGE_PASSWORD,
+    layout: MainLayout,
+    subLayout: AccountLayout,
+    element: React.lazy(
+      () => import('~/pages/user/Account/AccountChangePasswordPage')
+    ),
   },
 
   // RBAC ROUTE

@@ -17,5 +17,6 @@ export interface IUser {
 
 export interface UserState {
   loading?: boolean;
+  isInitialized?: boolean;
   currentUser: IUser;
 }

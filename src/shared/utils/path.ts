@@ -2,7 +2,9 @@ export const PATH = {
   HOME: '/',
   NOT_FOUND: '/*',
 
-  ACCOUNT: '/my-account',
+  ACCOUNT_DETAILS: '/my-account/account-details',
+  ACCOUNT_CHANGE_PASSWORD: '/my-account/change-password',
+  ACCOUNT_ORDERS: '/my-account/orders',
 
   PRODUCTS: '/products/:slug?',
   PRODUCTS_WITHOUT_SLUG: '/products',

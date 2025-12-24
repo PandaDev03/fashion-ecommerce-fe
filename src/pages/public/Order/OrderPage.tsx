@@ -104,7 +104,7 @@ const OrderPage = () => {
               <span className="uppercase text-[11px] block text-body font-normal leading-5">
                 Mã đơn hàng:
               </span>
-              <span>{order?.orderNumber}</span>
+              <span>{order?.orderNumber || '-'}</span>
             </div>
             <div className="font-semibold text-primary text-base lg:text-lg border-b lg:border-b-0 lg:border-r border-dashed border-gray-300 px-4 lg:px-6 xl:px-8 py-4 md:py-5 lg:py-6 last:border-0">
               <span className="uppercase text-[11px] block text-body font-normal leading-5">
@@ -116,7 +116,7 @@ const OrderPage = () => {
               <span className="uppercase text-[11px] block text-body font-normal leading-5">
                 Email:
               </span>
-              <span>{order?.customerEmail}</span>
+              <span>{order?.customerEmail || '-'}</span>
             </div>
             <div className="font-semibold text-primary text-base lg:text-lg border-b lg:border-b-0 lg:border-r border-dashed border-gray-300 px-4 lg:px-6 xl:px-8 py-4 md:py-5 lg:py-6 last:border-0">
               <span className="uppercase text-[11px] block text-body font-normal leading-5">
