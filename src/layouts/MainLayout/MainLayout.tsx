@@ -24,6 +24,7 @@ import {
 } from '~/features/cart/stores/cartSlice';
 import { getCartItems } from '~/features/cart/stores/cartThunks';
 import { resetUser } from '~/features/user/stores/userSlice';
+import { getMe } from '~/features/user/stores/userThunks';
 import Button from '~/shared/components/Button/Button';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import Form from '~/shared/components/Form/Form';
@@ -534,6 +535,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     onSuccess: (response) => {
       toast.success(response?.message);
 
+      dispatch(getMe());
       handleCancelAuthModal();
       setIsMenuDrawerVisible(false);
     },
@@ -546,6 +548,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       onSuccess: (response) => {
         toast.success(response?.message);
 
+        dispatch(getMe());
         handleCancelAuthModal();
         setIsMenuDrawerVisible(false);
       },

@@ -502,8 +502,8 @@ const Header = ({
   onOpenMenuDrawer,
 }: HeaderProps) => {
   const navigate = useNavigate();
-  const { currentUser } = useAppSelector((state) => state.user);
 
+  const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems } = useAppSelector((state) => state.cart);
 
   const totalQuantity = useMemo(

@@ -124,8 +124,6 @@ const CheckoutPage = () => {
       items: orderItems,
       paymentMethod: 'cod',
     };
-
-    console.log(params);
     createOrder(params);
   };
 

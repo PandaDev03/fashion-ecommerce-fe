@@ -11,7 +11,7 @@ import {
 } from 'antd';
 import { CarouselRef } from 'antd/es/carousel';
 import classNames from 'classnames';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { addToCart } from '~/features/cart/stores/cartSlice';
@@ -153,11 +153,14 @@ const collapseItems: CollapseProps['items'] = [
   },
 ];
 
+const TOAST_COOLDOWN = 2000;
+
 const ProductDetailPage = () => {
   const toast = useToast();
   const dispath = useAppDispatch();
   const { slug } = useParams<{ slug: string }>();
 
+  const lastToastTime = useRef(0);
   const carouselRef = useRef<CarouselRef>(null);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -197,6 +200,14 @@ const ProductDetailPage = () => {
     },
   ];
 
+  const isDisabledAddToCart = useMemo(
+    () =>
+      selectedVariant?.stock === 0 ||
+      !selectedVariant ||
+      quantity > selectedVariant?.stock,
+    [quantity, selectedVariant]
+  );
+
   const getOptionValueImage = (optionValueId: string) => {
     const variant = productDetails?.variants?.find((v) =>
       v.optionValues?.some((ov) => ov.optionValueId === optionValueId)
@@ -217,22 +228,65 @@ const ProductDetailPage = () => {
     if (slug) getProductBySlug(slug);
   }, [slug]);
 
+  const findFirstAvailableOptionValue = (
+    productDetails: IProduct,
+    optionId: string,
+    otherOptionValueId?: string
+  ) => {
+    const option = productDetails.options?.find((opt) => opt.id === optionId);
+    if (!option?.values) return '';
+
+    for (const value of option.values) {
+      const hasStock = productDetails.variants?.some((variant) => {
+        const hasThisValue = variant.optionValues?.some(
+          (ov) => ov.optionValueId === value.id
+        );
+
+        if (otherOptionValueId) {
+          const hasOtherValue = variant.optionValues?.some(
+            (ov) => ov.optionValueId === otherOptionValueId
+          );
+          return hasThisValue && hasOtherValue && (variant.stock || 0) > 0;
+        }
+
+        return hasThisValue && (variant.stock || 0) > 0;
+      });
+
+      if (hasStock) return value.id;
+    }
+
+    return option.values[0]?.id || '';
+  };
+
   useEffect(() => {
     if (!productDetails) return;
 
-    const initSelectedColorOption = productDetails?.options?.find((option) =>
-      isColorOption(option?.name)
+    const colorOption = productDetails.options?.find((option) =>
+      isColorOption(option.name)
     );
-    const initiSelectedColorId = initSelectedColorOption?.values?.[0]?.id || '';
-
-    const initSelectedSizeOption = productDetails?.options?.find(
-      (option) => option?.id !== initSelectedColorOption?.id
+    const sizeOption = productDetails.options?.find(
+      (option) => option.id !== colorOption?.id
     );
-    const initiSelectedSizeId = initSelectedSizeOption?.values?.[0]?.id || '';
 
-    setSelectedColorId(initiSelectedColorId);
-    setSelectedSizeId(initiSelectedSizeId);
-    setProductOptions(productDetails?.options);
+    let selectedColorId = '';
+    if (colorOption) {
+      selectedColorId = findFirstAvailableOptionValue(
+        productDetails,
+        colorOption.id
+      );
+      setSelectedColorId(selectedColorId);
+    }
+
+    if (sizeOption) {
+      const selectedSizeId = findFirstAvailableOptionValue(
+        productDetails,
+        sizeOption.id,
+        selectedColorId
+      );
+      setSelectedSizeId(selectedSizeId);
+    }
+
+    setProductOptions(productDetails.options);
   }, [productDetails]);
 
   useEffect(() => {
@@ -252,11 +306,13 @@ const ProductDetailPage = () => {
 
       setSelectedVariant(selectedVariant);
     } else if (selectedSizeId) {
-      const selectedVariant = productDetails?.variants?.find((variant) =>
-        variant?.optionValues?.some(
+      const selectedVariant = productDetails?.variants?.find((variant) => {
+        const isMatchSizeId = variant?.optionValues?.some(
           (optVal) => optVal?.optionValueId === selectedSizeId
-        )
-      );
+        );
+
+        return isMatchSizeId;
+      });
 
       setSelectedVariant(selectedVariant);
     } else setSelectedVariant(undefined);
@@ -272,6 +328,28 @@ const ProductDetailPage = () => {
   };
 
   const handleIncrease = () => {
+    const newQuantity = quantity + 1;
+    const stock = Number(selectedVariant?.stock || 0);
+
+    const attributeName = selectedVariant?.optionValues
+      ?.map((optVal) => optVal?.optionValue?.value)
+      .join(' - ');
+
+    if (newQuantity > stock) {
+      const now = Date.now();
+
+      if (now - lastToastTime.current > TOAST_COOLDOWN) {
+        toast.warning(
+          `Mẫu ${attributeName} chỉ còn ${stock} sản phẩm trong kho.`,
+          {}
+        );
+
+        lastToastTime.current = now;
+      }
+
+      return;
+    }
+
     setQuantity((prev) => prev + (prev === MAX_QUANTITY ? 0 : 1));
   };
 
@@ -421,19 +499,66 @@ const ProductDetailPage = () => {
                         ? selectedColorId === val?.id
                         : selectedSizeId === val?.id;
 
+                      let stock = 0;
+                      if (isColorOpt) {
+                        stock =
+                          productDetails?.variants
+                            ?.filter((variant) =>
+                              variant.optionValues?.some(
+                                (ov) => ov.optionValueId === val?.id
+                              )
+                            )
+                            .reduce(
+                              (prev, current) => prev + (current?.stock || 0),
+                              0
+                            ) || 0;
+                      } else {
+                        stock =
+                          productDetails?.variants
+                            ?.filter((variant) => {
+                              const hasSize = variant.optionValues?.some(
+                                (ov) => ov.optionValueId === val?.id
+                              );
+
+                              if (selectedColorId) {
+                                const hasColor = variant.optionValues?.some(
+                                  (ov) => ov.optionValueId === selectedColorId
+                                );
+                                return hasSize && hasColor;
+                              }
+
+                              return hasSize;
+                            })
+                            .reduce(
+                              (prev, current) => prev + (current?.stock || 0),
+                              0
+                            ) || 0;
+                      }
+
+                      const isOutOfStock = stock === 0;
+
                       return (
                         <Flex
                           align="center"
                           justify="center"
                           key={val?.id}
                           className={classNames(
-                            'border p-1! uppercase cursor-pointer overflow-hidden transition-all duration-300 ease-in-out',
+                            'border p-1! uppercase overflow-hidden transition-all duration-300 ease-in-out',
                             isColorOpt
                               ? 'rounded-full'
                               : 'rounded-md w-9 md:w-11 h-9 md:h-11',
-                            isSelected ? 'border-black' : 'border-[#e5e5e5]'
+                            isSelected ? 'border-black' : 'border-[#e5e5e5]',
+                            isOutOfStock
+                              ? `${
+                                  isColorOpt
+                                    ? ''
+                                    : 'text-white bg-[#c2c2c2] border-none'
+                                } cursor-not-allowed`
+                              : 'cursor-pointer'
                           )}
                           onClick={() => {
+                            if (isOutOfStock) return;
+
                             isColorOpt
                               ? setSelectedColorId(val?.id)
                               : setSelectedSizeId(val?.id);
@@ -457,62 +582,6 @@ const ProductDetailPage = () => {
               );
             })}
 
-            {/* {!!productDetails?.variantColorData?.length && (
-              <div className="mb-4">
-                <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
-                  Màu sắc
-                </h3>
-                <Flex className="gap-x-3">
-                  {colorImages?.map(({ colorId, image }) => (
-                    <Flex
-                      align="center"
-                      justify="center"
-                      key={colorId}
-                      className={classNames(
-                        'border rounded-full p-1! uppercase cursor-pointer overflow-hidden transition-all duration-300 ease-in-out',
-                        selectedColorId === colorId
-                          ? 'border-black'
-                          : 'border-[#e5e5e5]'
-                      )}
-                      onClick={() => handleColorClick(colorId)}
-                    >
-                      <Image
-                        width={36}
-                        height={36}
-                        src={image?.image?.url}
-                        className="rounded-full object-cover"
-                      />
-                    </Flex>
-                  ))}
-                </Flex>
-              </div>
-            )}
-            {!!sizes?.length && (
-              <div className="mb-4">
-                <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
-                  Kích cỡ
-                </h3>
-                <Flex className="gap-x-3">
-                  {sizes?.map(({ id, value }) => (
-                    <Flex
-                      key={id}
-                      align="center"
-                      justify="center"
-                      className={classNames(
-                        'w-9 md:w-11 h-9 md:h-11 border rounded-md p-1! uppercase cursor-pointer transition-all duration-300 ease-in-out',
-                        selectedSizeId === id
-                          ? 'border-black'
-                          : 'border-[#e5e5e5]'
-                      )}
-                      onClick={() => handleSizeClick(id)}
-                    >
-                      {value}
-                    </Flex>
-                  ))}
-                </Flex>
-              </div>
-            )} */}
-
             <div className="pt-2 md:pt-4">
               <Flex align="center" className="w-full mb-4! gap-x-3 sm:gap-x-4">
                 <QuantitySelector
@@ -524,7 +593,7 @@ const ProductDetailPage = () => {
                 <Button
                   title="Thêm vào giỏ hàng"
                   className="w-full py-3!"
-                  disabled={!selectedVariant}
+                  disabled={isDisabledAddToCart}
                   onClick={handleAddToCart}
                 />
               </Flex>

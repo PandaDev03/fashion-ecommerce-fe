@@ -85,7 +85,10 @@ const cartSlice = createSlice({
       state.pageInfo.totalItems = state.items.length;
     },
     clearCart: (state) => {
-      state = initialState;
+      state.items = [];
+      state.loading = false;
+      state.pageInfo = {} as IPageInfo;
+
       localStorage.removeItem(CART_STORAGE_KEY);
     },
   },

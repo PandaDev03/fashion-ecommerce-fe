@@ -41,11 +41,10 @@ interface OrderItem {
   productId: string;
   productVariantId: string;
   productName: string;
-  // variantAttributes: {
-  //   name: string;
-  //   value: string;
-  // };
-  variantAttributes: any;
+  variantAttributes: {
+    name: string;
+    value: string;
+  }[];
   quantity: number;
   unitPrice: number;
   totalPrice: number;
