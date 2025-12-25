@@ -13,9 +13,22 @@ export interface ICreateOrder {
   }[];
 }
 
+export interface IOrderParams extends IPaginationParams {
+  search?: string;
+  createdFrom?: string;
+  createdTo?: string;
+  status?: string;
+}
+
 export interface IMigrateOrder {
   fromUserId: string;
   toUserId: string;
+}
+
+export interface IUpdateOrderStatus {
+  id: string;
+  status: 'confirmed' | 'cancelled';
+  cancellationReason?: string;
 }
 
 export interface IOrder {
@@ -50,3 +63,53 @@ interface OrderItem {
   totalPrice: number;
   imageUrl: string;
 }
+
+// -----------------------------
+
+export interface IOrderManagement {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  updatedBy: string;
+  orderNumber: string;
+  customerName: string;
+  customerAddress: string;
+  customerPhone: string;
+  customerEmail: string;
+  note: string;
+  subtotal: string;
+  shippingFee: string;
+  total: string;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  userId: string;
+  confirmedAt: string;
+  deliveredAt: string;
+  cancelledAt: string;
+  cancellationReason: string;
+  orderDetails: OrderDetail[];
+  updater: string;
+}
+
+interface OrderDetail {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: null;
+  updatedBy: null;
+  orderId: string;
+  productId: string;
+  productVariantId: string;
+  productName: string;
+  variantAttributes: {
+    name: string;
+    value: string;
+  }[];
+  quantity: number;
+  unitPrice: string;
+  totalPrice: string;
+  imageUrl: string;
+}
+
+export type OrderState = IPaginatedData<IOrderManagement>;

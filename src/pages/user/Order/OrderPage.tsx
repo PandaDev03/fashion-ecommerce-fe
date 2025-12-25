@@ -98,9 +98,10 @@ const AccountOrderPage = () => {
         <Table<IOrder> columns={columns} dataSource={orders} />
       ) : (
         <Space size="middle" direction="vertical">
-          {orders?.map((order) => (
+          {orders?.map((order, index) => (
             <Flex
               vertical
+              key={index}
               className="px-4! pt-5! pb-6! gap-y-7 text-sm font-semibold border border-gray-300 rounded-md text-primary"
             >
               <>
