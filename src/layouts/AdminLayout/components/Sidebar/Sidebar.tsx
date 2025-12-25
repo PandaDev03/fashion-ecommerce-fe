@@ -27,6 +27,10 @@ const siderItems: MenuProps['items'] = [
         key: PATH.ADMIN_PRODUCT_MANAGEMENT,
         label: 'Sản phẩm',
       },
+      {
+        key: PATH.ADMIN_ORDER_MANAGEMENT,
+        label: 'Đơn hàng',
+      },
     ],
   },
   { key: PATH.ADMIN_PROFILE, label: 'Hồ sơ', icon: <UserCircleOutlined /> },
@@ -47,6 +51,14 @@ const routePatterns = [
   {
     pattern: PATH.ADMIN_PRODUCT_DETAILS,
     keys: [PATH.ADMIN_PRODUCT_MANAGEMENT],
+  },
+  {
+    pattern: PATH.ADMIN_ORDER_MANAGEMENT,
+    keys: [PATH.ADMIN_ORDER_MANAGEMENT],
+  },
+  {
+    pattern: PATH.ADMIN_ORDER_DETAILS,
+    keys: [PATH.ADMIN_ORDER_MANAGEMENT],
   },
 ];
 
@@ -79,7 +91,7 @@ const Sidebar = ({ className, ...props }: SiderProps) => {
           mode="inline"
           items={siderItems}
           className="h-full"
-          defaultSelectedKeys={['1']}
+          defaultSelectedKeys={[PATH.ADMIN_DASHBOARD]}
           selectedKeys={getSelectedKey(location.pathname)}
           defaultOpenKeys={location?.state?.key ? [location?.state?.key] : []}
           onSelect={(e) =>

@@ -12,11 +12,13 @@ import { productReducer } from '~/features/products/store/productSlice';
 import { userReducer } from '~/features/user/stores/userSlice';
 import { brandReducer } from '~/features/brand/store/brandReducer';
 import { cartReducer } from '~/features/cart/stores/cartSlice';
+import { orderReducer } from '~/features/order/store/orderSlice';
 
 const rootReducer = combineReducers({
   user: userReducer,
   cart: cartReducer,
   brand: brandReducer,
+  order: orderReducer,
   product: productReducer,
   category: categoryReducer,
 });

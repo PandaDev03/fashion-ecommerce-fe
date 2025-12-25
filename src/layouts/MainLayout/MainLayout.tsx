@@ -3,7 +3,12 @@ import { useMutation } from '@tanstack/react-query';
 import { Divider, Dropdown, Flex, MenuProps, Space } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  matchPath,
+  NavigateFunction,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 
 import {
   FALLBACK_IMG,
@@ -50,15 +55,257 @@ import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
 
 const TOAST_COOLDOWN = 2000;
+const ORDER_MENU_KEY = 'order-menu-key';
+
+const getSiderMenu = (
+  latestOrderNumber: string | null,
+  navigate?: NavigateFunction
+): MenuProps['items'] => [
+  {
+    key: 'fashion',
+    label: 'Thời trang',
+    children: [
+      {
+        key: 'top-wear',
+        label: 'Áo',
+        children: [
+          {
+            key: 't-shirt',
+            label: 'Áo Thun (Áo Phông)',
+          },
+          {
+            key: 'casual-shirt',
+            label: 'Áo Sơ mi Thường ngày',
+          },
+          {
+            key: 'business-shirt',
+            label: 'Áo Sơ mi Công sở',
+          },
+          {
+            key: 'blazer-coat',
+            label: 'Áo Blazer & Áo Khoác',
+          },
+          {
+            key: 'suit',
+            label: 'Bộ Vest (Com-lê)',
+          },
+          {
+            key: 'jacket',
+            label: 'Áo khoác (Jackets)',
+          },
+        ],
+      },
+      {
+        key: 'belt',
+        label: 'Dây lưng, Khăn choàng & Khác',
+      },
+      {
+        key: 'watches',
+        label: 'Đồng hồ & Thiết bị đeo',
+      },
+      {
+        key: 'western',
+        label: 'Trang phục phong cách Tây',
+        children: [
+          {
+            key: 'dress',
+            label: 'Váy (Đầm)',
+          },
+          {
+            key: 'jumpsuit',
+            label: 'Đồ Liền (Jumpsuit)',
+          },
+          {
+            key: 'shirt-blouse',
+            label: 'Áo kiểu, Áo Thun & Áo sơ mi',
+          },
+          {
+            key: 'short-skirt',
+            label: 'Quần Short & Chân Váy',
+          },
+          {
+            key: 'shrug',
+            label: 'Áo khoác mỏng (Shrug)',
+          },
+          {
+            key: 'blazer',
+            label: 'Áo Blazer',
+          },
+        ],
+      },
+      {
+        key: 'plus-size',
+        label: 'Kích cỡ Lớn (Big Size)',
+      },
+      {
+        key: 'sung-glasses',
+        label: 'Kính mát & Gọng kính',
+      },
+      {
+        key: 'foot-wear',
+        label: 'Giày Dép',
+        children: [
+          {
+            key: 'flat-shoes',
+            label: 'Giày Đế bệt',
+          },
+          {
+            key: 'casual-shoes',
+            label: 'Giày Thường ngày',
+          },
+          {
+            key: 'heels',
+            label: 'Giày Cao gót',
+          },
+          {
+            key: 'boots',
+            label: 'Giày Boots/Bốt',
+          },
+        ],
+      },
+      {
+        key: 'sport-wear',
+        label: 'Đồ Thể thao & Vận động',
+        children: [
+          {
+            key: 'clothing',
+            label: 'Quần áo',
+          },
+          {
+            key: 'footwear',
+            label: 'Giày Dép',
+          },
+          {
+            key: 'sport-accessories',
+            label: 'Phụ kiện Thể thao',
+          },
+        ],
+      },
+      {
+        key: 'lingerie',
+        label: 'Đồ Lót & Đồ Ngủ',
+        children: [
+          {
+            key: 'bra',
+            label: 'Áo Ngực',
+          },
+          {
+            key: 'panties',
+            label: 'Quần Lót',
+          },
+          {
+            key: 'sleep-wear',
+            label: 'Đồ Ngủ',
+          },
+        ],
+      },
+      {
+        key: 'scarves',
+        label: 'Dây lưng, Khăn choàng & Khác',
+        children: [
+          {
+            key: 'makeup',
+            label: 'Trang điểm',
+          },
+          {
+            key: 'skincare',
+            label: 'Chăm sóc Da',
+          },
+          {
+            key: 'luxury-cosmetic',
+            label: 'Mỹ phẩm Cao cấp',
+          },
+          {
+            key: 'lipstick',
+            label: 'Son môi',
+          },
+        ],
+      },
+      {
+        key: 'gadgets',
+        label: 'Thiết bị Công nghệ',
+        children: [
+          {
+            key: 'wearable-devices',
+            label: 'Thiết bị Đeo thông minh',
+          },
+          {
+            key: 'headphone',
+            label: 'Tai nghe',
+          },
+        ],
+      },
+      {
+        key: 'jewellers',
+        label: 'Trang Sức',
+        children: [
+          {
+            key: 'fashion-jewelry',
+            label: 'Trang sức Thời trang',
+          },
+          {
+            key: 'fine-jewelry',
+            label: 'Trang sức Cao cấp',
+          },
+        ],
+      },
+      {
+        key: 'backpacks',
+        label: 'Balo',
+      },
+      {
+        key: 'handbags',
+        label: 'Túi xách & Ví',
+      },
+    ],
+  },
+  {
+    key: 'collection',
+    label: 'Bộ sưu tập',
+  },
+  {
+    key: 'search',
+    label: 'Tìm kiếm',
+  },
+  {
+    key: 'contact',
+    label: 'Liên hệ',
+  },
+  {
+    key: PATH.CHECKOUT,
+    label: 'Thanh toán',
+  },
+  {
+    key: ORDER_MENU_KEY,
+    label: 'Đơn hàng',
+    onClick: () => {
+      const link = latestOrderNumber
+        ? PATH.ORDER.replace(':orderNumber', latestOrderNumber)
+        : PATH.ORDER_WITHOUT_ORDER_NUMBER;
+      navigate?.(link);
+    },
+  },
+];
+
+const routePatterns = [
+  { pattern: PATH.CHECKOUT, keys: [PATH.CHECKOUT] },
+  { pattern: PATH.ORDER_WITHOUT_ORDER_NUMBER, keys: [ORDER_MENU_KEY] },
+  { pattern: PATH.ORDER, keys: [ORDER_MENU_KEY] },
+];
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const location = useLocation();
 
   const toast = useToast();
   const { isXl } = useBreakpoint();
 
   const lastToastTime = useRef(0);
+
+  const latestOrderNumber = localStorage.getItem(
+    LATEST_ORDER_NUMBER_STORAGE_KEY
+  );
 
   const [subscriptionForm] = useForm();
   const [signUpForm] = useForm<ISignUp>();
@@ -71,238 +318,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
   const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems } = useAppSelector((state) => state.cart);
-
-  const latestOrderNumber = localStorage.getItem(
-    LATEST_ORDER_NUMBER_STORAGE_KEY
-  );
-
-  const siderMenu: MenuProps['items'] = [
-    {
-      key: 'fashion',
-      label: 'Thời trang',
-      children: [
-        {
-          key: 'top-wear',
-          label: 'Áo',
-          children: [
-            {
-              key: 't-shirt',
-              label: 'Áo Thun (Áo Phông)',
-            },
-            {
-              key: 'casual-shirt',
-              label: 'Áo Sơ mi Thường ngày',
-            },
-            {
-              key: 'business-shirt',
-              label: 'Áo Sơ mi Công sở',
-            },
-            {
-              key: 'blazer-coat',
-              label: 'Áo Blazer & Áo Khoác',
-            },
-            {
-              key: 'suit',
-              label: 'Bộ Vest (Com-lê)',
-            },
-            {
-              key: 'jacket',
-              label: 'Áo khoác (Jackets)',
-            },
-          ],
-        },
-        {
-          key: 'belt',
-          label: 'Dây lưng, Khăn choàng & Khác',
-        },
-        {
-          key: 'watches',
-          label: 'Đồng hồ & Thiết bị đeo',
-        },
-        {
-          key: 'western',
-          label: 'Trang phục phong cách Tây',
-          children: [
-            {
-              key: 'dress',
-              label: 'Váy (Đầm)',
-            },
-            {
-              key: 'jumpsuit',
-              label: 'Đồ Liền (Jumpsuit)',
-            },
-            {
-              key: 'shirt-blouse',
-              label: 'Áo kiểu, Áo Thun & Áo sơ mi',
-            },
-            {
-              key: 'short-skirt',
-              label: 'Quần Short & Chân Váy',
-            },
-            {
-              key: 'shrug',
-              label: 'Áo khoác mỏng (Shrug)',
-            },
-            {
-              key: 'blazer',
-              label: 'Áo Blazer',
-            },
-          ],
-        },
-        {
-          key: 'plus-size',
-          label: 'Kích cỡ Lớn (Big Size)',
-        },
-        {
-          key: 'sung-glasses',
-          label: 'Kính mát & Gọng kính',
-        },
-        {
-          key: 'foot-wear',
-          label: 'Giày Dép',
-          children: [
-            {
-              key: 'flat-shoes',
-              label: 'Giày Đế bệt',
-            },
-            {
-              key: 'casual-shoes',
-              label: 'Giày Thường ngày',
-            },
-            {
-              key: 'heels',
-              label: 'Giày Cao gót',
-            },
-            {
-              key: 'boots',
-              label: 'Giày Boots/Bốt',
-            },
-          ],
-        },
-        {
-          key: 'sport-wear',
-          label: 'Đồ Thể thao & Vận động',
-          children: [
-            {
-              key: 'clothing',
-              label: 'Quần áo',
-            },
-            {
-              key: 'footwear',
-              label: 'Giày Dép',
-            },
-            {
-              key: 'sport-accessories',
-              label: 'Phụ kiện Thể thao',
-            },
-          ],
-        },
-        {
-          key: 'lingerie',
-          label: 'Đồ Lót & Đồ Ngủ',
-          children: [
-            {
-              key: 'bra',
-              label: 'Áo Ngực',
-            },
-            {
-              key: 'panties',
-              label: 'Quần Lót',
-            },
-            {
-              key: 'sleep-wear',
-              label: 'Đồ Ngủ',
-            },
-          ],
-        },
-        {
-          key: 'scarves',
-          label: 'Dây lưng, Khăn choàng & Khác',
-          children: [
-            {
-              key: 'makeup',
-              label: 'Trang điểm',
-            },
-            {
-              key: 'skincare',
-              label: 'Chăm sóc Da',
-            },
-            {
-              key: 'luxury-cosmetic',
-              label: 'Mỹ phẩm Cao cấp',
-            },
-            {
-              key: 'lipstick',
-              label: 'Son môi',
-            },
-          ],
-        },
-        {
-          key: 'gadgets',
-          label: 'Thiết bị Công nghệ',
-          children: [
-            {
-              key: 'wearable-devices',
-              label: 'Thiết bị Đeo thông minh',
-            },
-            {
-              key: 'headphone',
-              label: 'Tai nghe',
-            },
-          ],
-        },
-        {
-          key: 'jewellers',
-          label: 'Trang Sức',
-          children: [
-            {
-              key: 'fashion-jewelry',
-              label: 'Trang sức Thời trang',
-            },
-            {
-              key: 'fine-jewelry',
-              label: 'Trang sức Cao cấp',
-            },
-          ],
-        },
-        {
-          key: 'backpacks',
-          label: 'Balo',
-        },
-        {
-          key: 'handbags',
-          label: 'Túi xách & Ví',
-        },
-      ],
-    },
-    {
-      key: 'collection',
-      label: 'Bộ sưu tập',
-    },
-    {
-      key: 'search',
-      label: 'Tìm kiếm',
-    },
-    {
-      key: 'contac',
-      label: 'Liên hệ',
-    },
-    {
-      key: 'checkout',
-      label: 'Thanh toán',
-      onClick: () => handleMenuItemClick(PATH.CHECKOUT),
-    },
-    {
-      key: 'order',
-      label: 'Đơn hàng',
-      onClick: () =>
-        handleMenuItemClick(
-          latestOrderNumber
-            ? PATH.ORDER.replace(':orderNumber', latestOrderNumber)
-            : PATH.ORDER_WITHOUT_ORDER_NUMBER
-        ),
-    },
-  ];
 
   const menuItems: MenuProps['items'] = [
     {
@@ -341,6 +356,10 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       ),
     [cartItems]
   );
+
+  const dynamicSiderMenu = useMemo(() => {
+    return getSiderMenu(latestOrderNumber, navigate);
+  }, [latestOrderNumber, navigate]);
 
   const { mutate: signUpMutate, isPending: isSignUpPending } = useMutation({
     mutationFn: (values: ISignUp) => AuthApi.signUp(values),
@@ -390,9 +409,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     dispatch(getCartItems());
   }, []);
 
-  const handleMenuItemClick = (href: string) => {
-    setIsMenuDrawerVisible(false);
-    navigate(href);
+  const getSelectedKey = (pathname: string) => {
+    for (const { pattern, keys } of routePatterns)
+      if (matchPath({ path: pattern, end: false }, pathname)) return keys;
+
+    return [pathname];
   };
 
   const handleOpenAuthModal = () => {
@@ -569,7 +590,18 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         }
         onClose={() => setIsMenuDrawerVisible(false)}
       >
-        <Menu mode="inline" items={siderMenu} />
+        <Menu
+          mode="inline"
+          items={dynamicSiderMenu}
+          selectedKeys={getSelectedKey(location.pathname)}
+          defaultOpenKeys={location?.state?.key ? [location?.state?.key] : []}
+          onSelect={(e) => {
+            if (e.key.startsWith('/') || Object.values(PATH).includes(e.key))
+              navigate(e.key, {
+                state: { key: e.key, parentKey: e.keyPath?.[1] },
+              });
+          }}
+        />
       </Drawer>
 
       <Drawer
