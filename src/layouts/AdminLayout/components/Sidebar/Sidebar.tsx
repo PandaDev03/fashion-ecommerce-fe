@@ -54,7 +54,11 @@ const routePatterns = [
   },
   {
     pattern: PATH.ADMIN_ORDER_MANAGEMENT,
-    keys: [PATH.ADMIN_ORDER_MANAGEMENT, PATH.ADMIN_ORDER_DETAILS],
+    keys: [PATH.ADMIN_ORDER_MANAGEMENT],
+  },
+  {
+    pattern: PATH.ADMIN_ORDER_DETAILS,
+    keys: [PATH.ADMIN_ORDER_MANAGEMENT],
   },
 ];
 
@@ -87,7 +91,7 @@ const Sidebar = ({ className, ...props }: SiderProps) => {
           mode="inline"
           items={siderItems}
           className="h-full"
-          defaultSelectedKeys={['1']}
+          defaultSelectedKeys={[PATH.ADMIN_DASHBOARD]}
           selectedKeys={getSelectedKey(location.pathname)}
           defaultOpenKeys={location?.state?.key ? [location?.state?.key] : []}
           onSelect={(e) =>
