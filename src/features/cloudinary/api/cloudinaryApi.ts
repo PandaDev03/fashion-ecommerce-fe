@@ -9,6 +9,14 @@ export const cloudinaryApi = {
       },
     });
   },
+  uploadUserAvatar: async (data: FormData) => {
+    return await axiosApi.post('/cloudinary/upload/avatar', data, {
+      timeout: 15000,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
   uploadBrandLogo: async (data: FormData) => {
     return await axiosApi.post('/cloudinary/upload/brand-logo', data, {
       timeout: 15000,

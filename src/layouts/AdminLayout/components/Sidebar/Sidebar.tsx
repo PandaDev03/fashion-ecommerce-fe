@@ -32,18 +32,6 @@ const siderItems: MenuProps['items'] = [
   { key: PATH.ADMIN_PROFILE, label: 'Hồ sơ', icon: <UserCircleOutlined /> },
 ];
 
-// const selectedKeys = [
-//   [PATH.ADMIN_PROFILE],
-//   [PATH.ADMIN_DASHBOARD],
-//   [PATH.ADMIN_BRAND_MANAGEMENT],
-//   [PATH.ADMIN_CATEGORY_MANAGEMENT],
-//   // [PATH.ADMIN_PRODUCT_MANAGEMENT, PATH.ADMIN_PRODUCT_DETAILS],
-//   [
-//     PATH.ADMIN_PRODUCT_MANAGEMENT,
-//     '/admin/product-management/ttd-c27-ao-polo-det-kim-2-soc-cho-nam-c27',
-//   ],
-// ];
-
 const routePatterns = [
   { pattern: PATH.ADMIN_PROFILE, keys: [PATH.ADMIN_PROFILE] },
   { pattern: PATH.ADMIN_DASHBOARD, keys: [PATH.ADMIN_DASHBOARD] },
@@ -72,8 +60,6 @@ const Sidebar = ({ className, ...props }: SiderProps) => {
   );
 
   const getSelectedKey = (pathname: string) => {
-    // for (const keys of selectedKeys) if (keys.includes(pathname)) return keys;
-    // return [pathname];
     for (const { pattern, keys } of routePatterns) {
       if (matchPath(pattern, pathname)) return keys;
     }

@@ -15,7 +15,7 @@ const NotFountPage = () => {
         vertical
         align="center"
         justify="center"
-        className="w-full border-b border-gray-200 text-center px-16! py-16! sm:py-20! lg:py-24! xl:py-32!"
+        className="w-full text-center px-16! py-16! sm:py-20! lg:py-24! xl:py-32!"
       >
         <div className="relative max-w-full">
           <span
@@ -43,7 +43,7 @@ const NotFountPage = () => {
             title={
               <Flex align="center" className="font-normal">
                 <HomeFilled />
-                <p className="ltr:pl-1.5 rtl:pr-1.5 ">Về trang chủ</p>
+                <p className="ltr:pl-1.5 rtl:pr-1.5">Về trang chủ</p>
               </Flex>
             }
             onClick={() => navigate(PATH.HOME)}

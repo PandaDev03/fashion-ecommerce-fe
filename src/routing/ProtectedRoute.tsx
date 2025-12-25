@@ -9,9 +9,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { currentUser } = useAppSelector((state) => state.user);
+  const { currentUser, isInitialized, loading } = useAppSelector(
+    (state) => state.user
+  );
   const isAuthenticated = !!Object.keys(currentUser)?.length;
 
+  if (!isInitialized || loading) return children; // LoadingScreen
   if (!isAuthenticated) return <Navigate to={PATH.HOME} replace />;
 
   return <>{children}</>;

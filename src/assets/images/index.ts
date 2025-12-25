@@ -27,3 +27,4 @@ export { default as VISA } from './visa.png';
 export { default as WATCH } from './watch.png';
 export { default as WOMAN } from './woman.png';
 export { default as WOMEN } from './women.png';
+export { default as PAGE_HEADER } from './page-header.jpg';
