@@ -26,9 +26,12 @@ import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import { useToast } from '~/shared/contexts/NotificationContext';
-import { useAppDispatch } from '~/shared/hooks/useStore';
+import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
-import { convertToVND } from '~/shared/utils/function';
+import {
+  convertToVND,
+  validateStockAvailability,
+} from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import { Product } from '../Home/HomePage';
 
@@ -176,6 +179,8 @@ const ProductDetailPage = () => {
 
   const [productDetails, setProductDetails] = useState<IProduct>();
   const [productOptions, setProductOptions] = useState<IProduct['options']>([]);
+
+  const { items: cartItems } = useAppSelector((state) => state.cart);
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({
@@ -328,27 +333,19 @@ const ProductDetailPage = () => {
   };
 
   const handleIncrease = () => {
-    const newQuantity = quantity + 1;
-    const stock = Number(selectedVariant?.stock || 0);
+    if (!selectedVariant) return;
 
-    const attributeName = selectedVariant?.optionValues
-      ?.map((optVal) => optVal?.optionValue?.value)
-      .join(' - ');
+    const isAvailableStock = validateStockAvailability({
+      item: {
+        quantity: quantity + 1,
+        optionValues: selectedVariant?.optionValues,
+        stock: selectedVariant?.stock,
+      },
+      toastCoolDown: TOAST_COOLDOWN,
+      lastToastTime,
+    });
 
-    if (newQuantity > stock) {
-      const now = Date.now();
-
-      if (now - lastToastTime.current > TOAST_COOLDOWN) {
-        toast.warning(
-          `Mẫu ${attributeName} chỉ còn ${stock} sản phẩm trong kho.`,
-          {}
-        );
-
-        lastToastTime.current = now;
-      }
-
-      return;
-    }
+    if (!isAvailableStock) return;
 
     setQuantity((prev) => prev + (prev === MAX_QUANTITY ? 0 : 1));
   };
@@ -362,6 +359,24 @@ const ProductDetailPage = () => {
     ) {
       toast.error('Không tìm thấy sản phẩm để thêm vào giỏ hàng');
       return;
+    }
+
+    const currentCartItem = cartItems?.find(
+      (cartItem) => cartItem?.variant?.id === selectedVariant?.id
+    );
+
+    if (currentCartItem) {
+      const isAvailableStock = validateStockAvailability({
+        item: {
+          quantity: quantity + currentCartItem?.quantity,
+          optionValues: selectedVariant?.optionValues,
+          stock: selectedVariant?.stock,
+        },
+        toastCoolDown: TOAST_COOLDOWN,
+        lastToastTime,
+      });
+
+      if (!isAvailableStock) return;
     }
 
     const cartItem: ICart = {

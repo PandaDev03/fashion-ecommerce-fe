@@ -2,6 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { FileType } from '../components/Upload/Dragger';
 import { DEFAULT_URL_FIELDS, GUEST_USER_KEY } from './constants';
+import { IVariant } from '~/features/products/types/product';
+import { RefObject } from 'react';
+import { notificationEmitter } from './notificationEmitter';
 
 export const generateSlug = (name: string) => {
   if (!name) return undefined;
@@ -107,4 +110,36 @@ export const getGuestUserId = (): string | null => {
 
 export const clearGuestUserId = (): void => {
   localStorage.removeItem(GUEST_USER_KEY);
+};
+
+export const validateStockAvailability = ({
+  item,
+  lastToastTime,
+  toastCoolDown,
+}: {
+  toastCoolDown: number;
+  lastToastTime: RefObject<number>;
+  item: Pick<IVariant, 'stock' | 'optionValues'> & { quantity: number };
+}) => {
+  const { optionValues, stock, quantity } = item;
+
+  const attributeName = optionValues
+    ?.map((optVal) => optVal?.optionValue?.value)
+    .join(' - ');
+
+  if (quantity > stock) {
+    const now = Date.now();
+
+    if (now - lastToastTime.current > toastCoolDown) {
+      notificationEmitter.emit(
+        'warning',
+        `Mẫu ${attributeName} chỉ còn ${stock} sản phẩm trong kho.`
+      );
+
+      lastToastTime.current = now;
+    }
+    return false;
+  }
+
+  return true;
 };

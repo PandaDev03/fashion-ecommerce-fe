@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { Divider, Flex, Layout } from 'antd';
+import { Divider, Flex, Layout, Tooltip } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { Content } from 'antd/es/layout/layout';
 import { useEffect, useMemo } from 'react';
@@ -18,6 +18,7 @@ import Input from '~/shared/components/Input/Input';
 import TextArea from '~/shared/components/Input/TextArea';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
+import { LATEST_ORDER_NUMBER_STORAGE_KEY } from '~/shared/utils/constants';
 import { convertToVND, getOrCreateGuestUserId } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 
@@ -52,6 +53,8 @@ const CheckoutPage = () => {
         toast.error('Không tìm thấy ID của đơn đặt hàng');
         return;
       }
+
+      localStorage.setItem(LATEST_ORDER_NUMBER_STORAGE_KEY, orderNumber);
 
       navigate(PATH.ORDER.replace(':orderNumber', orderNumber));
       dispatch(clearCart());
@@ -101,9 +104,9 @@ const CheckoutPage = () => {
     handleSaveToLocal(values);
 
     let userId;
-    if (currentUser || Object.keys(currentUser)?.length)
+    if (Object.keys(currentUser)?.length) {
       userId = currentUser?.id;
-    else {
+    } else {
       const guestUserId = getOrCreateGuestUserId();
       userId = guestUserId;
     }
@@ -228,9 +231,11 @@ const CheckoutPage = () => {
                       src={item?.variant?.imageMappings?.[0]?.image?.url}
                     />
                     <Flex vertical className="ltr:pl-3! rtl:pr-3!">
-                      <div className="text-sm font-regular text-primary max-w-[250px] truncate">
-                        Áo Polo Len Nam Tay Dài City Fade Form Regular
-                      </div>
+                      <Tooltip title={item?.name}>
+                        <div className="text-sm font-regular text-primary max-lg:max-w-[250px] max-lg:truncate">
+                          {item?.name}
+                        </div>
+                      </Tooltip>
                       <span className="text-body">
                         {item?.variant?.optionValues
                           ?.map((optVal) => optVal?.optionValue?.value)

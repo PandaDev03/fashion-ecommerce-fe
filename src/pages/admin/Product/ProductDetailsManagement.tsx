@@ -1000,11 +1000,11 @@ const ProductDetailsManagement = () => {
                                 key={image?.id}
                                 src={image?.url}
                                 className={classNames(
-                                  'border-2 border-gray-300 rounded-lg object-cover cursor-pointer hover:border-blue-300',
+                                  'border-2 rounded-lg object-cover cursor-pointer hover:border-gray-500',
                                   'transition-all duration-300 ease-in-out',
                                   selectedImage?.id === image?.id
-                                    ? 'border-blue-500!'
-                                    : ''
+                                    ? 'border-black'
+                                    : 'border-[#e5e5e5]'
                                 )}
                                 onClick={() =>
                                   setSelectedImage({
@@ -1021,11 +1021,16 @@ const ProductDetailsManagement = () => {
                                 key={image?.id}
                                 src={image?.url}
                                 className={classNames(
-                                  'border-2 border-gray-300 rounded-lg object-cover cursor-pointer hover:border-blue-300',
+                                  // 'border-2 border-gray-300 rounded-lg object-cover cursor-pointer hover:border-blue-300',
+                                  // 'transition-all duration-300 ease-in-out',
+                                  // selectedImage?.id === image?.id
+                                  //   ? 'border-blue-500!'
+                                  //   : ''
+                                  'border-2 rounded-lg object-cover cursor-pointer hover:border-gray-500',
                                   'transition-all duration-300 ease-in-out',
                                   selectedImage?.id === image?.id
-                                    ? 'border-blue-500!'
-                                    : ''
+                                    ? 'border-black'
+                                    : 'border-[#e5e5e5]'
                                 )}
                                 onClick={() =>
                                   setSelectedImage({

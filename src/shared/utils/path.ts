@@ -12,6 +12,7 @@ export const PATH = {
 
   CHECKOUT: '/checkout',
   ORDER: '/order/:orderNumber',
+  ORDER_WITHOUT_ORDER_NUMBER: '/order',
 
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_PROFILE: '/admin/profile',

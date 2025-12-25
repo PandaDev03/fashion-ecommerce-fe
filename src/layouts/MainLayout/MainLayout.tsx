@@ -2,7 +2,7 @@ import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import { Divider, Dropdown, Flex, MenuProps, Space } from 'antd';
 import { useForm } from 'antd/es/form/Form';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -38,11 +38,15 @@ import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelec
 import { useToast } from '~/shared/contexts/NotificationContext';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
-import { convertToVND } from '~/shared/utils/function';
+import {
+  convertToVND,
+  validateStockAvailability,
+} from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import BottomNavBar from './components/BottomNavBar/BottomNavBar';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
+import { ICart } from '~/features/cart/types/cart';
 
 const siderMenu: MenuProps['items'] = [
   {
@@ -463,12 +467,16 @@ const siderMenu: MenuProps['items'] = [
   },
 ];
 
+const TOAST_COOLDOWN = 2000;
+
 const MainLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const toast = useToast();
   const { isXl } = useBreakpoint();
+
+  const lastToastTime = useRef(0);
 
   const [subscriptionForm] = useForm();
   const [signUpForm] = useForm<ISignUp>();
@@ -588,8 +596,37 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     signInForm.resetFields();
   };
 
-  const handleUpdateQuantity = (variantId: string, quantity: number) => {
-    dispatch(updateQuantity({ variantId, quantity }));
+  const handleDecrease = (item: ICart) => {
+    dispatch(
+      updateQuantity({
+        variantId: item?.variant?.id,
+        quantity: item?.quantity > 1 ? -1 : 0,
+      })
+    );
+  };
+
+  const handleIncrease = (item: ICart) => {
+    const { variant } = item;
+    const newQuantity = item?.quantity + 1;
+
+    const isAvailableStock = validateStockAvailability({
+      item: {
+        quantity: newQuantity,
+        stock: variant?.stock,
+        optionValues: variant?.optionValues,
+      },
+      toastCoolDown: TOAST_COOLDOWN,
+      lastToastTime,
+    });
+
+    if (!isAvailableStock) return;
+
+    dispatch(
+      updateQuantity({
+        variantId: item?.variant?.id,
+        quantity: 1,
+      })
+    );
   };
 
   const handleDeleteCartItem = (variantId: string) => {
@@ -777,15 +814,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                         size="small"
                         className="shrink-0"
                         quantity={item?.quantity}
-                        onDecrease={() =>
-                          handleUpdateQuantity(
-                            item?.variant?.id,
-                            item?.quantity > 1 ? -1 : 0
-                          )
-                        }
-                        onIncrease={() =>
-                          handleUpdateQuantity(item?.variant?.id, 1)
-                        }
+                        onDecrease={() => handleDecrease(item)}
+                        onIncrease={() => handleIncrease(item)}
                       />
                     </Flex>
                   </Flex>

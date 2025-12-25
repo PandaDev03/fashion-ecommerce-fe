@@ -44,6 +44,11 @@ const routes: AppRoute[] = [
     layout: MainLayout,
     element: React.lazy(() => import('~/pages/public/Order/OrderPage')),
   },
+  {
+    path: PATH.ORDER_WITHOUT_ORDER_NUMBER,
+    layout: MainLayout,
+    element: React.lazy(() => import('~/pages/public/Order/OrderPage')),
+  },
 
   // PROTECTED ROUTES
   {
