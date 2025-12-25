@@ -79,16 +79,14 @@ const routes: AppRoute[] = [
 
   // RBAC ROUTE
   {
-    // isProtected: true,
+    isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_DASHBOARD,
     // requiredRoles: [],
-    element: React.lazy(
-      () => import('~/pages/admin/Dashboard.tsx/AdminDashboard')
-    ),
+    element: React.lazy(() => import('~/pages/admin/Dashboard/AdminDashboard')),
   },
   {
-    // isProtected: true,
+    isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_CATEGORY_MANAGEMENT,
     // requiredRoles: [],
@@ -97,14 +95,14 @@ const routes: AppRoute[] = [
     ),
   },
   {
-    // isProtected: true,
+    isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_BRAND_MANAGEMENT,
     // requiredRoles: [],
     element: React.lazy(() => import('~/pages/admin/Brand/BrandManagement')),
   },
   {
-    // isProtected: true,
+    isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_PRODUCT_MANAGEMENT,
     // requiredRoles: [],
@@ -113,7 +111,7 @@ const routes: AppRoute[] = [
     ),
   },
   {
-    // isProtected: true,
+    isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_PRODUCT_DETAILS,
     // requiredRoles: [],
@@ -122,11 +120,27 @@ const routes: AppRoute[] = [
     ),
   },
   {
-    // isProtected: true,
+    isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_PRODUCT_CREATE,
     // requiredRoles: [],
     element: React.lazy(() => import('~/pages/admin/Product/ProductCreate')),
+  },
+  {
+    isProtected: true,
+    layout: AdminLayout,
+    path: PATH.ADMIN_ORDER_MANAGEMENT,
+    // requiredRoles: [],
+    element: React.lazy(() => import('~/pages/admin/Order/OrderManagement')),
+  },
+  {
+    isProtected: true,
+    layout: AdminLayout,
+    path: PATH.ADMIN_ORDER_DETAILS,
+    // requiredRoles: [],
+    element: React.lazy(
+      () => import('~/pages/admin/Order/OrderDetailManagement')
+    ),
   },
 
   // NOT FOUND

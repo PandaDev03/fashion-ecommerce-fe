@@ -27,6 +27,10 @@ const siderItems: MenuProps['items'] = [
         key: PATH.ADMIN_PRODUCT_MANAGEMENT,
         label: 'Sản phẩm',
       },
+      {
+        key: PATH.ADMIN_ORDER_MANAGEMENT,
+        label: 'Đơn hàng',
+      },
     ],
   },
   { key: PATH.ADMIN_PROFILE, label: 'Hồ sơ', icon: <UserCircleOutlined /> },
@@ -47,6 +51,10 @@ const routePatterns = [
   {
     pattern: PATH.ADMIN_PRODUCT_DETAILS,
     keys: [PATH.ADMIN_PRODUCT_MANAGEMENT],
+  },
+  {
+    pattern: PATH.ADMIN_ORDER_MANAGEMENT,
+    keys: [PATH.ADMIN_ORDER_MANAGEMENT, PATH.ADMIN_ORDER_DETAILS],
   },
 ];
 

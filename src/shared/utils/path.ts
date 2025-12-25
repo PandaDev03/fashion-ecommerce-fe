@@ -16,10 +16,14 @@ export const PATH = {
 
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_PROFILE: '/admin/profile',
+
   ADMIN_CATEGORY_MANAGEMENT: '/admin/category-management',
   ADMIN_BRAND_MANAGEMENT: '/admin/brand-management',
-
+  ADMIN_ORDER_MANAGEMENT: '/admin/order-management',
+  ADMIN_ORDER_DETAILS: '/admin/order/order-details/:orderId',
+  
   ADMIN_PRODUCT_MANAGEMENT: '/admin/product-management',
   ADMIN_PRODUCT_DETAILS: '/admin/product-management/:slug',
   ADMIN_PRODUCT_CREATE: '/admin/product-create',
+
 };
