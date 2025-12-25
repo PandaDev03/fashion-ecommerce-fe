@@ -45,6 +45,8 @@ const revokeSession = async () => {
     await AuthApi.signOut();
   } catch (error) {
     console.error('Logout failed after refresh failure:', error);
+  } finally {
+    localStorage.removeItem('accessToken');
   }
 };
 
