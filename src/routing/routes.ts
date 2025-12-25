@@ -5,6 +5,7 @@ import { PATH } from '~/shared/utils/path';
 import AccountLayout from '~/layouts/AccountLayout/AccountLayout';
 import AdminLayout from '~/layouts/AdminLayout/AdminLayout';
 import MainLayout from '~/layouts/MainLayout/MainLayout';
+import { UserRole } from '~/shared/utils/enum';
 
 export interface AppRoute {
   path: string;
@@ -82,14 +83,14 @@ const routes: AppRoute[] = [
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_DASHBOARD,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(() => import('~/pages/admin/Dashboard/AdminDashboard')),
   },
   {
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_CATEGORY_MANAGEMENT,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(
       () => import('~/pages/admin/Category/CategoryManagement')
     ),
@@ -98,14 +99,14 @@ const routes: AppRoute[] = [
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_BRAND_MANAGEMENT,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(() => import('~/pages/admin/Brand/BrandManagement')),
   },
   {
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_PRODUCT_MANAGEMENT,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(
       () => import('~/pages/admin/Product/ProductManagement')
     ),
@@ -114,7 +115,7 @@ const routes: AppRoute[] = [
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_PRODUCT_DETAILS,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(
       () => import('~/pages/admin/Product/ProductDetailsManagement')
     ),
@@ -123,21 +124,21 @@ const routes: AppRoute[] = [
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_PRODUCT_CREATE,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(() => import('~/pages/admin/Product/ProductCreate')),
   },
   {
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_ORDER_MANAGEMENT,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(() => import('~/pages/admin/Order/OrderManagement')),
   },
   {
     isProtected: true,
     layout: AdminLayout,
     path: PATH.ADMIN_ORDER_DETAILS,
-    // requiredRoles: [],
+    requiredRoles: [UserRole.ADMIN],
     element: React.lazy(
       () => import('~/pages/admin/Order/OrderDetailManagement')
     ),
