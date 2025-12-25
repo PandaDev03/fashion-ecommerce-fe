@@ -10,13 +10,13 @@ const signUpFormItems: FormItemProps[] = [
   {
     name: 'name',
     label: 'Tên',
-    children: <Input />,
+    children: <Input placeholder="VD: Nguyễn Văn A" />,
     rules: [{ required: true, message: 'Vui lòng nhập tên' }],
   },
   {
     name: 'email',
     label: 'Email',
-    children: <Input />,
+    children: <Input placeholder="VD: example@gmail.com" />,
     rules: [
       { required: true, message: 'Vui lòng nhập email' },
       { type: 'email', message: 'Email không đúng định dạng' },
@@ -25,7 +25,7 @@ const signUpFormItems: FormItemProps[] = [
   {
     name: 'password',
     label: 'Mật khẩu',
-    children: <InputPassword type="password" />,
+    children: <InputPassword type="password" placeholder="Tối thiểu 8 ký tự" />,
     rules: [
       { required: true, message: 'Vui lòng nhập mật khẩu' },
       { min: 8, message: 'Mật khẩu phải có ít nhât 8 ký tự' },

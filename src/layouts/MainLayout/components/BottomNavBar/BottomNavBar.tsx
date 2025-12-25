@@ -1,8 +1,9 @@
 import { Badge, Flex } from 'antd';
-import { memo, ReactElement } from 'react';
+import { memo, ReactElement, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { HomeOutlined, Search, ShoppingBag } from '~/assets/svg';
+import { useAppSelector } from '~/shared/hooks/useStore';
 import { PATH } from '~/shared/utils/path';
 
 interface BottomNavBar {
@@ -19,6 +20,13 @@ interface BottomNavBarItem {
 const BottomNavBar = ({ onOpenCartDrawer, onOpenMenuDrawer }: BottomNavBar) => {
   const navigate = useNavigate();
 
+  const { items: cartItems } = useAppSelector((state) => state.cart);
+
+  const totalQuantity = useMemo(
+    () => cartItems?.reduce((prev, current) => (prev += current?.quantity), 0),
+    [cartItems]
+  );
+
   const bottomNavBar: BottomNavBarItem[] = [
     {
       key: 'sider',
@@ -28,7 +36,7 @@ const BottomNavBar = ({ onOpenCartDrawer, onOpenMenuDrawer }: BottomNavBar) => {
           vertical
           justify="center"
           onClick={onOpenMenuDrawer}
-          className="w-6! h-full! xl:hidden! [&>*:first-child]:w-1/2 [&>*:nth-child(2)]:w-full [&>*:last-child]:w-3/4 hover:[&>*:nth-child(odd)]:w-full hover:[&>*:nth-child(even)]:w-1/2"
+          className="w-6! h-full! xl:hidden! cursor-pointer [&>*:first-child]:w-1/2 [&>*:nth-child(2)]:w-full [&>*:last-child]:w-3/4 hover:[&>*:nth-child(odd)]:w-full hover:[&>*:nth-child(even)]:w-1/2"
         >
           {[0, 1, 2].map((index) => (
             <p
@@ -51,7 +59,7 @@ const BottomNavBar = ({ onOpenCartDrawer, onOpenMenuDrawer }: BottomNavBar) => {
     {
       key: 'cart',
       children: (
-        <Badge showZero count={0}>
+        <Badge showZero count={totalQuantity}>
           <ShoppingBag className="cursor-pointer" />
         </Badge>
       ),

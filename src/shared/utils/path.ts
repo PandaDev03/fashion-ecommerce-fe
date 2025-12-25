@@ -2,11 +2,17 @@ export const PATH = {
   HOME: '/',
   NOT_FOUND: '/*',
 
-  ACCOUNT: '/account',
+  ACCOUNT_DETAILS: '/my-account/account-details',
+  ACCOUNT_CHANGE_PASSWORD: '/my-account/change-password',
+  ACCOUNT_ORDERS: '/my-account/orders',
 
-  PRODUCTS: '/products/:slugId?',
+  PRODUCTS: '/products/:slug?',
   PRODUCTS_WITHOUT_SLUG: '/products',
-  PRODUCT_DETAILS: '/product/:slugId',
+  PRODUCT_DETAILS: '/product/:slug',
+
+  CHECKOUT: '/checkout',
+  ORDER: '/order/:orderNumber',
+  ORDER_WITHOUT_ORDER_NUMBER: '/order',
 
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_PROFILE: '/admin/profile',

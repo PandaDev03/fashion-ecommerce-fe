@@ -1,11 +1,16 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Dropdown, Flex, MenuProps } from 'antd';
+import { Divider, Dropdown, Flex, MenuProps, Space } from 'antd';
 import { useForm } from 'antd/es/form/Form';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { PROFILE_PICTURE, SUBSCRIPTION_BG } from '~/assets/images';
-import { EmptyCart, LOGO } from '~/assets/svg';
+import {
+  FALLBACK_IMG,
+  PROFILE_PICTURE,
+  SUBSCRIPTION_BG,
+} from '~/assets/images';
+import { EmptyCart, LOGO, Trash } from '~/assets/svg';
 import { AuthApi } from '~/features/auth/api/auth';
 import AuthModal from '~/features/auth/components/AuthModal';
 import {
@@ -13,6 +18,12 @@ import {
   ISignInWithGoogle,
   ISignUp,
 } from '~/features/auth/types/auth';
+import {
+  deleteCartItem,
+  updateQuantity,
+} from '~/features/cart/stores/cartSlice';
+import { getCartItems } from '~/features/cart/stores/cartThunks';
+import { ICart } from '~/features/cart/types/cart';
 import { resetUser } from '~/features/user/stores/userSlice';
 import { getMe } from '~/features/user/stores/userThunks';
 import Button from '~/shared/components/Button/Button';
@@ -24,436 +35,30 @@ import Input from '~/shared/components/Input/Input';
 import { Layout } from '~/shared/components/Layout/Layout';
 import Link from '~/shared/components/Link/Link';
 import Menu from '~/shared/components/Menu/Menu';
+import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
+import { LATEST_ORDER_NUMBER_STORAGE_KEY } from '~/shared/utils/constants';
+import {
+  convertToVND,
+  validateStockAvailability,
+} from '~/shared/utils/function';
+import { PATH } from '~/shared/utils/path';
 import BottomNavBar from './components/BottomNavBar/BottomNavBar';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
 
-const siderMenu: MenuProps['items'] = [
-  {
-    key: 'fashion',
-    label: 'Thời trang',
-    children: [
-      {
-        key: 'top-wear',
-        label: 'Áo',
-        children: [
-          {
-            key: 't-shirt',
-            label: 'Áo Thun (Áo Phông)',
-          },
-          {
-            key: 'casual-shirt',
-            label: 'Áo Sơ mi Thường ngày',
-          },
-          {
-            key: 'business-shirt',
-            label: 'Áo Sơ mi Công sở',
-          },
-          {
-            key: 'blazer-coat',
-            label: 'Áo Blazer & Áo Khoác',
-          },
-          {
-            key: 'suit',
-            label: 'Bộ Vest (Com-lê)',
-          },
-          {
-            key: 'jacket',
-            label: 'Áo khoác (Jackets)',
-          },
-        ],
-      },
-      {
-        key: 'belt',
-        label: 'Dây lưng, Khăn choàng & Khác',
-      },
-      {
-        key: 'watches',
-        label: 'Đồng hồ & Thiết bị đeo',
-      },
-      {
-        key: 'western',
-        label: 'Trang phục phong cách Tây',
-        children: [
-          {
-            key: 'dress',
-            label: 'Váy (Đầm)',
-          },
-          {
-            key: 'jumpsuit',
-            label: 'Đồ Liền (Jumpsuit)',
-          },
-          {
-            key: 'shirt-blouse',
-            label: 'Áo kiểu, Áo Thun & Áo sơ mi',
-          },
-          {
-            key: 'short-skirt',
-            label: 'Quần Short & Chân Váy',
-          },
-          {
-            key: 'shrug',
-            label: 'Áo khoác mỏng (Shrug)',
-          },
-          {
-            key: 'blazer',
-            label: 'Áo Blazer',
-          },
-        ],
-      },
-      {
-        key: 'plus-size',
-        label: 'Kích cỡ Lớn (Big Size)',
-      },
-      {
-        key: 'sung-glasses',
-        label: 'Kính mát & Gọng kính',
-      },
-      {
-        key: 'foot-wear',
-        label: 'Giày Dép',
-        children: [
-          {
-            key: 'flat-shoes',
-            label: 'Giày Đế bệt',
-          },
-          {
-            key: 'casual-shoes',
-            label: 'Giày Thường ngày',
-          },
-          {
-            key: 'heels',
-            label: 'Giày Cao gót',
-          },
-          {
-            key: 'boots',
-            label: 'Giày Boots/Bốt',
-          },
-        ],
-      },
-      {
-        key: 'sport-wear',
-        label: 'Đồ Thể thao & Vận động',
-        children: [
-          {
-            key: 'clothing',
-            label: 'Quần áo',
-          },
-          {
-            key: 'footwear',
-            label: 'Giày Dép',
-          },
-          {
-            key: 'sport-accessories',
-            label: 'Phụ kiện Thể thao',
-          },
-        ],
-      },
-      {
-        key: 'lingerie',
-        label: 'Đồ Lót & Đồ Ngủ',
-        children: [
-          {
-            key: 'bra',
-            label: 'Áo Ngực',
-          },
-          {
-            key: 'panties',
-            label: 'Quần Lót',
-          },
-          {
-            key: 'sleep-wear',
-            label: 'Đồ Ngủ',
-          },
-        ],
-      },
-      {
-        key: 'scarves',
-        label: 'Dây lưng, Khăn choàng & Khác',
-        children: [
-          {
-            key: 'makeup',
-            label: 'Trang điểm',
-          },
-          {
-            key: 'skincare',
-            label: 'Chăm sóc Da',
-          },
-          {
-            key: 'luxury-cosmetic',
-            label: 'Mỹ phẩm Cao cấp',
-          },
-          {
-            key: 'lipstick',
-            label: 'Son môi',
-          },
-        ],
-      },
-      {
-        key: 'gadgets',
-        label: 'Thiết bị Công nghệ',
-        children: [
-          {
-            key: 'wearable-devices',
-            label: 'Thiết bị Đeo thông minh',
-          },
-          {
-            key: 'headphone',
-            label: 'Tai nghe',
-          },
-        ],
-      },
-      {
-        key: 'jewellers',
-        label: 'Trang Sức',
-        children: [
-          {
-            key: 'fashion-jewelry',
-            label: 'Trang sức Thời trang',
-          },
-          {
-            key: 'fine-jewelry',
-            label: 'Trang sức Cao cấp',
-          },
-        ],
-      },
-      {
-        key: 'backpacks',
-        label: 'Balo',
-      },
-      {
-        key: 'handbags',
-        label: 'Túi xách & Ví',
-      },
-    ],
-  },
-  // {
-  //   key: 'women-wear',
-  //   label: 'Thời trang Nữ',
-  //   children: [
-  //     {
-  //       key: 'top-wear',
-  //       label: 'Áo',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Áo Thun (Áo Phông)',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Áo Sơ mi Thường ngày',
-  //         },
-  //         {
-  //           key: '3',
-  //           label: 'Áo Sơ mi Công sở',
-  //         },
-  //         {
-  //           key: '4',
-  //           label: 'Áo Blazer & Áo Khoác',
-  //         },
-  //         {
-  //           key: '5',
-  //           label: 'Bộ Vest (Com-lê)',
-  //         },
-  //         {
-  //           key: '6',
-  //           label: 'Áo khoác (Jackets)',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'belt',
-  //       label: 'Dây lưng, Khăn choàng & Khác',
-  //     },
-  //     {
-  //       key: 'watches',
-  //       label: 'Đồng hồ & Thiết bị đeo',
-  //     },
-  //     {
-  //       key: 'western',
-  //       label: 'Trang phục phong cách Tây',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Váy (Đầm)',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Đồ Liền (Jumpsuit)',
-  //         },
-  //         {
-  //           key: '3',
-  //           label: 'Áo kiểu, Áo Thun & Áo sơ mi',
-  //         },
-  //         {
-  //           key: '4',
-  //           label: 'Quần Short & Chân Váy',
-  //         },
-  //         {
-  //           key: '5',
-  //           label: 'Áo khoác mỏng (Shrug)',
-  //         },
-  //         {
-  //           key: '6',
-  //           label: 'Áo Blazer',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'plus-size',
-  //       label: 'Kích cỡ Lớn (Big Size)',
-  //     },
-  //     {
-  //       key: 'sung-glasses',
-  //       label: 'Kính mát & Gọng kính',
-  //     },
-  //     {
-  //       key: 'foot-wear',
-  //       label: 'Giày Dép',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Giày Đế bệt',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Giày Thường ngày',
-  //         },
-  //         {
-  //           key: '3',
-  //           label: 'Giày Cao gót',
-  //         },
-  //         {
-  //           key: '4',
-  //           label: 'Giày Boots/Bốt',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'sport-wear',
-  //       label: 'Đồ Thể thao & Vận động',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Quần áo',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Giày Dép',
-  //         },
-  //         {
-  //           key: '3',
-  //           label: 'Phụ kiện Thể thao',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'lingerie',
-  //       label: 'Đồ Lót & Đồ Ngủ',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Áo Ngực',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Quần Lót',
-  //         },
-  //         {
-  //           key: '3',
-  //           label: 'Đồ Ngủ',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'scarves',
-  //       label: 'Dây lưng, Khăn choàng & Khác',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Trang điểm',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Chăm sóc Da',
-  //         },
-  //         {
-  //           key: '3',
-  //           label: 'Mỹ phẩm Cao cấp',
-  //         },
-  //         {
-  //           key: '4',
-  //           label: 'Son môi',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'gadgets',
-  //       label: 'Thiết bị Công nghệ',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Thiết bị Đeo thông minh',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Tai nghe',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'jewellers',
-  //       label: 'Trang Sức',
-  //       children: [
-  //         {
-  //           key: '1',
-  //           label: 'Trang sức Thời trang',
-  //         },
-  //         {
-  //           key: '2',
-  //           label: 'Trang sức Cao cấp',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       key: 'backpacks',
-  //       label: 'Balo',
-  //     },
-  //     {
-  //       key: 'handbags',
-  //       label: 'Túi xách & Ví',
-  //     },
-  //   ],
-  // },
-  {
-    key: 'collection',
-    label: 'Bộ sưu tập',
-  },
-  {
-    key: 'search',
-    label: 'Tìm kiếm',
-  },
-  {
-    key: 'contac',
-    label: 'Liên hệ',
-  },
-  {
-    key: 'cart',
-    label: 'Giỏ hàng',
-  },
-  {
-    key: 'order',
-    label: 'Đơn hàng',
-  },
-];
+const TOAST_COOLDOWN = 2000;
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
   const toast = useToast();
   const { isXl } = useBreakpoint();
-  const dispatch = useAppDispatch();
+
+  const lastToastTime = useRef(0);
 
   const [subscriptionForm] = useForm();
   const [signUpForm] = useForm<ISignUp>();
@@ -465,6 +70,239 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
 
   const { currentUser } = useAppSelector((state) => state.user);
+  const { items: cartItems } = useAppSelector((state) => state.cart);
+
+  const latestOrderNumber = localStorage.getItem(
+    LATEST_ORDER_NUMBER_STORAGE_KEY
+  );
+
+  const siderMenu: MenuProps['items'] = [
+    {
+      key: 'fashion',
+      label: 'Thời trang',
+      children: [
+        {
+          key: 'top-wear',
+          label: 'Áo',
+          children: [
+            {
+              key: 't-shirt',
+              label: 'Áo Thun (Áo Phông)',
+            },
+            {
+              key: 'casual-shirt',
+              label: 'Áo Sơ mi Thường ngày',
+            },
+            {
+              key: 'business-shirt',
+              label: 'Áo Sơ mi Công sở',
+            },
+            {
+              key: 'blazer-coat',
+              label: 'Áo Blazer & Áo Khoác',
+            },
+            {
+              key: 'suit',
+              label: 'Bộ Vest (Com-lê)',
+            },
+            {
+              key: 'jacket',
+              label: 'Áo khoác (Jackets)',
+            },
+          ],
+        },
+        {
+          key: 'belt',
+          label: 'Dây lưng, Khăn choàng & Khác',
+        },
+        {
+          key: 'watches',
+          label: 'Đồng hồ & Thiết bị đeo',
+        },
+        {
+          key: 'western',
+          label: 'Trang phục phong cách Tây',
+          children: [
+            {
+              key: 'dress',
+              label: 'Váy (Đầm)',
+            },
+            {
+              key: 'jumpsuit',
+              label: 'Đồ Liền (Jumpsuit)',
+            },
+            {
+              key: 'shirt-blouse',
+              label: 'Áo kiểu, Áo Thun & Áo sơ mi',
+            },
+            {
+              key: 'short-skirt',
+              label: 'Quần Short & Chân Váy',
+            },
+            {
+              key: 'shrug',
+              label: 'Áo khoác mỏng (Shrug)',
+            },
+            {
+              key: 'blazer',
+              label: 'Áo Blazer',
+            },
+          ],
+        },
+        {
+          key: 'plus-size',
+          label: 'Kích cỡ Lớn (Big Size)',
+        },
+        {
+          key: 'sung-glasses',
+          label: 'Kính mát & Gọng kính',
+        },
+        {
+          key: 'foot-wear',
+          label: 'Giày Dép',
+          children: [
+            {
+              key: 'flat-shoes',
+              label: 'Giày Đế bệt',
+            },
+            {
+              key: 'casual-shoes',
+              label: 'Giày Thường ngày',
+            },
+            {
+              key: 'heels',
+              label: 'Giày Cao gót',
+            },
+            {
+              key: 'boots',
+              label: 'Giày Boots/Bốt',
+            },
+          ],
+        },
+        {
+          key: 'sport-wear',
+          label: 'Đồ Thể thao & Vận động',
+          children: [
+            {
+              key: 'clothing',
+              label: 'Quần áo',
+            },
+            {
+              key: 'footwear',
+              label: 'Giày Dép',
+            },
+            {
+              key: 'sport-accessories',
+              label: 'Phụ kiện Thể thao',
+            },
+          ],
+        },
+        {
+          key: 'lingerie',
+          label: 'Đồ Lót & Đồ Ngủ',
+          children: [
+            {
+              key: 'bra',
+              label: 'Áo Ngực',
+            },
+            {
+              key: 'panties',
+              label: 'Quần Lót',
+            },
+            {
+              key: 'sleep-wear',
+              label: 'Đồ Ngủ',
+            },
+          ],
+        },
+        {
+          key: 'scarves',
+          label: 'Dây lưng, Khăn choàng & Khác',
+          children: [
+            {
+              key: 'makeup',
+              label: 'Trang điểm',
+            },
+            {
+              key: 'skincare',
+              label: 'Chăm sóc Da',
+            },
+            {
+              key: 'luxury-cosmetic',
+              label: 'Mỹ phẩm Cao cấp',
+            },
+            {
+              key: 'lipstick',
+              label: 'Son môi',
+            },
+          ],
+        },
+        {
+          key: 'gadgets',
+          label: 'Thiết bị Công nghệ',
+          children: [
+            {
+              key: 'wearable-devices',
+              label: 'Thiết bị Đeo thông minh',
+            },
+            {
+              key: 'headphone',
+              label: 'Tai nghe',
+            },
+          ],
+        },
+        {
+          key: 'jewellers',
+          label: 'Trang Sức',
+          children: [
+            {
+              key: 'fashion-jewelry',
+              label: 'Trang sức Thời trang',
+            },
+            {
+              key: 'fine-jewelry',
+              label: 'Trang sức Cao cấp',
+            },
+          ],
+        },
+        {
+          key: 'backpacks',
+          label: 'Balo',
+        },
+        {
+          key: 'handbags',
+          label: 'Túi xách & Ví',
+        },
+      ],
+    },
+    {
+      key: 'collection',
+      label: 'Bộ sưu tập',
+    },
+    {
+      key: 'search',
+      label: 'Tìm kiếm',
+    },
+    {
+      key: 'contac',
+      label: 'Liên hệ',
+    },
+    {
+      key: 'checkout',
+      label: 'Thanh toán',
+      onClick: () => handleMenuItemClick(PATH.CHECKOUT),
+    },
+    {
+      key: 'order',
+      label: 'Đơn hàng',
+      onClick: () =>
+        handleMenuItemClick(
+          latestOrderNumber
+            ? PATH.ORDER.replace(':orderNumber', latestOrderNumber)
+            : PATH.ORDER_WITHOUT_ORDER_NUMBER
+        ),
+    },
+  ];
 
   const menuItems: MenuProps['items'] = [
     {
@@ -479,7 +317,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     {
       key: '2',
       icon: <UserOutlined />,
-      label: <Link to={'/'}>Trang tài khoản</Link>,
+      label: <Link to={PATH.ACCOUNT_DETAILS}>Trang tài khoản</Link>,
     },
     {
       key: '3',
@@ -491,6 +329,18 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       onClick: () => signOut(),
     },
   ];
+
+  const isEmptyCart = useMemo(() => !cartItems?.length, [cartItems]);
+
+  const totalPrice = useMemo(
+    () =>
+      cartItems?.reduce(
+        (prev, current) =>
+          (prev += Number(current?.variant?.price ?? 0) * current?.quantity),
+        0
+      ),
+    [cartItems]
+  );
 
   const { mutate: signUpMutate, isPending: isSignUpPending } = useMutation({
     mutationFn: (values: ISignUp) => AuthApi.signUp(values),
@@ -505,9 +355,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const { mutate: signInMutate, isPending: isSignInPending } = useMutation({
     mutationFn: (values: ISignIn) => AuthApi.signIn(values),
     onSuccess: (response) => {
-      dispatch(getMe());
       toast.success(response?.message);
 
+      dispatch(getMe());
       handleCancelAuthModal();
       setIsMenuDrawerVisible(false);
     },
@@ -518,9 +368,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       mutationFn: (values: ISignInWithGoogle) =>
         AuthApi.signInWithGoogle(values),
       onSuccess: (response) => {
-        dispatch(getMe());
         toast.success(response?.message);
 
+        dispatch(getMe());
         handleCancelAuthModal();
         setIsMenuDrawerVisible(false);
       },
@@ -535,6 +385,15 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       dispatch(resetUser());
     },
   });
+
+  useEffect(() => {
+    dispatch(getCartItems());
+  }, []);
+
+  const handleMenuItemClick = (href: string) => {
+    setIsMenuDrawerVisible(false);
+    navigate(href);
+  };
 
   const handleOpenAuthModal = () => {
     setIsAuthVisible(true);
@@ -554,6 +413,48 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
     signUpForm.resetFields();
     signInForm.resetFields();
+  };
+
+  const handleDecrease = (item: ICart) => {
+    dispatch(
+      updateQuantity({
+        variantId: item?.variant?.id,
+        quantity: item?.quantity > 1 ? -1 : 0,
+      })
+    );
+  };
+
+  const handleIncrease = (item: ICart) => {
+    const { variant } = item;
+    const newQuantity = item?.quantity + 1;
+
+    const isAvailableStock = validateStockAvailability({
+      item: {
+        quantity: newQuantity,
+        stock: variant?.stock,
+        optionValues: variant?.optionValues,
+      },
+      toastCoolDown: TOAST_COOLDOWN,
+      lastToastTime,
+    });
+
+    if (!isAvailableStock) return;
+
+    dispatch(
+      updateQuantity({
+        variantId: item?.variant?.id,
+        quantity: 1,
+      })
+    );
+  };
+
+  const handleDeleteCartItem = (variantId: string) => {
+    dispatch(deleteCartItem({ variantId }));
+  };
+
+  const handleCheckout = () => {
+    setIsCartDrawerVisible(false);
+    navigate(PATH.CHECKOUT);
   };
 
   return (
@@ -672,32 +573,96 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       </Drawer>
 
       <Drawer
+        width={500}
         open={isCartDrawerVisible}
         title={<p className="font-bold text-2xl text-primary">Giỏ hàng</p>}
         footer={
           <Button
+            disabled={isEmptyCart}
             className="w-full py-4! px-5!"
             title={
               <Flex align="center" gap={25}>
                 <p>Tiến hành thanh toán</p>
-                <p>0,00 VNĐ</p>
+                {!isEmptyCart && <p>{convertToVND(totalPrice)}</p>}
               </Flex>
             }
+            onClick={handleCheckout}
           />
         }
         onClose={() => setIsCartDrawerVisible(false)}
       >
-        <Flex
-          vertical
-          align="center"
-          justify="center"
-          className="h-full px-5 pt-8 pb-5"
-        >
-          <EmptyCart />
-          <p className="font-semibold text-lg text-primary">
-            Giỏ hàng của bạn đang trống
-          </p>
-        </Flex>
+        {isEmptyCart ? (
+          <Flex
+            vertical
+            align="center"
+            justify="center"
+            className="h-full px-5 pt-8 pb-5"
+          >
+            <EmptyCart />
+            <p className="font-semibold text-lg text-primary">
+              Giỏ hàng của bạn đang trống
+            </p>
+          </Flex>
+        ) : (
+          <Space size="middle" direction="vertical">
+            {cartItems?.map((item, index) => (
+              <>
+                <div className="grid grid-cols-9 gap-x-3">
+                  <img
+                    className="col-span-3 rounded-lg object-cover"
+                    src={item?.variant?.imageMappings?.[0]?.image?.url}
+                    onError={(element) => {
+                      element.currentTarget.src = FALLBACK_IMG;
+                      element.currentTarget.srcset = FALLBACK_IMG;
+                    }}
+                  />
+                  <Flex vertical justify="space-between" className="col-span-4">
+                    <Space direction="vertical">
+                      <p className="font-semibold text-primary">{item?.name}</p>
+                      <p className="text-body">
+                        {item?.variant?.optionValues
+                          ?.map((optVal) => optVal?.optionValue?.value)
+                          .join(' - ')}
+                      </p>
+                      <span className="text-body">
+                        Giá: {convertToVND(Number(item?.variant?.price ?? 0))}
+                      </span>
+                    </Space>
+                    <Flex align="center" justify="space-between">
+                      <QuantitySelector
+                        size="small"
+                        className="shrink-0"
+                        quantity={item?.quantity}
+                        onDecrease={() => handleDecrease(item)}
+                        onIncrease={() => handleIncrease(item)}
+                      />
+                    </Flex>
+                  </Flex>
+                  <Flex
+                    vertical
+                    align="end"
+                    justify="space-between"
+                    className="col-span-2"
+                  >
+                    <p className="font-semibold">
+                      {convertToVND(
+                        Number(item?.variant?.price ?? 0) * item?.quantity
+                      )}
+                    </p>
+                    <Flex align="center" justify="end">
+                      <Button
+                        displayType="outlined"
+                        title={<Trash />}
+                        onClick={() => handleDeleteCartItem(item?.variant?.id)}
+                      />
+                    </Flex>
+                  </Flex>
+                </div>
+                {index !== cartItems?.length - 1 && <Divider />}
+              </>
+            ))}
+          </Space>
+        )}
       </Drawer>
     </Layout>
   );

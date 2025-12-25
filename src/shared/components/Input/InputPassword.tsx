@@ -1,11 +1,8 @@
 import { ConfigProvider, Input, InputProps } from 'antd';
 import { memo } from 'react';
 
-import classNames from 'classnames';
-
 const InputPassword = ({ className, ...props }: InputProps) => {
   const { allowClear = false } = props;
-  const customClass = classNames('px-5! py-2!', className);
 
   return (
     <ConfigProvider
@@ -14,16 +11,14 @@ const InputPassword = ({ className, ...props }: InputProps) => {
           Input: {
             hoverBg: '#fafafa',
             activeBg: '#fafafa',
+            hoverBorderColor: '#212121',
+            activeBorderColor: '#212121',
+            activeShadow: '0 0 0 2px rgba(44,44,45,0.1)',
           },
         },
       }}
     >
-      <Input.Password
-        size="middle"
-        allowClear={allowClear}
-        className={customClass}
-        {...props}
-      />
+      <Input.Password size="large" allowClear={allowClear} {...props} />
     </ConfigProvider>
   );
 };

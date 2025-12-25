@@ -5,6 +5,7 @@ import { getMe } from './userThunks';
 
 const initialState: UserState = {
   loading: false,
+  isInitialized: false,
   currentUser: {} as IUser,
 };
 
@@ -25,10 +26,12 @@ const userSlice = createSlice({
         const payload = action.payload;
 
         state.loading = false;
+        state.isInitialized = true;
         state.currentUser = payload?.data?.userInfo;
       })
       .addCase(getMe.rejected, (state) => {
         state.loading = false;
+        state.isInitialized = true;
       });
   },
 });
