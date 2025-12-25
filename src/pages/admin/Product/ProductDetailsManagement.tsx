@@ -152,8 +152,8 @@ const ProductDetailsManagement = () => {
   const [dataSource, setDataSource] = useState<IDataSource[]>([]);
   const [product, setProduct] = useState<IProduct>(initialProduct);
 
-  console.log('dataSource', dataSource);
-  console.log('productOptions', productOptions);
+  // console.log('dataSource', dataSource);
+  // console.log('productOptions', productOptions);
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({

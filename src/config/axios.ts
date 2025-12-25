@@ -90,8 +90,8 @@ export const setupAxiosInterceptors = () => {
       const originalRequest = error.config as CustomInternalAxiosRequestConfig;
       const status = error.response?.status;
 
-      // const authEndpoints = ['/auth/refresh', '/auth/sign-out'];
-      const authEndpoints = ['/auth/refresh'];
+      const authEndpoints = ['/auth/refresh', '/auth/sign-out'];
+      // const authEndpoints = ['/auth/refresh'];
       const isAuthEndpoint = authEndpoints.some((endpoint) =>
         originalRequest.url?.includes(endpoint)
       );

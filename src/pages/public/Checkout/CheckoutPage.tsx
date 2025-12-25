@@ -61,6 +61,8 @@ const CheckoutPage = () => {
     },
   });
 
+  const isDisabledOrder = useMemo(() => !cartItems?.length, [cartItems]);
+
   const totalPrice = useMemo(
     () =>
       cartItems?.reduce(
@@ -198,6 +200,7 @@ const CheckoutPage = () => {
             <Flex>
               <Button
                 title="Đặt hàng"
+                disabled={isDisabledOrder}
                 loading={isCreateOrderPending}
                 onClick={() => shippingAddressForm.submit()}
               />
