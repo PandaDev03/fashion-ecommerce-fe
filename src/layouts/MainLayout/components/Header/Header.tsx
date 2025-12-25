@@ -384,17 +384,29 @@ const Header = ({
 
               const Child = () => (
                 <div key={key} className="cursor-pointer group">
-                  <Space align="center" className="relative px-4 py-9">
-                    <Link
-                      to={href}
-                      className="text-base text-black! before:transition-all before:duration-300 before:ease-in-out before:absolute before:content-[''] before:h-0.5 before:w-0 before:bg-primary before:left-0 before:top-[calc(100%-2px)] group-has-hover:before:w-full"
-                    >
+                  <Space
+                    align="center"
+                    className="relative px-4 py-9"
+                    onClick={() => navigate(href)}
+                  >
+                    <a className="text-base text-black! before:transition-all before:duration-300 before:ease-in-out before:absolute before:content-[''] before:h-0.5 before:w-0 before:bg-primary before:left-0 before:top-[calc(100%-2px)] group-has-hover:before:w-full">
                       {title}
-                    </Link>
+                    </a>
                     {children && (
                       <ArrowDown className="text-xs group-has-hover:rotate-180 transition duration-300 ease-in-out" />
                     )}
                   </Space>
+                  {/* <Link
+                    to={''}
+                    className="relative px-4 py-9 text-base text-black!"
+                  >
+                    <div className="before:transition-all before:duration-300 before:ease-in-out before:absolute before:content-[''] before:h-0.5 before:w-0 before:bg-primary before:left-0 before:top-[calc(100%-2px)] group-has-hover:before:w-full">
+                      {title}
+                    </div>
+                  </Link>
+                  {children && (
+                    <ArrowDown className="text-xs group-has-hover:rotate-180 transition duration-300 ease-in-out" />
+                  )} */}
                 </div>
               );
 
