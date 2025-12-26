@@ -5,10 +5,12 @@ export interface IProductParams extends IPaginationParams {
   status?: string;
   brandId?: string;
   categoryId?: string;
-  brandSlugs?: string[]
-  categorySlugs?: string[]
+  brandSlugs?: string[];
+  categorySlugs?: string[];
   createdFrom?: string;
   createdTo?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export interface IGetProductOptionParams {

@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { Flex, Select } from 'antd';
-import { useEffect, useState } from 'react';
-
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { EmptyOrder, FilterAdjust, PlaceholderLarge } from '~/assets/svg';
 import { brandApi } from '~/features/brand/api/brandApi';
 import { categoryApi } from '~/features/category/api/categoryApi';
@@ -12,8 +12,12 @@ import Button from '~/shared/components/Button/Button';
 import { Layout } from '~/shared/components/Layout/Layout';
 import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
+import ProductCardSkeleton from '~/shared/components/ProductCardSkeleton/ProductCardSkeleton';
+import { useToast } from '~/shared/contexts/NotificationContext';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import useDebounceCallback from '~/shared/hooks/useDebounce';
 import useQueryParams from '~/shared/hooks/useQueryParams';
+import { RANGE_PRICE_CONSTANTS } from '~/shared/utils/constants';
 import Filter from './Filter';
 
 export interface IOption {
@@ -32,8 +36,16 @@ const initialFilterParams: IFilterParams = {
 };
 
 const ProductPage = () => {
+  const toast = useToast();
   const navigate = useNavigate();
   const { queryParams } = useQueryParams();
+
+  const flagRef = useRef(false);
+  const skeletonTimeoutRef = useRef<NodeJS.Timeout>(null);
+
+  const { is2Xl, isXl, isSm } = useBreakpoint();
+
+  const [shouldShowSkeleton, setShouldShowSkeleton] = useState(false);
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [isProductModalVisible, setIsProductModalVisible] = useState(false);
@@ -44,15 +56,41 @@ const ProductPage = () => {
   const [categoryOptions, setCategoryOptions] = useState<IOption[]>();
   const [brandOptions, setBrandOptions] = useState<IOption[]>();
 
-  const [rangPrice, setRangPrice] = useState([0, 20000]);
+  const [rangPrice, setRangPrice] = useState<number[]>([
+    RANGE_PRICE_CONSTANTS.MIN,
+    RANGE_PRICE_CONSTANTS.MAX_PLUS,
+  ]);
 
   const [filterParams, setFilterParams] =
     useState<IFilterParams>(initialFilterParams);
 
+  const isFilter = useMemo(
+    () => !!filterParams?.categories?.length || !!filterParams?.brands?.length,
+    [filterParams, products]
+  );
+
   const { mutate: getProducts, isPending: isGetProductPending } = useMutation({
     mutationFn: (params: IProductParams) => productAPI.getProducts(params),
+    onMutate: () => {
+      skeletonTimeoutRef.current = setTimeout(() => {
+        setShouldShowSkeleton(true);
+      }, 200);
+    },
     onSuccess: (response) => {
+      if (skeletonTimeoutRef.current) clearTimeout(skeletonTimeoutRef.current);
+      setShouldShowSkeleton(false);
+
+      if (!flagRef.current) flagRef.current = true;
       setProducts(response?.data);
+    },
+    onError: (error: any) => {
+      if (skeletonTimeoutRef.current) clearTimeout(skeletonTimeoutRef.current);
+
+      setShouldShowSkeleton(false);
+      toast.error(
+        error?.response?.data?.message ||
+          'Có lỗi xảy ra khi lây thông tin sản phẩm. Vui lòng thử lại sau'
+      );
     },
   });
 
@@ -87,43 +125,54 @@ const ProductPage = () => {
       const categoryValues = currentFilters.categories.map((c) => c.value);
       const brandValues = currentFilters.brands.map((b) => b.value);
 
+      const [minPrice, maxPrice] = rangPrice;
+
       const params = new URLSearchParams();
 
       if (brandValues.length > 0) params.set('brand', brandValues.join(','));
       if (categoryValues.length > 0)
         params.set('category', categoryValues.join(','));
 
+      if (minPrice) params.set('min', minPrice?.toString());
+      if (maxPrice && maxPrice !== RANGE_PRICE_CONSTANTS.MAX_PLUS)
+        params.set('max', maxPrice?.toString());
+
       const queryString = params.toString();
       navigate(queryString ? `?${queryString}` : '', { replace: true });
 
       const productParams: IProductParams = {
         status: 'active',
-        categorySlugs: categoryValues,
         brandSlugs: brandValues,
+        categorySlugs: categoryValues,
+        minPrice: minPrice * RANGE_PRICE_CONSTANTS.MULTIPLIER,
+        maxPrice:
+          maxPrice !== RANGE_PRICE_CONSTANTS.MAX_PLUS
+            ? maxPrice * RANGE_PRICE_CONSTANTS.MULTIPLIER
+            : undefined,
       };
-
       getProducts(productParams);
     },
     500
   );
 
   useEffect(() => {
-    const params: IProductParams = { status: 'active' };
-    getProducts(params);
-
     getBrandOptions();
     getCategoryOptions();
+
+    return () => {
+      if (skeletonTimeoutRef.current) clearTimeout(skeletonTimeoutRef.current);
+    };
   }, []);
 
   useEffect(() => {
     handleSyncFilters(filterParams);
-  }, [filterParams]);
-
-  console.log(rangPrice);
+  }, [filterParams, rangPrice]);
 
   useEffect(() => {
     const urlCategories = queryParams.get('category')?.split(',') || [];
     const urlBrands = queryParams.get('brand')?.split(',') || [];
+    const urlMinPrice = queryParams.get('min');
+    const urlMaxPrice = queryParams.get('max');
 
     if (categoryOptions && brandOptions) {
       const initialCats = categoryOptions.filter((opt) =>
@@ -141,7 +190,92 @@ const ProductPage = () => {
         }));
       }
     }
+
+    if (urlMinPrice && urlMaxPrice)
+      setRangPrice([Number(urlMinPrice), Number(urlMaxPrice)]);
+    else if (urlMinPrice)
+      setRangPrice([Number(urlMinPrice), RANGE_PRICE_CONSTANTS.MAX_PLUS]);
+    else if (urlMaxPrice)
+      setRangPrice([RANGE_PRICE_CONSTANTS.MIN, Number(urlMaxPrice)]);
+    else
+      setRangPrice([RANGE_PRICE_CONSTANTS.MIN, RANGE_PRICE_CONSTANTS.MAX_PLUS]);
   }, [categoryOptions, brandOptions]);
+
+  const renderContent = () => {
+    if (shouldShowSkeleton)
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 lg:gap-x-5 xl:gap-x-7 gap-y-3 xl:gap-y-5 2xl:gap-y-8 ">
+          <ProductCardSkeleton count={is2Xl ? 10 : isXl ? 8 : isSm ? 6 : 4} />
+        </div>
+      );
+
+    if (flagRef.current) {
+      if (products?.length)
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 lg:gap-x-5 xl:gap-x-7 gap-y-3 xl:gap-y-5 2xl:gap-y-8 ">
+            {products?.map((product, index) => (
+              <ProductCard
+                vertical
+                key={index}
+                effect="lift"
+                product={product}
+                onClick={() => handleProductCardClick(product)}
+              />
+            ))}
+          </div>
+        );
+
+      return (
+        <Flex
+          vertical
+          align="center"
+          justify="center"
+          className="w-full col-span-10 lg:col-span-8 bg-white text-center px-16! py-16! sm:py-20! lg:py-24! xl:py-32!"
+        >
+          <div className="relative max-w-full">
+            <span
+              style={{
+                width: 'initial',
+                height: 'initial',
+              }}
+            >
+              <PlaceholderLarge
+                style={{
+                  width: 'initial',
+                  height: 'initial',
+                }}
+                className="block min-w-full max-w-full min-h-full max-h-full"
+              />
+              <EmptyOrder className="absolute inset-0 top-0 right-0 min-w-full max-w-full min-h-full max-h-full" />
+            </span>
+          </div>
+          <Flex vertical align="center">
+            <h3 className="font-bold text-primary text-5xl">
+              {isFilter
+                ? 'Không tìm thấy sản phẩm phù hợp'
+                : 'Chưa có sản phẩm nào'}
+            </h3>
+            <p className="text-sm text-body md:text-base leading-7 pt-2 md:pt-3.5 pb-7 md:pb-9">
+              {isFilter
+                ? 'Không có sản phẩm nào khớp với bộ lọc của bạn. Hãy thử điều chỉnh bộ lọc hoặc xóa một số tiêu chí.'
+                : 'Hiện tại chưa có sản phẩm nào trong danh mục này. Vui lòng quay lại sau.'}
+            </p>
+            {isFilter && (
+              <Button
+                title={
+                  <Flex align="center" className="font-normal">
+                    <FilterAdjust className="w-4 h-4" />
+                    <p className="ltr:pl-1.5 rtl:pr-1.5">Xóa bộ lọc</p>
+                  </Flex>
+                }
+                onClick={() => handleClearFilter()}
+              />
+            )}
+          </Flex>
+        </Flex>
+      );
+    }
+  };
 
   const handleCloseFilterDrawer = () => {
     setIsOpenFilterDrawer(false);
@@ -158,15 +292,15 @@ const ProductPage = () => {
   };
 
   const handleClearFilter = () => {
-    setFilterParams({ brands: [], categories: [] });
+    setFilterParams({
+      brands: [],
+      categories: [],
+    });
   };
 
   return (
     <Layout
-      loading={
-        // isGetProductPending ||
-        isGetCategoryOptionPending || isGetBrandOptionPending
-      }
+      loading={isGetCategoryOptionPending || isGetBrandOptionPending}
       className="bg-white! px-4! md:px-8! 2xl:px-16!"
     >
       <div className="grid grid-cols-10 pt-8! gap-x-8">
@@ -213,62 +347,8 @@ const ProductPage = () => {
               </Flex>
             </Flex>
           </Flex>
-          {products?.length ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 lg:gap-x-5 xl:gap-x-7 gap-y-3 xl:gap-y-5 2xl:gap-y-8 ">
-              {products?.map((product, index) => (
-                <ProductCard
-                  vertical
-                  key={index}
-                  effect="lift"
-                  product={product}
-                  onClick={() => handleProductCardClick(product)}
-                />
-              ))}
-            </div>
-          ) : (
-            <Flex
-              vertical
-              align="center"
-              justify="center"
-              className="w-full col-span-10 lg:col-span-8 bg-white text-center px-16! py-16! sm:py-20! lg:py-24! xl:py-32!"
-            >
-              <div className="relative max-w-full">
-                <span
-                  style={{
-                    width: 'initial',
-                    height: 'initial',
-                  }}
-                >
-                  <PlaceholderLarge
-                    style={{
-                      width: 'initial',
-                      height: 'initial',
-                    }}
-                    className="block min-w-full max-w-full min-h-full max-h-full"
-                  />
-                  <EmptyOrder className="absolute inset-0 top-0 right-0 min-w-full max-w-full min-h-full max-h-full" />
-                </span>
-              </div>
-              <Flex vertical align="center">
-                <h3 className="font-bold text-primary text-5xl">
-                  Không tìm thấy sản phẩm phù hợp
-                </h3>
-                <p className="text-sm text-body md:text-base leading-7 pt-2 md:pt-3.5 pb-7 md:pb-9">
-                  Không có sản phẩm nào khớp với bộ lọc của bạn. Hãy thử điều
-                  chỉnh bộ lọc hoặc xóa một số tiêu chí.
-                </p>
-                <Button
-                  title={
-                    <Flex align="center" className="font-normal">
-                      <FilterAdjust className="w-4 h-4" />
-                      <p className="ltr:pl-1.5 rtl:pr-1.5">Xóa bộ lọc</p>
-                    </Flex>
-                  }
-                  onClick={() => handleClearFilter()}
-                />
-              </Flex>
-            </Flex>
-          )}
+
+          {renderContent()}
         </Flex>
 
         <ProductModal

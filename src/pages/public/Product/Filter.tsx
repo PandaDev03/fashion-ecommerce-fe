@@ -15,6 +15,7 @@ import { Checkbox } from '~/shared/components/Checkbox/Checkbox';
 import Drawer from '~/shared/components/Drawer/Drawer';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { IFilterParams, IOption } from './ProductPage';
+import { RANGE_PRICE_CONSTANTS } from '~/shared/utils/constants';
 
 interface FilterProps {
   rangePrice: number[];
@@ -217,10 +218,11 @@ const FilterContent = ({
         <h3 className="text-sm text-primary md:text-base font-semibold">Giá</h3>
         <Slider
           range
-          min={0}
-          max={20000}
           value={rangePrice}
-          marks={{ 0: 0, 20000: 20000 }}
+          min={RANGE_PRICE_CONSTANTS.MIN}
+          max={RANGE_PRICE_CONSTANTS.MAX_PLUS}
+          step={RANGE_PRICE_CONSTANTS.STEP}
+          marks={RANGE_PRICE_CONSTANTS.MARKS}
           onChange={setRangPrice}
         />
       </Space>
