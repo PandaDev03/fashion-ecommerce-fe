@@ -25,6 +25,7 @@ import {
 } from '~/features/auth/types/auth';
 import {
   deleteCartItem,
+  toggleCartDrawer,
   updateQuantity,
 } from '~/features/cart/stores/cartSlice';
 import { getCartItems } from '~/features/cart/stores/cartThunks';
@@ -314,10 +315,12 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const [isAuthVisible, setIsAuthVisible] = useState(false);
   const [isSignUpVisible, setIsSignUpVisible] = useState(false);
   const [isMenuDrawerVisible, setIsMenuDrawerVisible] = useState(false);
-  const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
+  // const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
 
   const { currentUser } = useAppSelector((state) => state.user);
-  const { items: cartItems } = useAppSelector((state) => state.cart);
+  const { items: cartItems, isCartDrawerOpen } = useAppSelector(
+    (state) => state.cart
+  );
 
   const menuItems: MenuProps['items'] = [
     {
@@ -425,7 +428,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   };
 
   const handleOpenCartDrawer = () => {
-    setIsCartDrawerVisible(true);
+    dispatch(toggleCartDrawer(true));
+    // setIsCartDrawerVisible(true);
   };
 
   const handleCancelAuthModal = () => {
@@ -474,7 +478,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   };
 
   const handleCheckout = () => {
-    setIsCartDrawerVisible(false);
+    // setIsCartDrawerVisible(false);
+
+    dispatch(toggleCartDrawer(false));
     navigate(PATH.CHECKOUT);
   };
 
@@ -606,7 +612,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
       <Drawer
         width={500}
-        open={isCartDrawerVisible}
+        open={isCartDrawerOpen}
         title={<p className="font-bold text-2xl text-primary">Giỏ hàng</p>}
         footer={
           <Button
@@ -621,7 +627,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             onClick={handleCheckout}
           />
         }
-        onClose={() => setIsCartDrawerVisible(false)}
+        // onClose={() => setIsCartDrawerVisible(false)}
+        onClose={() => dispatch(toggleCartDrawer(false))}
       >
         {isEmptyCart ? (
           <Flex

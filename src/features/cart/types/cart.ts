@@ -35,7 +35,7 @@ export interface ICart {
   }[];
 }
 
-export type CartState = IPaginatedData<ICart>;
+export type CartState = IPaginatedData<ICart> & { isCartDrawerOpen?: boolean };
 
 export interface ILocalCartItem {
   productId: string;

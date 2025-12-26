@@ -30,6 +30,9 @@ import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
 import {
   convertToVND,
+  findFirstAvailableOptionValue,
+  getOptionValueImage,
+  isColorOption,
   validateStockAvailability,
 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
@@ -160,7 +163,7 @@ const TOAST_COOLDOWN = 2000;
 
 const ProductDetailPage = () => {
   const toast = useToast();
-  const dispath = useAppDispatch();
+  const dispatch = useAppDispatch();
   const { slug } = useParams<{ slug: string }>();
 
   const lastToastTime = useRef(0);
@@ -213,55 +216,55 @@ const ProductDetailPage = () => {
     [quantity, selectedVariant]
   );
 
-  const getOptionValueImage = (optionValueId: string) => {
-    const variant = productDetails?.variants?.find((v) =>
-      v.optionValues?.some((ov) => ov.optionValueId === optionValueId)
-    );
+  // const getOptionValueImage = (optionValueId: string) => {
+  //   const variant = productDetails?.variants?.find((v) =>
+  //     v.optionValues?.some((ov) => ov.optionValueId === optionValueId)
+  //   );
 
-    return variant?.imageMappings?.[0]?.image?.url;
-  };
+  //   return variant?.imageMappings?.[0]?.image?.url;
+  // };
 
-  const isColorOption = (optionName: string) => {
-    const colorKeywords = ['màu', 'color', 'colour'];
+  // const isColorOption = (optionName: string) => {
+  //   const colorKeywords = ['màu', 'color', 'colour'];
 
-    return colorKeywords.some((keyword) =>
-      optionName.toLowerCase().includes(keyword)
-    );
-  };
+  //   return colorKeywords.some((keyword) =>
+  //     optionName.toLowerCase().includes(keyword)
+  //   );
+  // };
 
   useEffect(() => {
     if (slug) getProductBySlug(slug);
   }, [slug]);
 
-  const findFirstAvailableOptionValue = (
-    productDetails: IProduct,
-    optionId: string,
-    otherOptionValueId?: string
-  ) => {
-    const option = productDetails.options?.find((opt) => opt.id === optionId);
-    if (!option?.values) return '';
+  // const findFirstAvailableOptionValue = (
+  //   productDetails: IProduct,
+  //   optionId: string,
+  //   otherOptionValueId?: string
+  // ) => {
+  //   const option = productDetails.options?.find((opt) => opt.id === optionId);
+  //   if (!option?.values) return '';
 
-    for (const value of option.values) {
-      const hasStock = productDetails.variants?.some((variant) => {
-        const hasThisValue = variant.optionValues?.some(
-          (ov) => ov.optionValueId === value.id
-        );
+  //   for (const value of option.values) {
+  //     const hasStock = productDetails.variants?.some((variant) => {
+  //       const hasThisValue = variant.optionValues?.some(
+  //         (ov) => ov.optionValueId === value.id
+  //       );
 
-        if (otherOptionValueId) {
-          const hasOtherValue = variant.optionValues?.some(
-            (ov) => ov.optionValueId === otherOptionValueId
-          );
-          return hasThisValue && hasOtherValue && (variant.stock || 0) > 0;
-        }
+  //       if (otherOptionValueId) {
+  //         const hasOtherValue = variant.optionValues?.some(
+  //           (ov) => ov.optionValueId === otherOptionValueId
+  //         );
+  //         return hasThisValue && hasOtherValue && (variant.stock || 0) > 0;
+  //       }
 
-        return hasThisValue && (variant.stock || 0) > 0;
-      });
+  //       return hasThisValue && (variant.stock || 0) > 0;
+  //     });
 
-      if (hasStock) return value.id;
-    }
+  //     if (hasStock) return value.id;
+  //   }
 
-    return option.values[0]?.id || '';
-  };
+  //   return option.values[0]?.id || '';
+  // };
 
   useEffect(() => {
     if (!productDetails) return;
@@ -365,8 +368,23 @@ const ProductDetailPage = () => {
       (cartItem) => cartItem?.variant?.id === selectedVariant?.id
     );
 
+    // if (currentCartItem) {
+    //   const isAvailableStock = validateStockAvailability({
+    //     item: {
+    //       quantity: quantity + currentCartItem?.quantity,
+    //       optionValues: selectedVariant?.optionValues,
+    //       stock: selectedVariant?.stock,
+    //     },
+    //     toastCoolDown: TOAST_COOLDOWN,
+    //     lastToastTime,
+    //   });
+
+    //   if (!isAvailableStock) return;
+    // }
+
+    let isAvailableStock;
     if (currentCartItem) {
-      const isAvailableStock = validateStockAvailability({
+      isAvailableStock = validateStockAvailability({
         item: {
           quantity: quantity + currentCartItem?.quantity,
           optionValues: selectedVariant?.optionValues,
@@ -375,9 +393,19 @@ const ProductDetailPage = () => {
         toastCoolDown: TOAST_COOLDOWN,
         lastToastTime,
       });
-
-      if (!isAvailableStock) return;
+    } else {
+      isAvailableStock = validateStockAvailability({
+        item: {
+          quantity: quantity,
+          optionValues: selectedVariant?.optionValues,
+          stock: selectedVariant?.stock,
+        },
+        toastCoolDown: TOAST_COOLDOWN,
+        lastToastTime,
+      });
     }
+
+    if (!isAvailableStock) return;
 
     const cartItem: ICart = {
       id: productDetails?.id,
@@ -393,13 +421,14 @@ const ProductDetailPage = () => {
       variant: selectedVariant,
       quantity,
     };
-    dispath(addToCart(cartItem));
+
+    dispatch(addToCart(cartItem));
   };
 
-  const handleSelectedProduct = (product: Product) => {
-    setIsOpen(true);
-    setSelectedProduct(product);
-  };
+  // const handleSelectedProduct = (product: Product) => {
+  //   setIsOpen(true);
+  //   setSelectedProduct(product);
+  // };
 
   return (
     <Layout
@@ -507,7 +536,7 @@ const ProductDetailPage = () => {
                   <Flex className="gap-x-3">
                     {values?.map((val) => {
                       const imageUrl = isColorOpt
-                        ? getOptionValueImage(val?.id)
+                        ? getOptionValueImage(val?.id, productDetails)
                         : null;
 
                       const isSelected = isColorOpt
@@ -642,27 +671,26 @@ const ProductDetailPage = () => {
             Sản phẩm liên quan
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
-            {newArrivals?.map(({ key, ...product }) => (
+            {/* {newArrivals?.map(({ key, ...product }) => (
               <ProductCard
                 vertical
                 key={key}
                 effect="lift"
-                imgSrc={product?.img}
+                product={pro}
                 onClick={() => handleSelectedProduct(product)}
-                {...product}
               />
-            ))}
+            ))} */}
           </div>
         </Flex>
 
-        <ProductModal
+        {/* <ProductModal
           open={isOpen}
           quantity={quantity}
           product={selectedProduct}
           onDecrease={handleDecrease}
           onIncrease={handleIncrease}
           onCancel={() => setIsOpen(false)}
-        />
+        /> */}
       </Content>
     </Layout>
   );
