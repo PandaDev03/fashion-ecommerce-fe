@@ -1,14 +1,14 @@
 import { Flex } from 'antd';
 import classNames from 'classnames';
-import { HTMLAttributes, memo, ReactNode } from 'react';
+import { HTMLAttributes, memo, useMemo } from 'react';
+
+import { FALLBACK_IMG } from '~/assets/images';
 import { PlaceholderMedium, PlaceholderSmall } from '~/assets/svg';
+import { IProduct } from '~/features/products/types/product';
+import { convertToVND } from '~/shared/utils/function';
 
 interface ProductCardProps {
-  imgSrc: string;
-  title: ReactNode;
-  subTitle: ReactNode;
-  price: number;
-  originalPrice?: number;
+  product: IProduct;
   vertical?: boolean;
   size?: 'sm' | 'md';
   effect?: 'lift' | 'scale';
@@ -20,17 +20,24 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({
-  imgSrc,
-  title,
-  subTitle,
-  price,
-  originalPrice,
+  product,
   customClassNames,
   size = 'md',
   vertical = false,
   effect = 'scale',
   onClick,
 }: ProductCardProps) => {
+  const defaultProduct = useMemo(() => {
+    const productVariant = product?.variants?.[0];
+
+    return {
+      imageUrl:
+        product?.images?.[0]?.url ||
+        productVariant?.imageMappings?.[0]?.image?.url,
+      price: product?.price || productVariant?.price,
+    };
+  }, [product]);
+
   return (
     <Flex
       vertical={vertical}
@@ -71,7 +78,7 @@ const ProductCard = ({
             )}
           </span>
           <img
-            src={imgSrc}
+            src={defaultProduct?.imageUrl || FALLBACK_IMG}
             className={classNames(
               'block absolute inset-0 m-auto min-w-full max-w-full min-h-full max-h-full bg-gray-300 object-cover rounded-s-md w-full transition duration-200 ease-in rounded-md',
               effect === 'scale' ? 'group-hover:scale-115' : ''
@@ -92,18 +99,15 @@ const ProductCard = ({
         )}
       >
         <h4 className="font-semibold text-sm sm:text-base md:text-sm lg:text-base xl:text-lg text-primary mb-1 truncate">
-          {title}
+          {product?.name}
         </h4>
-        <p className="truncate text-xs lg:text-sm text-body">{subTitle}</p>
+        <p className="truncate text-xs lg:text-sm text-body">
+          {product?.description}
+        </p>
         <Flex align="center" className="gap-x-2 mt-2.5!">
           <p className="font-semibold text-sm lg:text-lg text-primary">
-            ${price}
+            {convertToVND(defaultProduct?.price)}
           </p>
-          {originalPrice && (
-            <p className="line-through text-sm lg:text-base text-gray-400">
-              ${originalPrice}
-            </p>
-          )}
         </Flex>
       </Flex>
     </Flex>
