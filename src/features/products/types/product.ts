@@ -5,6 +5,8 @@ export interface IProductParams extends IPaginationParams {
   status?: string;
   brandId?: string;
   categoryId?: string;
+  brandSlugs?: string[]
+  categorySlugs?: string[]
   createdFrom?: string;
   createdTo?: string;
 }

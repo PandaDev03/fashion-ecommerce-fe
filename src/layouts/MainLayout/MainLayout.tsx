@@ -483,8 +483,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     navigate(PATH.CHECKOUT);
   };
 
-  console.log('isSm', isSm);
-
   return (
     <Layout loading={isSignOutPending} className="max-lg:pb-14 bg-white!">
       <Header
