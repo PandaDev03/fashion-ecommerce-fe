@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { FileType } from '../components/Upload/Dragger';
 import { DEFAULT_URL_FIELDS, GUEST_USER_KEY } from './constants';
-import { IVariant } from '~/features/products/types/product';
+import { IProduct, IVariant } from '~/features/products/types/product';
 import { RefObject } from 'react';
 import { notificationEmitter } from './notificationEmitter';
 
@@ -142,4 +142,53 @@ export const validateStockAvailability = ({
   }
 
   return true;
+};
+
+export const findFirstAvailableOptionValue = (
+  productDetails: IProduct,
+  optionId: string,
+  otherOptionValueId?: string
+) => {
+  const option = productDetails.options?.find((opt) => opt.id === optionId);
+  if (!option?.values) return '';
+
+  for (const value of option.values) {
+    const hasStock = productDetails.variants?.some((variant) => {
+      const hasThisValue = variant.optionValues?.some(
+        (ov) => ov.optionValueId === value.id
+      );
+
+      if (otherOptionValueId) {
+        const hasOtherValue = variant.optionValues?.some(
+          (ov) => ov.optionValueId === otherOptionValueId
+        );
+        return hasThisValue && hasOtherValue && (variant.stock || 0) > 0;
+      }
+
+      return hasThisValue && (variant.stock || 0) > 0;
+    });
+
+    if (hasStock) return value.id;
+  }
+
+  return option.values[0]?.id || '';
+};
+
+export const getOptionValueImage = (
+  optionValueId: string,
+  productDetails: IProduct | undefined
+) => {
+  const variant = productDetails?.variants?.find((v) =>
+    v.optionValues?.some((ov) => ov.optionValueId === optionValueId)
+  );
+
+  return variant?.imageMappings?.[0]?.image?.url;
+};
+
+export const isColorOption = (optionName: string) => {
+  const colorKeywords = ['màu', 'color', 'colour'];
+
+  return colorKeywords.some((keyword) =>
+    optionName.toLowerCase().includes(keyword)
+  );
 };

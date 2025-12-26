@@ -13,6 +13,7 @@ const CART_STORAGE_KEY = 'cartItems';
 
 const initialState: CartState = {
   loading: false,
+  isCartDrawerOpen: false,
   items: [] as ICart[],
   pageInfo: {} as IPageInfo,
 };
@@ -46,6 +47,9 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
+    toggleCartDrawer: (state, action) => {
+      state.isCartDrawerOpen = action.payload;
+    },
     addToCart: (state, action: PayloadAction<ICart>) => {
       const newItem = action.payload;
       const currentItems = state.items;
@@ -110,5 +114,11 @@ const cartSlice = createSlice({
 });
 
 export const cartReducer = cartSlice.reducer;
-export const { addToCart, updateQuantity, deleteCartItem, clearCart } =
-  cartSlice.actions;
+
+export const {
+  toggleCartDrawer,
+  addToCart,
+  updateQuantity,
+  deleteCartItem,
+  clearCart,
+} = cartSlice.actions;

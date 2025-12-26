@@ -37,7 +37,7 @@ const QuantitySelector = ({
       </button>
       <span
         className={classNames(
-          'font-semibold flex items-center justify-center h-full border-l border-r border-gray-100 transition-colors duration-250 ease-in-out cursor-default shrink-0 text-base text-heading w-12 md:w-12 xl:w-24',
+          'font-semibold flex items-center justify-center h-full border-l border-r border-gray-100 transition-colors duration-250 ease-in-out cursor-default shrink-0 text-base text-heading',
           size === 'small' ? 'w-12' : 'w-12 md:w-20 xl:w-24'
         )}
       >
