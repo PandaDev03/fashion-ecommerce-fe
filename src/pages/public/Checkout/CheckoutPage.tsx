@@ -197,9 +197,10 @@ const CheckoutPage = () => {
                 />
               </FormItem>
             </Form>
-            <Flex>
+            <Flex className="max-sm:w-full">
               <Button
                 title="Đặt hàng"
+                className="w-full"
                 disabled={isDisabledOrder}
                 loading={isCreateOrderPending}
                 onClick={() => shippingAddressForm.submit()}

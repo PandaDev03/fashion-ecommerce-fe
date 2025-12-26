@@ -5,6 +5,7 @@ export { ReactComponent as ArrowLeft } from './arrow-left.svg';
 export { ReactComponent as ArrowRight } from './arrow-right.svg';
 export { ReactComponent as BrandSuperHuman } from './brand-superhuman.svg';
 export { ReactComponent as Cart } from './cart.svg';
+export { ReactComponent as CloseFill } from './close-fill.svg';
 export { ReactComponent as DashBoard } from './dashboard.svg';
 export { ReactComponent as EmptyCart } from './empty-cart.svg';
 export { ReactComponent as EmptyOrder } from './empty-order.svg';

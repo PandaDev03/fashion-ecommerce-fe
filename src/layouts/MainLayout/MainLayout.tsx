@@ -1,6 +1,6 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Divider, Dropdown, Flex, MenuProps, Space } from 'antd';
+import { Drawer as AntdDrawer, Dropdown, Flex, MenuProps, Space } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -15,7 +15,7 @@ import {
   PROFILE_PICTURE,
   SUBSCRIPTION_BG,
 } from '~/assets/images';
-import { EmptyCart, LOGO, Trash } from '~/assets/svg';
+import { CloseFill, EmptyCart, LOGO } from '~/assets/svg';
 import { AuthApi } from '~/features/auth/api/auth';
 import AuthModal from '~/features/auth/components/AuthModal';
 import {
@@ -300,13 +300,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
 
   const toast = useToast();
-  const { isXl } = useBreakpoint();
+  const { isXl, isMd, isSm } = useBreakpoint();
 
   const lastToastTime = useRef(0);
-
-  const latestOrderNumber = localStorage.getItem(
-    LATEST_ORDER_NUMBER_STORAGE_KEY
-  );
 
   const [subscriptionForm] = useForm();
   const [signUpForm] = useForm<ISignUp>();
@@ -315,11 +311,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const [isAuthVisible, setIsAuthVisible] = useState(false);
   const [isSignUpVisible, setIsSignUpVisible] = useState(false);
   const [isMenuDrawerVisible, setIsMenuDrawerVisible] = useState(false);
-  // const [isCartDrawerVisible, setIsCartDrawerVisible] = useState(false);
 
   const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems, isCartDrawerOpen } = useAppSelector(
     (state) => state.cart
+  );
+
+  const latestOrderNumber = localStorage.getItem(
+    LATEST_ORDER_NUMBER_STORAGE_KEY
   );
 
   const menuItems: MenuProps['items'] = [
@@ -484,6 +483,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     navigate(PATH.CHECKOUT);
   };
 
+  console.log('isSm', isSm);
+
   return (
     <Layout loading={isSignOutPending} className="max-lg:pb-14 bg-white!">
       <Header
@@ -610,9 +611,13 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         />
       </Drawer>
 
-      <Drawer
+      <AntdDrawer
         width={500}
         open={isCartDrawerOpen}
+        classNames={{
+          wrapper: 'sm:max-w-[80%]!',
+          header: '[&>*:first-child]:flex-row-reverse',
+        }}
         title={<p className="font-bold text-2xl text-primary">Giỏ hàng</p>}
         footer={
           <Button
@@ -627,7 +632,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             onClick={handleCheckout}
           />
         }
-        // onClose={() => setIsCartDrawerVisible(false)}
         onClose={() => dispatch(toggleCartDrawer(false))}
       >
         {isEmptyCart ? (
@@ -643,66 +647,55 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             </p>
           </Flex>
         ) : (
-          <Space size="middle" direction="vertical">
+          <Space size="middle" direction="vertical" className="w-full">
             {cartItems?.map((item, index) => (
-              <>
-                <div className="grid grid-cols-9 gap-x-3">
+              <Flex
+                key={index}
+                align="center"
+                className="w-full h-auto bg-white py-4 md:py-7 border-b border-gray-100 relative last:border-b-0"
+              >
+                <div
+                  className="group relative flex shrink-0 w-24 h-24 overflow-hidden bg-gray-200 rounded-md cursor-pointer md:w-28 md:h-28 ltr:mr-4 rtl:ml-4"
+                  onClick={() => handleDeleteCartItem(item?.variant?.id)}
+                >
                   <img
-                    className="col-span-3 rounded-lg object-cover"
+                    className="w-full rounded-lg object-cover"
                     src={item?.variant?.imageMappings?.[0]?.image?.url}
                     onError={(element) => {
                       element.currentTarget.src = FALLBACK_IMG;
                       element.currentTarget.srcset = FALLBACK_IMG;
                     }}
                   />
-                  <Flex vertical justify="space-between" className="col-span-4">
-                    <Space direction="vertical">
-                      <p className="font-semibold text-primary">{item?.name}</p>
-                      <p className="text-body">
-                        {item?.variant?.optionValues
-                          ?.map((optVal) => optVal?.optionValue?.value)
-                          .join(' - ')}
-                      </p>
-                      <span className="text-body">
-                        Giá: {convertToVND(Number(item?.variant?.price ?? 0))}
-                      </span>
-                    </Space>
-                    <Flex align="center" justify="space-between">
-                      <QuantitySelector
-                        size="small"
-                        className="shrink-0"
-                        quantity={item?.quantity}
-                        onDecrease={() => handleDecrease(item)}
-                        onIncrease={() => handleIncrease(item)}
-                      />
-                    </Flex>
-                  </Flex>
-                  <Flex
-                    vertical
-                    align="end"
-                    justify="space-between"
-                    className="col-span-2"
-                  >
-                    <p className="font-semibold">
-                      {convertToVND(
-                        Number(item?.variant?.price ?? 0) * item?.quantity
-                      )}
-                    </p>
-                    <Flex align="center" justify="end">
-                      <Button
-                        displayType="outlined"
-                        title={<Trash />}
-                        onClick={() => handleDeleteCartItem(item?.variant?.id)}
-                      />
-                    </Flex>
-                  </Flex>
+                  <div className="absolute flex items-center justify-center top-0 w-full h-full transition duration-200 ease-in-out bg-[#0000004d] ltr:left-0 rtl:right-0 md:bg-transparent md:group-hover:bg-[#0000004d]">
+                    <CloseFill />
+                  </div>
                 </div>
-                {index !== cartItems?.length - 1 && <Divider />}
-              </>
+                <Flex vertical className="w-full overflow-hidden">
+                  <p className="text-sm text-primary mb-1.5 -mt-1 truncate">
+                    {item?.name}
+                  </p>
+                  <p className="text-sm text-gray-400 mb-2.5">
+                    Giá:&nbsp;
+                    {convertToVND(Number(item?.variant?.price ?? 0))}
+                  </p>
+                  <Flex align="center" justify="space-between">
+                    <QuantitySelector
+                      size="small"
+                      className="shrink-0"
+                      quantity={item?.quantity}
+                      onDecrease={() => handleDecrease(item)}
+                      onIncrease={() => handleIncrease(item)}
+                    />
+                    <p className="text-sm font-semibold leading-5 md:text-base text-heading">
+                      {convertToVND(Number(item?.price) * item?.quantity)}
+                    </p>
+                  </Flex>
+                </Flex>
+              </Flex>
             ))}
           </Space>
         )}
-      </Drawer>
+      </AntdDrawer>
     </Layout>
   );
 };
