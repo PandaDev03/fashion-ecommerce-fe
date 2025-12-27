@@ -11,6 +11,7 @@ export interface IProductParams extends IPaginationParams {
   createdTo?: string;
   minPrice?: number;
   maxPrice?: number;
+  includeVariants?: boolean;
 }
 
 export interface IGetProductOptionParams {

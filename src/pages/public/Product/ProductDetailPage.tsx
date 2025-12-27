@@ -22,8 +22,6 @@ import Button from '~/shared/components/Button/Button';
 import Collapse from '~/shared/components/Collapse/Collapse';
 import Image from '~/shared/components/Image/Image';
 import { Content, Layout } from '~/shared/components/Layout/Layout';
-import ProductModal from '~/shared/components/Modal/ProductModal';
-import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
@@ -37,6 +35,7 @@ import {
 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import { Product } from '../Home/HomePage';
+import ProductDetailSkeleton from './components/ProductDetailSkeleton';
 
 const newArrivals: Product[] = [
   {
@@ -169,16 +168,12 @@ const ProductDetailPage = () => {
   const lastToastTime = useRef(0);
   const carouselRef = useRef<CarouselRef>(null);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantity, setQuantity] = useState(MIN_QUANTITY);
 
   const [selectedColorId, setSelectedColorId] = useState('');
   const [selectedSizeId, setSelectedSizeId] = useState('');
   const [selectedVariant, setSelectedVariant] = useState<IVariant>();
-  const [selectedProduct, setSelectedProduct] = useState<Product>(
-    {} as Product
-  );
 
   const [productDetails, setProductDetails] = useState<IProduct>();
   const [productOptions, setProductOptions] = useState<IProduct['options']>([]);
@@ -208,6 +203,13 @@ const ProductDetailPage = () => {
     },
   ];
 
+  const isShowSkeleton = useMemo(
+    () =>
+      !productDetails ||
+      (productDetails && !Object.keys(productDetails)?.length),
+    [productDetails]
+  );
+
   const isDisabledAddToCart = useMemo(
     () =>
       selectedVariant?.stock === 0 ||
@@ -216,55 +218,9 @@ const ProductDetailPage = () => {
     [quantity, selectedVariant]
   );
 
-  // const getOptionValueImage = (optionValueId: string) => {
-  //   const variant = productDetails?.variants?.find((v) =>
-  //     v.optionValues?.some((ov) => ov.optionValueId === optionValueId)
-  //   );
-
-  //   return variant?.imageMappings?.[0]?.image?.url;
-  // };
-
-  // const isColorOption = (optionName: string) => {
-  //   const colorKeywords = ['màu', 'color', 'colour'];
-
-  //   return colorKeywords.some((keyword) =>
-  //     optionName.toLowerCase().includes(keyword)
-  //   );
-  // };
-
   useEffect(() => {
     if (slug) getProductBySlug(slug);
   }, [slug]);
-
-  // const findFirstAvailableOptionValue = (
-  //   productDetails: IProduct,
-  //   optionId: string,
-  //   otherOptionValueId?: string
-  // ) => {
-  //   const option = productDetails.options?.find((opt) => opt.id === optionId);
-  //   if (!option?.values) return '';
-
-  //   for (const value of option.values) {
-  //     const hasStock = productDetails.variants?.some((variant) => {
-  //       const hasThisValue = variant.optionValues?.some(
-  //         (ov) => ov.optionValueId === value.id
-  //       );
-
-  //       if (otherOptionValueId) {
-  //         const hasOtherValue = variant.optionValues?.some(
-  //           (ov) => ov.optionValueId === otherOptionValueId
-  //         );
-  //         return hasThisValue && hasOtherValue && (variant.stock || 0) > 0;
-  //       }
-
-  //       return hasThisValue && (variant.stock || 0) > 0;
-  //     });
-
-  //     if (hasStock) return value.id;
-  //   }
-
-  //   return option.values[0]?.id || '';
-  // };
 
   useEffect(() => {
     if (!productDetails) return;
@@ -368,20 +324,6 @@ const ProductDetailPage = () => {
       (cartItem) => cartItem?.variant?.id === selectedVariant?.id
     );
 
-    // if (currentCartItem) {
-    //   const isAvailableStock = validateStockAvailability({
-    //     item: {
-    //       quantity: quantity + currentCartItem?.quantity,
-    //       optionValues: selectedVariant?.optionValues,
-    //       stock: selectedVariant?.stock,
-    //     },
-    //     toastCoolDown: TOAST_COOLDOWN,
-    //     lastToastTime,
-    //   });
-
-    //   if (!isAvailableStock) return;
-    // }
-
     let isAvailableStock;
     if (currentCartItem) {
       isAvailableStock = validateStockAvailability({
@@ -425,11 +367,6 @@ const ProductDetailPage = () => {
     dispatch(addToCart(cartItem));
   };
 
-  // const handleSelectedProduct = (product: Product) => {
-  //   setIsOpen(true);
-  //   setSelectedProduct(product);
-  // };
-
   return (
     <Layout
       loading={isGetProductBySlugPending}
@@ -437,233 +374,265 @@ const ProductDetailPage = () => {
     >
       <Content className="mx-auto max-w-full lg:max-w-7xl max-lg:px-0!">
         <Breadcrumb items={breadCrumbItems} className="pt-8!" />
-        <div className="md:grid grid-cols-9 items-start gap-x-10 xl:gap-x-14 pt-7 pb-10 lg:pb-14 2xl:pb-20">
-          <Flex className="md:col-span-4 gap-4 max-lg:flex-col-reverse">
-            <Flex
-              className="gap-1 shrink-0 overflow-x-scroll no-scrollbar select-none lg:flex-col lg:gap-3"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
-              {selectedVariant?.imageMappings?.map(({ image }, index) => (
-                <div
-                  key={image?.id}
-                  className={classNames(
-                    'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
-                    currentSlide === index ? 'border-black' : 'border-gray-200'
-                  )}
-                  onClick={() => goToSlide(index)}
-                >
-                  <img
-                    alt="thumbnail"
-                    src={image?.url}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </Flex>
-            <div className="relative max-h-max flex-1 overflow-hidden rounded-lg select-none">
-              {selectedVariant &&
-                selectedVariant?.imageMappings?.length > 1 && (
-                  <>
-                    <button
-                      aria-label="Previous slide"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
-                      onClick={() => carouselRef.current?.prev()}
-                    >
-                      <LeftOutlined />
-                    </button>
-
-                    <button
-                      aria-label="Next slide"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
-                      onClick={() => carouselRef.current?.next()}
-                    >
-                      <RightOutlined />
-                    </button>
-                  </>
+        <div
+          className={classNames(
+            'md:grid grid-cols-9 items-start gap-x-10 xl:gap-x-14 pt-7 pb-10 lg:pb-14 2xl:pb-20',
+            isShowSkeleton ? 'w-svh' : ''
+          )}
+        >
+          {isShowSkeleton ? (
+            <ProductDetailSkeleton />
+          ) : (
+            <>
+              <Flex
+                className={classNames(
+                  'md:col-span-4 gap-4 max-lg:flex-col-reverse',
+                  isShowSkeleton ? 'h-full' : ''
                 )}
-
-              <Carousel
-                autoplay
-                draggable
-                dots={false}
-                arrows={false}
-                ref={carouselRef}
-                autoplaySpeed={3000}
-                afterChange={(current) => setCurrentSlide(current)}
               >
-                {selectedVariant?.imageMappings?.map(({ image }) => (
-                  <div key={image?.id} className="outline-none">
-                    <Image
-                      preview
-                      width="100%"
-                      src={image?.url}
-                      alt="main product"
-                      className="w-full aspect-3/4 object-cover bg-gray-100"
-                    />
-                  </div>
-                ))}
-              </Carousel>
-            </div>
-          </Flex>
-
-          <div className="col-span-5 pt-8 lg:pt-0">
-            <h2 className="text-primary text-lg md:text-xl lg:text-2xl 2xl:text-3xl font-bold hover:text-black mb-3.5">
-              {productDetails?.name}
-            </h2>
-            <p className="text-body text-sm lg:text-base leading-6 lg:leading-8">
-              {productDetails?.description}
-            </p>
-            <Flex className="flex items-center mt-5!">
-              <p className="text-primary font-bold text-base md:text-xl lg:text-2xl 2xl:text-4xl ltr:pr-2 rtl:pl-2 ltr:md:pr-0 rtl:md:pl-0 ltr:lg:pr-2 rtl:lg:pl-2 ltr:2xl:pr-0 rtl:2xl:pl-0">
-                {convertToVND(selectedVariant?.price)}
-              </p>
-            </Flex>
-
-            <Divider />
-
-            {productOptions?.map(({ id, name, values }) => {
-              const isColorOpt = isColorOption(name);
-
-              return (
-                <div key={id} className="mb-4">
-                  <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
-                    {name}
-                  </h3>
-                  <Flex className="gap-x-3">
-                    {values?.map((val) => {
-                      const imageUrl = isColorOpt
-                        ? getOptionValueImage(val?.id, productDetails)
-                        : null;
-
-                      const isSelected = isColorOpt
-                        ? selectedColorId === val?.id
-                        : selectedSizeId === val?.id;
-
-                      let stock = 0;
-                      if (isColorOpt) {
-                        stock =
-                          productDetails?.variants
-                            ?.filter((variant) =>
-                              variant.optionValues?.some(
-                                (ov) => ov.optionValueId === val?.id
-                              )
-                            )
-                            .reduce(
-                              (prev, current) => prev + (current?.stock || 0),
-                              0
-                            ) || 0;
-                      } else {
-                        stock =
-                          productDetails?.variants
-                            ?.filter((variant) => {
-                              const hasSize = variant.optionValues?.some(
-                                (ov) => ov.optionValueId === val?.id
-                              );
-
-                              if (selectedColorId) {
-                                const hasColor = variant.optionValues?.some(
-                                  (ov) => ov.optionValueId === selectedColorId
-                                );
-                                return hasSize && hasColor;
-                              }
-
-                              return hasSize;
-                            })
-                            .reduce(
-                              (prev, current) => prev + (current?.stock || 0),
-                              0
-                            ) || 0;
-                      }
-
-                      const isOutOfStock = stock === 0;
-
-                      return (
-                        <Flex
-                          align="center"
-                          justify="center"
-                          key={val?.id}
-                          className={classNames(
-                            'border p-1! uppercase overflow-hidden transition-all duration-300 ease-in-out',
-                            isColorOpt
-                              ? 'rounded-full'
-                              : 'rounded-md w-9 md:w-11 h-9 md:h-11',
-                            isSelected ? 'border-black' : 'border-[#e5e5e5]',
-                            isOutOfStock
-                              ? `${
-                                  isColorOpt
-                                    ? ''
-                                    : 'text-white bg-[#c2c2c2] border-none'
-                                } cursor-not-allowed`
-                              : 'cursor-pointer'
-                          )}
-                          onClick={() => {
-                            if (isOutOfStock) return;
-
-                            isColorOpt
-                              ? setSelectedColorId(val?.id)
-                              : setSelectedSizeId(val?.id);
-                          }}
+                <Flex
+                  className="gap-1 shrink-0 overflow-x-scroll no-scrollbar select-none lg:flex-col lg:gap-3"
+                  style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch',
+                  }}
+                >
+                  {selectedVariant?.imageMappings?.map(({ image }, index) => (
+                    <div
+                      key={image?.id}
+                      className={classNames(
+                        'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
+                        currentSlide === index
+                          ? 'border-black'
+                          : 'border-gray-200'
+                      )}
+                      onClick={() => goToSlide(index)}
+                    >
+                      <img
+                        alt="thumbnail"
+                        src={image?.url}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </Flex>
+                <div className="relative max-h-max flex-1 overflow-hidden rounded-lg select-none">
+                  {selectedVariant &&
+                    selectedVariant?.imageMappings?.length > 1 && (
+                      <>
+                        <button
+                          aria-label="Previous slide"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
+                          onClick={() => carouselRef.current?.prev()}
                         >
-                          {isColorOpt && imageUrl ? (
-                            <Image
-                              width={36}
-                              height={36}
-                              src={imageUrl}
-                              className="rounded-full object-cover"
-                            />
-                          ) : (
-                            <span>{val?.value}</span>
-                          )}
-                        </Flex>
-                      );
-                    })}
+                          <LeftOutlined />
+                        </button>
+
+                        <button
+                          aria-label="Next slide"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white py-2 px-3 rounded-full shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:opacity-70"
+                          onClick={() => carouselRef.current?.next()}
+                        >
+                          <RightOutlined />
+                        </button>
+                      </>
+                    )}
+
+                  <Carousel
+                    autoplay
+                    draggable
+                    dots={false}
+                    arrows={false}
+                    ref={carouselRef}
+                    autoplaySpeed={3000}
+                    afterChange={(current) => setCurrentSlide(current)}
+                  >
+                    {selectedVariant?.imageMappings?.map(({ image }) => (
+                      <div key={image?.id} className="outline-none">
+                        <Image
+                          preview
+                          width="100%"
+                          src={image?.url}
+                          alt="main product"
+                          className="w-full aspect-3/4 object-cover bg-gray-100"
+                        />
+                      </div>
+                    ))}
+                  </Carousel>
+                </div>
+              </Flex>
+
+              <div className="col-span-5 pt-8 lg:pt-0">
+                <h2 className="text-primary text-lg md:text-xl lg:text-2xl 2xl:text-3xl font-bold hover:text-black mb-3.5">
+                  {productDetails?.name}
+                </h2>
+                <p className="text-body text-sm lg:text-base leading-6 lg:leading-8">
+                  {productDetails?.description}
+                </p>
+                <Flex className="flex items-center mt-5!">
+                  <p className="text-primary font-bold text-base md:text-xl lg:text-2xl 2xl:text-4xl ltr:pr-2 rtl:pl-2 ltr:md:pr-0 rtl:md:pl-0 ltr:lg:pr-2 rtl:lg:pl-2 ltr:2xl:pr-0 rtl:2xl:pl-0">
+                    {convertToVND(selectedVariant?.price)}
+                  </p>
+                </Flex>
+
+                <Divider />
+
+                {productOptions?.map(({ id, name, values }) => {
+                  const isColorOpt = isColorOption(name);
+
+                  return (
+                    <div key={id} className="mb-4">
+                      <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
+                        {name}
+                      </h3>
+                      <Flex className="gap-x-3">
+                        {values?.map((val) => {
+                          const imageUrl = isColorOpt
+                            ? getOptionValueImage(val?.id, productDetails)
+                            : null;
+
+                          const isSelected = isColorOpt
+                            ? selectedColorId === val?.id
+                            : selectedSizeId === val?.id;
+
+                          let stock = 0;
+                          if (isColorOpt) {
+                            stock =
+                              productDetails?.variants
+                                ?.filter((variant) =>
+                                  variant.optionValues?.some(
+                                    (ov) => ov.optionValueId === val?.id
+                                  )
+                                )
+                                .reduce(
+                                  (prev, current) =>
+                                    prev + (current?.stock || 0),
+                                  0
+                                ) || 0;
+                          } else {
+                            stock =
+                              productDetails?.variants
+                                ?.filter((variant) => {
+                                  const hasSize = variant.optionValues?.some(
+                                    (ov) => ov.optionValueId === val?.id
+                                  );
+
+                                  if (selectedColorId) {
+                                    const hasColor = variant.optionValues?.some(
+                                      (ov) =>
+                                        ov.optionValueId === selectedColorId
+                                    );
+                                    return hasSize && hasColor;
+                                  }
+
+                                  return hasSize;
+                                })
+                                .reduce(
+                                  (prev, current) =>
+                                    prev + (current?.stock || 0),
+                                  0
+                                ) || 0;
+                          }
+
+                          const isOutOfStock = stock === 0;
+
+                          return (
+                            <Flex
+                              align="center"
+                              justify="center"
+                              key={val?.id}
+                              className={classNames(
+                                'border p-1! uppercase overflow-hidden transition-all duration-300 ease-in-out',
+                                isColorOpt
+                                  ? 'rounded-full'
+                                  : 'rounded-md w-9 md:w-11 h-9 md:h-11',
+                                isSelected
+                                  ? 'border-black'
+                                  : 'border-[#e5e5e5]',
+                                isOutOfStock
+                                  ? `${
+                                      isColorOpt
+                                        ? ''
+                                        : 'text-white bg-[#c2c2c2] border-none'
+                                    } cursor-not-allowed`
+                                  : 'cursor-pointer'
+                              )}
+                              onClick={() => {
+                                if (isOutOfStock) return;
+
+                                isColorOpt
+                                  ? setSelectedColorId(val?.id)
+                                  : setSelectedSizeId(val?.id);
+                              }}
+                            >
+                              {isColorOpt && imageUrl ? (
+                                <Image
+                                  width={36}
+                                  height={36}
+                                  src={imageUrl}
+                                  className="rounded-full object-cover"
+                                />
+                              ) : (
+                                <span>{val?.value}</span>
+                              )}
+                            </Flex>
+                          );
+                        })}
+                      </Flex>
+                    </div>
+                  );
+                })}
+
+                <div className="pt-2 md:pt-4">
+                  <Flex
+                    align="center"
+                    className="w-full mb-4! gap-x-3 sm:gap-x-4"
+                  >
+                    <QuantitySelector
+                      className="shrink-0"
+                      quantity={quantity}
+                      onDecrease={handleDecrease}
+                      onIncrease={handleIncrease}
+                    />
+                    <Button
+                      title="Thêm vào giỏ hàng"
+                      className="w-full py-3!"
+                      disabled={isDisabledAddToCart}
+                      onClick={handleAddToCart}
+                    />
                   </Flex>
                 </div>
-              );
-            })}
 
-            <div className="pt-2 md:pt-4">
-              <Flex align="center" className="w-full mb-4! gap-x-3 sm:gap-x-4">
-                <QuantitySelector
-                  className="shrink-0"
-                  quantity={quantity}
-                  onDecrease={handleDecrease}
-                  onIncrease={handleIncrease}
-                />
-                <Button
-                  title="Thêm vào giỏ hàng"
-                  className="w-full py-3!"
-                  disabled={isDisabledAddToCart}
-                  onClick={handleAddToCart}
-                />
-              </Flex>
-            </div>
+                <Divider />
 
-            <Divider />
+                <Space direction="vertical">
+                  <Flex align="center" className="gap-x-2">
+                    <span className="font-semibold text-primary">
+                      Thương hiệu:
+                    </span>
+                    <span className="text-body">
+                      {productDetails?.brand?.name}
+                    </span>
+                  </Flex>
+                  <Flex align="center" className="gap-x-2">
+                    <span className="font-semibold text-primary">
+                      Danh mục:
+                    </span>
+                    <span className="text-body">
+                      {productDetails?.category?.name}
+                    </span>
+                  </Flex>
+                </Space>
 
-            <Space direction="vertical">
-              <Flex align="center" className="gap-x-2">
-                <span className="font-semibold text-primary">Thương hiệu:</span>
-                <span className="text-body">{productDetails?.brand?.name}</span>
-              </Flex>
-              <Flex align="center" className="gap-x-2">
-                <span className="font-semibold text-primary">Danh mục:</span>
-                <span className="text-body">
-                  {productDetails?.category?.name}
-                </span>
-              </Flex>
-            </Space>
+                <Divider />
 
-            <Divider />
-
-            <Flex className="gap-y-6 md:gap-y-7">
-              <Collapse ghost items={collapseItems} />
-            </Flex>
-          </div>
+                <Flex className="gap-y-6 md:gap-y-7">
+                  <Collapse ghost items={collapseItems} />
+                </Flex>
+              </div>
+            </>
+          )}
         </div>
 
         <Flex vertical className="gap-y-6">
