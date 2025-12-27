@@ -12,8 +12,10 @@ export const productAPI = {
   getProducts: async (params: IProductParams) => {
     return await axiosApi.get('/products', { params });
   },
-  getProductBySlug: async (slug: string) => {
-    return await axiosApi.get('/products/slug', { params: { slug } });
+  getProductBySlug: async (slug: string, includeVariants?: boolean) => {
+    return await axiosApi.get('/products/slug', {
+      params: { slug, includeVariants },
+    });
   },
   getProductOptions: async (params: IGetProductOptionParams) => {
     return await axiosApi.get('/products/product-option', { params });

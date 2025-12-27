@@ -51,6 +51,12 @@ interface ISearchForm {
   search: string;
 }
 
+const initialFilterParams: IProductParams = {
+  page: 1,
+  pageSize: 10,
+  includeVariants: true,
+};
+
 const ProductManagement = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -66,7 +72,9 @@ const ProductManagement = () => {
 
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
-  const [filterParams, setFilterParams] = useState<IProductParams>();
+  const [filterParams, setFilterParams] =
+    useState<IProductParams>(initialFilterParams);
+
   const [selectedMultipleProduct, setSelectedMultipleProduct] = useState<
     IProduct[]
   >([]);
@@ -328,7 +336,7 @@ const ProductManagement = () => {
     const { search } = values;
 
     resetPaginationAndUrl();
-    setFilterParams({ ...filterParams, search });
+    setFilterParams({ ...filterParams, search, includeVariants: true });
   };
   const handleCancelFilter = () => {
     filterForm.resetFields();
@@ -342,6 +350,7 @@ const ProductManagement = () => {
       status: undefined,
       createdFrom: undefined,
       createdTo: undefined,
+      includeVariants: true,
     });
   };
 
@@ -349,6 +358,7 @@ const ProductManagement = () => {
     const { createdDate, ...rest } = values;
 
     const params: IProductParams = {
+      includeVariants: true,
       createdFrom: createdDate?.[0]
         ? dayjs(createdDate?.[0]).startOf('day').toISOString()
         : undefined,
