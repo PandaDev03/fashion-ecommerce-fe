@@ -205,9 +205,10 @@ const ProductDetailPage = () => {
 
   const isShowSkeleton = useMemo(
     () =>
+      isGetProductBySlugPending ||
       !productDetails ||
       (productDetails && !Object.keys(productDetails)?.length),
-    [productDetails]
+    [isGetProductBySlugPending, productDetails]
   );
 
   const isDisabledAddToCart = useMemo(
@@ -368,10 +369,7 @@ const ProductDetailPage = () => {
   };
 
   return (
-    <Layout
-      loading={isGetProductBySlugPending}
-      className="bg-white! px-4! md:px-8! 2xl:px-16!"
-    >
+    <Layout className="bg-white! px-4! md:px-8! 2xl:px-16!">
       <Content className="mx-auto max-w-full lg:max-w-7xl max-lg:px-0!">
         <Breadcrumb items={breadCrumbItems} className="pt-8!" />
         <div
