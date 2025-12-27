@@ -300,7 +300,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
 
   const toast = useToast();
-  const { isXl, isMd, isSm } = useBreakpoint();
+  const { isXl } = useBreakpoint();
 
   const lastToastTime = useRef(0);
 

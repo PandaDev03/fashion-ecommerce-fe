@@ -2,13 +2,16 @@ import { Divider, Flex } from 'antd';
 import { memo, ReactElement } from 'react';
 
 import { MenuItem } from './Header';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderDropdown {
   children: ReactElement;
-  menuItems: MenuItem[][];
+  menuItems: (MenuItem & { href?: string })[][];
 }
 
 const HeaderDropdown = ({ children, menuItems }: HeaderDropdown) => {
+  const navigate = useNavigate();
+
   return (
     <div className="relative group">
       {children}
@@ -35,7 +38,10 @@ const HeaderDropdown = ({ children, menuItems }: HeaderDropdown) => {
                   return <Divider key={item.key} className="my-2!" />;
 
                 return (
-                  <div key={item.key}>
+                  <div
+                    key={item.key}
+                    onClick={() => navigate(item?.href || '/')}
+                  >
                     <p className="py-1.5 px-5 text-primary font-semibold hover:bg-[#e6e6e6]">
                       {item?.label}
                     </p>

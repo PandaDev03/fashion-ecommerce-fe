@@ -8,7 +8,7 @@ import {
 
 export const orderApi = {
   createOrder: async (params: ICreateOrder) => {
-    return await axiosApi.post('/orders', params);
+    return await axiosApi.post('/orders', params, { timeout: 20000 });
   },
   migrateOrder: async (params: IMigrateOrder) => {
     return await axiosApi.post('/orders/migrate', params);

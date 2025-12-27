@@ -38,9 +38,11 @@ const initialFilterParams: IFilterParams = {
 const ProductPage = () => {
   const toast = useToast();
   const navigate = useNavigate();
+
   const { queryParams } = useQueryParams();
 
   const flagRef = useRef(false);
+  const isFirstRender = useRef(true);
   const skeletonTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   const { is2Xl, isXl, isSm } = useBreakpoint();
@@ -165,15 +167,15 @@ const ProductPage = () => {
   }, []);
 
   useEffect(() => {
+    if (isFirstRender.current) return;
     handleSyncFilters(filterParams);
-  }, [filterParams, rangPrice]);
+  }, [filterParams, rangPrice, isFirstRender]);
 
   useEffect(() => {
     const urlCategories = queryParams.get('category')?.split(',') || [];
     const urlBrands = queryParams.get('brand')?.split(',') || [];
     const urlMinPrice = queryParams.get('min');
     const urlMaxPrice = queryParams.get('max');
-
     if (categoryOptions && brandOptions) {
       const initialCats = categoryOptions.filter((opt) =>
         urlCategories.includes(opt.value)
@@ -181,7 +183,6 @@ const ProductPage = () => {
       const initialBrands = brandOptions.filter((opt) =>
         urlBrands.includes(opt.value)
       );
-
       if (filterParams.categories.length === 0 && initialCats.length > 0) {
         setFilterParams((prev) => ({
           ...prev,
@@ -190,7 +191,6 @@ const ProductPage = () => {
         }));
       }
     }
-
     if (urlMinPrice && urlMaxPrice)
       setRangPrice([Number(urlMinPrice), Number(urlMaxPrice)]);
     else if (urlMinPrice)
@@ -199,6 +199,8 @@ const ProductPage = () => {
       setRangPrice([RANGE_PRICE_CONSTANTS.MIN, Number(urlMaxPrice)]);
     else
       setRangPrice([RANGE_PRICE_CONSTANTS.MIN, RANGE_PRICE_CONSTANTS.MAX_PLUS]);
+
+    isFirstRender.current = false;
   }, [categoryOptions, brandOptions]);
 
   const renderContent = () => {
@@ -300,7 +302,7 @@ const ProductPage = () => {
 
   return (
     <Layout
-      loading={isGetCategoryOptionPending || isGetBrandOptionPending}
+      // loading={isGetCategoryOptionPending || isGetBrandOptionPending}
       className="bg-white! px-4! md:px-8! 2xl:px-16!"
     >
       <div className="grid grid-cols-10 pt-8! gap-x-8">
