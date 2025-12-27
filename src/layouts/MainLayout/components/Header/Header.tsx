@@ -399,9 +399,22 @@ const Header = ({
                 </div>
               );
 
+              const menuItems = Array.isArray(children)
+                ? children?.map((child) =>
+                    child?.map((item) => ({
+                      ...item,
+                      href: PATH.PRODUCTS_WITHOUT_SLUG,
+                      children: item?.children?.map((childItem) => ({
+                        ...childItem,
+                        href: PATH.PRODUCTS_WITHOUT_SLUG,
+                      })),
+                    }))
+                  )
+                : children;
+
               if (children?.length)
                 return (
-                  <HeaderDropdown key={index} menuItems={children}>
+                  <HeaderDropdown key={index} menuItems={menuItems ?? []}>
                     <Child />
                   </HeaderDropdown>
                 );
