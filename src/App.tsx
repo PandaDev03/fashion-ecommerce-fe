@@ -25,9 +25,9 @@ const App = () => {
   }, [clientId]);
 
   useEffect(() => {
-    if (flagRef.current || !accessToken) return;
+    if (flagRef.current) return;
+    if (accessToken) dispatch(getMe());
 
-    dispatch(getMe());
     flagRef.current = true;
   }, [accessToken, flagRef]);
 
