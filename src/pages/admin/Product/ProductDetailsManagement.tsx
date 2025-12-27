@@ -157,7 +157,7 @@ const ProductDetailsManagement = () => {
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({
-      mutationFn: (slug: string) => productAPI.getProductBySlug(slug),
+      mutationFn: (slug: string) => productAPI.getProductBySlug(slug, true),
       onSuccess: (response) => setProduct(response?.data),
     });
 
