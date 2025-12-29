@@ -7,12 +7,12 @@ import {
 
 import { errorMiddleware } from './errorMiddleware';
 
+import { brandReducer } from '~/features/brand/store/brandSlice';
+import { cartReducer } from '~/features/cart/stores/cartSlice';
 import { categoryReducer } from '~/features/category/stores/categorySlice';
+import { orderReducer } from '~/features/order/store/orderSlice';
 import { productReducer } from '~/features/products/store/productSlice';
 import { userReducer } from '~/features/user/stores/userSlice';
-import { brandReducer } from '~/features/brand/store/brandReducer';
-import { cartReducer } from '~/features/cart/stores/cartSlice';
-import { orderReducer } from '~/features/order/store/orderSlice';
 
 const rootReducer = combineReducers({
   user: userReducer,

@@ -4,6 +4,13 @@ import axios from 'axios';
 import { notificationEmitter } from '~/shared/utils/notificationEmitter';
 
 const globalErrorHandler = (error: any) => {
+  if (axios.isAxiosError(error) && error.response?.status === 401) {
+    console.log(
+      '401 Unauthorized in React Query - handled by axios interceptor'
+    );
+    return;
+  }
+
   let errorMessage = 'Đã có lỗi không xác định xảy ra.';
 
   if (axios.isAxiosError(error)) {

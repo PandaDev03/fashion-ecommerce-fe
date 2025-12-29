@@ -8,8 +8,11 @@ import axios, {
 import queryString from 'query-string';
 
 import { AuthApi } from '~/features/auth/api/auth';
+import { resetUser } from '~/features/user/stores/userSlice';
+import { navigate } from '~/routing/router';
 import { notificationEmitter } from '~/shared/utils/notificationEmitter';
 import { PATH } from '~/shared/utils/path';
+import { store } from '~/store';
 
 export const instance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_API_BASE_URL,
@@ -46,7 +49,15 @@ const revokeSession = async () => {
   } catch (error) {
     console.error('Logout failed after refresh failure:', error);
   } finally {
+    notificationEmitter.emit(
+      'warning',
+      'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
+    );
+
     localStorage.removeItem('accessToken');
+
+    store.dispatch(resetUser());
+    navigate(PATH.HOME, { replace: true });
   }
 };
 
@@ -128,15 +139,6 @@ export const setupAxiosInterceptors = () => {
           processQueue(refreshError);
 
           await revokeSession();
-
-          localStorage.removeItem('accessToken');
-          window.location.href = PATH.HOME;
-
-          notificationEmitter.emit(
-            'warning',
-            'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
-          );
-
           return Promise.reject(refreshError);
         }
       }

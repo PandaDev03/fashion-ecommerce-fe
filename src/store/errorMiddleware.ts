@@ -3,8 +3,14 @@ import { notificationEmitter } from '~/shared/utils/notificationEmitter';
 
 export const errorMiddleware: Middleware = () => (next) => (action) => {
   if (isRejectedWithValue(action)) {
-    let errorMessage = 'Đã có lỗi không xác định xảy ra.';
     const error: any = action.payload;
+
+    if (error?.response?.status === 401) {
+      console.log('401 Unauthorized - handled by axios interceptor');
+      return next(action);
+    }
+
+    let errorMessage = 'Đã có lỗi không xác định xảy ra.';
 
     if (typeof error === 'string') errorMessage = error;
     else if (error && error.response)

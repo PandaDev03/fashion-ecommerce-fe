@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { RouterProvider } from 'react-router-dom';
 
 import { getMe } from './features/user/stores/userThunks';
-import AppRouter from './routing/AppRouter';
+import { router } from './routing/router';
 import { useToast } from './shared/contexts/NotificationContext';
 import { useOrderMigration } from './shared/hooks/useOrderMigration';
 import { useAppDispatch } from './shared/hooks/useStore';
@@ -31,7 +32,7 @@ const App = () => {
     flagRef.current = true;
   }, [accessToken, flagRef]);
 
-  return <AppRouter />;
+  return <RouterProvider router={router} />;
 };
 
 export default App;
