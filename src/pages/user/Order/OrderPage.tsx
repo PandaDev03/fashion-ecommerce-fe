@@ -23,10 +23,7 @@ const AccountOrderPage = () => {
 
   const { mutate: getOrderByUserId, isPending } = useMutation({
     mutationFn: () => orderApi.getOrderByUserId(),
-    onSuccess: (response) => {
-      console.log(response);
-      setOrders(response?.data);
-    },
+    onSuccess: (response) => setOrders(response?.data),
   });
 
   const columns: ColumnType<IOrder>[] = [

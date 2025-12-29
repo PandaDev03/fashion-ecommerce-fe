@@ -4,6 +4,7 @@ import type { ArgsProps } from 'antd/es/notification/interface';
 type NotificationType = 'success' | 'info' | 'warning' | 'error';
 
 interface NotificationOptions {
+  key?: string;
   message?: string;
   description?: string;
   duration?: number;
@@ -18,6 +19,10 @@ const defaultMessages: Record<NotificationType, string> = {
   error: 'Có lỗi xảy ra',
 };
 
+const generateKey = (type: NotificationType, description?: string): string => {
+  return `${type}-${description}`;
+};
+
 const useNotification = () => {
   const [api, contextHolder] = notification.useNotification();
 
@@ -26,6 +31,7 @@ const useNotification = () => {
     options: NotificationOptions = {}
   ) => {
     const {
+      key,
       message,
       description,
       duration = 3,
@@ -33,7 +39,10 @@ const useNotification = () => {
       onClick,
     } = options;
 
+    const notificationKey = key || generateKey(type, description);
+
     api[type]({
+      key: notificationKey,
       message: message || defaultMessages[type],
       description,
       duration,

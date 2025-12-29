@@ -8,7 +8,7 @@ import {
 
 export const orderApi = {
   createOrder: async (params: ICreateOrder) => {
-    return await axiosApi.post('/orders', params, { timeout: 20000 });
+    return await axiosApi.post('/orders', params, { timeout: 40000 });
   },
   migrateOrder: async (params: IMigrateOrder) => {
     return await axiosApi.post('/orders/migrate', params);
@@ -26,6 +26,8 @@ export const orderApi = {
     return await axiosApi.get(`/orders/${id}`);
   },
   updateOrderStatus: async (params: IUpdateOrderStatus) => {
-    return await axiosApi.put('/orders/status', params);
+    return await axiosApi.put('/orders/status', params, {
+      timeout: 40000,
+    } as any);
   },
 };
