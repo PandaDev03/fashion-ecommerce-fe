@@ -73,36 +73,44 @@ const getSiderMenu = (
           {
             key: 't-shirt',
             label: 'Áo Thun (Áo Phông)',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'casual-shirt',
             label: 'Áo Sơ mi Thường ngày',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'business-shirt',
             label: 'Áo Sơ mi Công sở',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'blazer-coat',
             label: 'Áo Blazer & Áo Khoác',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'suit',
             label: 'Bộ Vest (Com-lê)',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'jacket',
             label: 'Áo khoác (Jackets)',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
       {
         key: 'belt',
         label: 'Dây lưng, Khăn choàng & Khác',
+        onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
       },
       {
         key: 'watches',
         label: 'Đồng hồ & Thiết bị đeo',
+        onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
       },
       {
         key: 'western',
@@ -111,36 +119,44 @@ const getSiderMenu = (
           {
             key: 'dress',
             label: 'Váy (Đầm)',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'jumpsuit',
             label: 'Đồ Liền (Jumpsuit)',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'shirt-blouse',
             label: 'Áo kiểu, Áo Thun & Áo sơ mi',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'short-skirt',
             label: 'Quần Short & Chân Váy',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'shrug',
             label: 'Áo khoác mỏng (Shrug)',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'blazer',
             label: 'Áo Blazer',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
       {
         key: 'plus-size',
         label: 'Kích cỡ Lớn (Big Size)',
+        onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
       },
       {
         key: 'sung-glasses',
         label: 'Kính mát & Gọng kính',
+        onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
       },
       {
         key: 'foot-wear',
@@ -149,18 +165,22 @@ const getSiderMenu = (
           {
             key: 'flat-shoes',
             label: 'Giày Đế bệt',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'casual-shoes',
             label: 'Giày Thường ngày',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'heels',
             label: 'Giày Cao gót',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'boots',
             label: 'Giày Boots/Bốt',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
@@ -171,14 +191,17 @@ const getSiderMenu = (
           {
             key: 'clothing',
             label: 'Quần áo',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'footwear',
             label: 'Giày Dép',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'sport-accessories',
             label: 'Phụ kiện Thể thao',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
@@ -189,14 +212,17 @@ const getSiderMenu = (
           {
             key: 'bra',
             label: 'Áo Ngực',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'panties',
             label: 'Quần Lót',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'sleep-wear',
             label: 'Đồ Ngủ',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
@@ -207,18 +233,22 @@ const getSiderMenu = (
           {
             key: 'makeup',
             label: 'Trang điểm',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'skincare',
             label: 'Chăm sóc Da',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'luxury-cosmetic',
             label: 'Mỹ phẩm Cao cấp',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'lipstick',
             label: 'Son môi',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
@@ -229,10 +259,12 @@ const getSiderMenu = (
           {
             key: 'wearable-devices',
             label: 'Thiết bị Đeo thông minh',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'headphone',
             label: 'Tai nghe',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
@@ -243,26 +275,31 @@ const getSiderMenu = (
           {
             key: 'fashion-jewelry',
             label: 'Trang sức Thời trang',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
           {
             key: 'fine-jewelry',
             label: 'Trang sức Cao cấp',
+            onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
           },
         ],
       },
       {
         key: 'backpacks',
         label: 'Balo',
+        onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
       },
       {
         key: 'handbags',
         label: 'Túi xách & Ví',
+        onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG), //
       },
     ],
   },
   {
     key: 'collection',
     label: 'Bộ sưu tập',
+    onClick: () => navigate?.(PATH.PRODUCTS_WITHOUT_SLUG),
   },
   {
     key: 'search',
@@ -556,7 +593,12 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       />
 
       <Drawer
-        title={<LOGO />}
+        title={
+          <LOGO
+            className="cursor-pointer"
+            onClick={() => navigate(PATH.HOME)}
+          />
+        }
         placement="left"
         open={isMenuDrawerVisible}
         rootClassName="z-[999]! [&>div]:z-[999]!"
