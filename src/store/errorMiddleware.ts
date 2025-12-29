@@ -23,7 +23,7 @@ export const errorMiddleware: Middleware = () => (next) => (action) => {
       errorMessage = 'Lỗi kết nối mạng hoặc server không phản hồi.';
     else if (error && error.message) errorMessage = error.message;
 
-    notificationEmitter.emit('error', errorMessage);
+    notificationEmitter.forceEmit('error', errorMessage);
   }
 
   return next(action);

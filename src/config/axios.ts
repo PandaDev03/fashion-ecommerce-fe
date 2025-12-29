@@ -49,7 +49,7 @@ const revokeSession = async () => {
   } catch (error) {
     console.error('Logout failed after refresh failure:', error);
   } finally {
-    notificationEmitter.emit(
+    notificationEmitter.forceEmit(
       'warning',
       'Phiên đăng nhập đã hết hạn. Xin vui lòng đăng nhập lại'
     );
@@ -167,8 +167,8 @@ const retryRequest = async <T>(
         return retryRequest<T>(config, retries - 1, delay * 2);
       }
 
-      notificationEmitter.emit(
-        'warning',
+      notificationEmitter.forceEmit(
+        'error',
         'Hết thời gian truy cập. Xin vui lòng thử lại'
       );
     }

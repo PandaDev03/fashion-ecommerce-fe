@@ -21,7 +21,7 @@ const globalErrorHandler = (error: any) => {
       errorMessage = 'Lỗi kết nối mạng hoặc server không phản hồi.';
   }
 
-  notificationEmitter.emit('error', errorMessage);
+  notificationEmitter.forceEmit('error', errorMessage);
 };
 
 export const queryClient = new QueryClient({
