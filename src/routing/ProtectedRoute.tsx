@@ -12,9 +12,13 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { currentUser, isInitialized, loading } = useAppSelector(
     (state) => state.user
   );
-  const isAuthenticated = !!Object.keys(currentUser)?.length;
 
-  if (!isInitialized || loading) return children; // LoadingScreen
+  const isAuthenticated = !!Object.keys(currentUser)?.length;
+  const hasAccessToken = !!localStorage.getItem('accessToken');
+
+  if (!hasAccessToken) return <Navigate to={PATH.HOME} replace />;
+  if (!isInitialized || loading) return <>{children}</>; // LoadingScreen
+
   if (!isAuthenticated) return <Navigate to={PATH.HOME} replace />;
 
   return <>{children}</>;

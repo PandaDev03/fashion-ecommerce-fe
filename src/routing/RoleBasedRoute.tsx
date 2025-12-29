@@ -14,7 +14,11 @@ const RoleBasedRoute = ({ children, requiredRoles }: RoleBasedRouteProps) => {
   const { isInitialized, loading } = useAppSelector((state) => state.user);
   const { hasAnyRole } = useAccessControl();
 
-  if (!isInitialized || loading) return children; // LoadingScreen
+  const hasAccessToken = !!localStorage.getItem('accessToken');
+
+  if (!hasAccessToken) return <Navigate to={PATH.HOME} replace />;
+  if (!isInitialized || loading) return <>{children}</>; // LoadingScreen
+
   if (!hasAnyRole(requiredRoles)) return <Navigate to={PATH.HOME} replace />;
 
   return <>{children}</>;
