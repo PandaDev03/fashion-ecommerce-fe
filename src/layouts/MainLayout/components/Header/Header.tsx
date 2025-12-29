@@ -42,7 +42,7 @@ const getHeaderMenu = (latestOrderNumber: string | null): Menu[] => [
   {
     key: 'collection',
     title: 'Bộ sưu tập',
-    href: '',
+    href: PATH.PRODUCTS_WITHOUT_SLUG,
   },
   {
     key: 'man',

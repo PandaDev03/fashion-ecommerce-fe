@@ -4,7 +4,6 @@ import { RouterProvider } from 'react-router-dom';
 import { getMe } from './features/user/stores/userThunks';
 import { router } from './routing/router';
 import { useToast } from './shared/contexts/NotificationContext';
-import { useOrderMigration } from './shared/hooks/useOrderMigration';
 import { useAppDispatch } from './shared/hooks/useStore';
 
 const App = () => {
@@ -16,7 +15,7 @@ const App = () => {
   const accessToken = localStorage.getItem('accessToken');
   const clientId = import.meta.env.VITE_APP_GOOGLE_CLIENT_ID;
 
-  useOrderMigration();
+  // useOrderMigration();
 
   useEffect(() => {
     if (!clientId) {
