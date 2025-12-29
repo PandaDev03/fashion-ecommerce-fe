@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+import { notificationEmitter } from '~/shared/utils/notificationEmitter';
 import {
   CartState,
   ICart,
@@ -51,18 +52,27 @@ const cartSlice = createSlice({
       state.isCartDrawerOpen = action.payload;
     },
     addToCart: (state, action: PayloadAction<ICart>) => {
-      const newItem = action.payload;
-      const currentItems = state.items;
+      try {
+        const newItem = action.payload;
+        const currentItems = state.items;
 
-      const existingItemIndex = currentItems.findIndex(
-        (item) => item?.variant?.id === newItem?.variant?.id
-      );
+        const existingItemIndex = currentItems.findIndex(
+          (item) => item?.variant?.id === newItem?.variant?.id
+        );
 
-      if (existingItemIndex === -1) state.items.push(newItem);
-      else state.items[existingItemIndex].quantity += newItem.quantity;
+        if (existingItemIndex === -1) state.items.push(newItem);
+        else state.items[existingItemIndex].quantity += newItem.quantity;
 
-      saveLocalCartItems(state.items);
-      state.pageInfo.totalItems = state.items.length;
+        saveLocalCartItems(state.items);
+        state.pageInfo.totalItems = state.items.length;
+
+        notificationEmitter.emit('success', 'Thêm vào giỏ hàng thành công');
+      } catch (error) {
+        notificationEmitter.emit(
+          'error',
+          `Có lỗi xảy ra khi thêm vào giở hàng: ${error}`
+        );
+      }
     },
     updateQuantity: (state, action: PayloadAction<IUpdateQuantity>) => {
       const { variantId, quantity } = action.payload;
