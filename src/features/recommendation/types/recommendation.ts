@@ -5,4 +5,8 @@ export interface IGetRecommendationParams {
   limit?: number;
 }
 
+export interface IGetFeaturedProductParams {
+  limit?: number;
+}
+
 export interface IRecommendationProduct extends IProduct {}

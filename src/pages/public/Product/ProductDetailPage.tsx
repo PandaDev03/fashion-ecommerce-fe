@@ -22,9 +22,12 @@ import Button from '~/shared/components/Button/Button';
 import Collapse from '~/shared/components/Collapse/Collapse';
 import Image from '~/shared/components/Image/Image';
 import { Content, Layout } from '~/shared/components/Layout/Layout';
+import ProductModal from '~/shared/components/Modal/ProductModal';
+import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import { useToast } from '~/shared/contexts/NotificationContext';
 import { useProductView } from '~/shared/hooks/useProductView';
+import { useRecommendations } from '~/shared/hooks/useRecommendation';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
 import {
@@ -36,7 +39,6 @@ import {
 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
 import ProductDetailSkeleton from './components/ProductDetailSkeleton';
-import { useRecommendations } from '~/shared/hooks/useRecommendation';
 
 const TOAST_COOLDOWN = 2000;
 
@@ -58,8 +60,17 @@ const ProductDetailPage = () => {
   const [productDetails, setProductDetails] = useState<IProduct>();
   const [productOptions, setProductOptions] = useState<IProduct['options']>([]);
 
+  const [isProductModalVisible, setIsProductModalVisible] = useState(false);
+
+  const [selectedRecommendationProduct, setSelectedRecommendationProduct] =
+    useState<IProduct>();
+
   const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems } = useAppSelector((state) => state.cart);
+
+  const { products: recommendationProducts } = useRecommendations({
+    userId: currentUser?.id,
+  });
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({
@@ -73,12 +84,6 @@ const ProductDetailPage = () => {
     source: 'direct',
     enabled: !!productDetails?.id,
   });
-
-  const { products } = useRecommendations({
-    userId: currentUser?.id,
-  });
-
-  console.log('useRecommendations', products);
 
   const breadCrumbItems: BreadcrumbProps['items'] = [
     {
@@ -304,6 +309,16 @@ const ProductDetailPage = () => {
     };
 
     dispatch(addToCart(cartItem));
+  };
+
+  const handleSelectedRecommendationProduct = (product: IProduct) => {
+    setIsProductModalVisible(true);
+    setSelectedRecommendationProduct(product);
+  };
+
+  const handleCancelProductModal = () => {
+    setIsProductModalVisible(false);
+    setSelectedRecommendationProduct(undefined);
   };
 
   return (
@@ -579,32 +594,32 @@ const ProductDetailPage = () => {
             </>
           )}
         </div>
+      </Content>
 
+      <Content>
         <Flex vertical className="gap-y-6">
-          <h3 className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 font-bold text-primary">
+          <h3 className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 font-bold text-primary capitalize">
             Sản phẩm liên quan
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
-            {/* {newArrivals?.map(({ key, ...product }) => (
+            {recommendationProducts?.map((product, index) => (
               <ProductCard
                 vertical
-                key={key}
+                key={index}
                 effect="lift"
-                product={pro}
-                onClick={() => handleSelectedProduct(product)}
+                product={product}
+                onClick={() => handleSelectedRecommendationProduct(product)}
               />
-            ))} */}
+            ))}
           </div>
         </Flex>
 
-        {/* <ProductModal
-          open={isOpen}
-          quantity={quantity}
-          product={selectedProduct}
-          onDecrease={handleDecrease}
-          onIncrease={handleIncrease}
-          onCancel={() => setIsOpen(false)}
-        /> */}
+        <ProductModal
+          open={isProductModalVisible}
+          product={selectedRecommendationProduct ?? ({} as IProduct)}
+          setIsProductModalVisible={setIsProductModalVisible}
+          onCancel={handleCancelProductModal}
+        />
       </Content>
     </Layout>
   );

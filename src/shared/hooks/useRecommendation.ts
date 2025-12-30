@@ -27,8 +27,8 @@ export const useRecommendations = ({
     mutationFn: (params: IGetRecommendationParams) =>
       recommendationApi.getRecommendations(params),
     onSuccess: (response) => {
-      console.log('recommendation', response);
-      setProducts(response);
+      const products = response?.data;
+      setProducts(products ?? []);
     },
   });
 
