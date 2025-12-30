@@ -34,7 +34,7 @@ const ProductCard = ({
       imageUrl:
         product?.images?.[0]?.url ||
         productVariant?.imageMappings?.[0]?.image?.url,
-      price: product?.price || productVariant?.price,
+      price: productVariant?.price || product?.price,
     };
   }, [product]);
 

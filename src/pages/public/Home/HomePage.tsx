@@ -1,6 +1,6 @@
 import { Carousel, Flex, Space } from 'antd';
 import classNames from 'classnames';
-import { ReactElement, ReactNode, useState } from 'react';
+import { ReactElement, ReactNode, useEffect, useState } from 'react';
 import { SwiperSlide } from 'swiper/react';
 
 import {
@@ -30,10 +30,18 @@ import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
 import Button from '~/shared/components/Button/Button';
 import Image from '~/shared/components/Image/Image';
 import { Layout } from '~/shared/components/Layout/Layout';
-import ProductModal, { Size } from '~/shared/components/Modal/ProductModal';
+import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import Swiper from '~/shared/components/Swiper/Swiper';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
+import { useNavigate } from 'react-router-dom';
+import { PATH } from '~/shared/utils/path';
+import { useMutation } from '@tanstack/react-query';
+import { recommendationApi } from '~/features/recommendation/api/recommendationApi';
+import { IProduct, IProductParams } from '~/features/products/types/product';
+import { IGetFeaturedProductParams } from '~/features/recommendation/types/recommendation';
+import { convertToVND } from '~/shared/utils/function';
+import { productAPI } from '~/features/products/api/productApi';
 
 interface Category {
   key: string;
@@ -137,51 +145,6 @@ const categories: Category[] = [
     title: 'Giày thể thao',
     subTitle: '5 thương hiệu, hơn 20 sản phẩm',
     icon: <Image width={59} height={29} src={SNEAKERS} alt="sneakers" />,
-  },
-];
-
-const featuredProducts: Product[] = [
-  {
-    key: 'nike-bag',
-    cols: 2,
-    rows: 2,
-    title: 'Túi Nike',
-    subTitle:
-      'Bộ máy Calibre 3235 Perpetual mạnh mẽ của Rolex. Một bản nâng cấp từ bộ máy Calibre 3135',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Ffeatured%2F1.png&w=640&q=75',
-    discountRate: 20,
-    price: 16.38,
-    originalPrice: 20.38,
-  },
-  {
-    key: 'adidas-woolen-cap',
-    title: 'Mũ len Adidas',
-    subTitle:
-      'Trang phục thường ngày (trang phục thường ngày hoặc trang phục thường ngày) có thể là một kiểu trang phục phương Tây thoải mái, giản dị, tự nhiên và phù hợp với việc sử dụng hàng ngày. Trang phục thường ngày trở nên phổ biến trong thế giới phương Tây sau làn sóng phản văn hóa những năm 1960.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Ffeatured%2F2.png&w=640&q=75',
-    discountRate: 20,
-    price: 16,
-    originalPrice: 20,
-  },
-  {
-    key: 'nike-leader-vt',
-    rows: 2,
-    title: 'Nike Leader VT',
-    subTitle:
-      'Giày dép là loại quần áo được mang vào chân, ban đầu có mục đích bảo vệ khỏi những tác động của môi trường, thường liên quan đến kết cấu mặt đất và nhiệt độ.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Ffeatured%2F3.png&w=640&q=75',
-    discountRate: 15,
-    price: 16.38,
-  },
-  {
-    key: 'aviator-ray-ban',
-    title: 'Ray-ban Aviator',
-    subTitle:
-      'Kính râm phân cực giúp giảm độ chói phản chiếu từ đường, mặt nước, tuyết và các bề mặt nằm ngang khác. Khôi phục màu sắc trung thực. Tròng kính Vision có chỉ số chống tia UV là 400, nghĩa là có thể chặn bức xạ UVA và UVB.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Ffeatured%2F4.png&w=640&q=75',
-    discountRate: 15,
-    price: 850,
-    originalPrice: 720,
   },
 ];
 
@@ -518,23 +481,68 @@ const shopByGender = [
 ];
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const { is2Xs, isSm, isMd, isLg, isXl } = useBreakpoint();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isProductModalVisible, setIsProductModalVisible] = useState(false);
 
-  const [color, setColor] = useState('');
-  const [size, setSize] = useState<Size>();
-  const [quantity, setQuantity] = useState(MIN_QUANTITY);
-  const [selectedProduct, setSelectedProduct] = useState<Product>(
-    {} as Product
-  );
+  const [topProducts, setTopProducts] = useState<IProduct[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<IProduct[]>([]);
+  const [flashSaleProducts, setFlashSaleProducts] = useState<IProduct[]>([]);
+  const [newArrivalProducts, setNewArrivalProducts] = useState<IProduct[]>([]);
+
+  const [selectedProduct, setSelectedProduct] = useState<IProduct>();
+
+  const { mutate: getFeaturedProduct } = useMutation({
+    mutationFn: (params: IGetFeaturedProductParams) =>
+      recommendationApi.getPopularProduct(params),
+    onSuccess: (response) => {
+      const products = response?.data || [];
+      setFeaturedProducts(products);
+    },
+  });
+
+  const { mutate: getTopProduct } = useMutation({
+    mutationFn: (params: IGetFeaturedProductParams) =>
+      recommendationApi.getPopularProduct(params),
+    onSuccess: (response) => {
+      const products = response?.data || [];
+      setTopProducts(products);
+    },
+  });
+
+  const { mutate: getFlashSaleProducts } = useMutation({
+    mutationFn: (params: IProductParams) => productAPI.getProducts(params),
+    onSuccess: (response) => {
+      const products = response?.data || [];
+      setFlashSaleProducts(products);
+    },
+  });
+
+  const { mutate: getNewArrivalProducts } = useMutation({
+    mutationFn: (params: IProductParams) => productAPI.getProducts(params),
+    onSuccess: (response) => {
+      const products = response?.data || [];
+      setNewArrivalProducts(products);
+    },
+  });
+
+  useEffect(() => {
+    getTopProduct({ limit: 6 });
+    getFeaturedProduct({ limit: 4 });
+    getFlashSaleProducts({ status: 'active' });
+    getNewArrivalProducts({ status: 'active', page: 1, pageSize: 12 });
+  }, []);
 
   const pageContents: PageContent[] = [
     {
       key: 'collections',
       children: (
         <div className="grid grid-cols-2 sm:grid-cols-9 gap-2.5">
-          <div className="relative col-span-2 sm:col-span-5">
+          <div
+            className="relative col-span-2 sm:col-span-5"
+            onClick={() => navigate(PATH.PRODUCTS_WITHOUT_SLUG)}
+          >
             <Image
               width="100%"
               height="100%"
@@ -543,7 +551,10 @@ const HomePage = () => {
               className="cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
             />
           </div>
-          <span className="col-span-1 sm:col-span-2">
+          <div
+            className="col-span-1 sm:col-span-2"
+            onClick={() => navigate(PATH.PRODUCTS_WITHOUT_SLUG)}
+          >
             <Image
               width="100%"
               height="100%"
@@ -551,8 +562,11 @@ const HomePage = () => {
               src={BANNER_5_KID_COLLECTION}
               className="cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
             />
-          </span>
-          <span className="col-span-1 sm:col-span-2">
+          </div>
+          <div
+            className="col-span-1 sm:col-span-2"
+            onClick={() => navigate(PATH.PRODUCTS_WITHOUT_SLUG)}
+          >
             <Image
               width="100%"
               height="100%"
@@ -560,7 +574,7 @@ const HomePage = () => {
               src={BANNER_6_WOMEN_COLLECTION}
               className="cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out"
             />
-          </span>
+          </div>
         </div>
       ),
     },
@@ -582,6 +596,7 @@ const HomePage = () => {
                 key={key}
                 justify="center"
                 className="relavite group rounded-lg px-6! lg:px-8! pt-7! lg:pt-10! pb-5! lg:pb-8! bg-[#f9f9f9] cursor-pointer"
+                onClick={() => navigate(PATH.PRODUCTS_WITHOUT_SLUG)}
               >
                 <Flex
                   align="center"
@@ -615,51 +630,62 @@ const HomePage = () => {
       title: 'Sản phẩm nổi bật',
       children: (
         <div className="grid grid-rows-2 grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 xl:gap-7">
-          {featuredProducts?.map((product) => (
-            <Flex
-              vertical
-              key={product.key}
-              className={classNames(
-                'relative group bg-gray-100 rounded-md cursor-pointer',
-                spanClasses?.cols[product?.cols || 1],
-                spanClasses?.rows[product?.rows || 1]
-              )}
-              onClick={() => handleSelectedProduct(product)}
-            >
-              <Flex align="center" justify="center" className="h-full">
-                <Image
-                  src={product?.img}
-                  className="transition duration-300 ease-in-out group-has-hover:scale-115"
-                />
-              </Flex>
-              <Flex
-                justify="space-between"
-                className="items-center overflow-hidden w-full px-7! pb-7! max-2xl:px-4! max-2xl:pb-4! shrink-0 max-2xl:flex-col max-2xl:items-start"
-              >
-                <Flex vertical justify="space-between" className="w-full">
-                  <h4 className="text-sm font-semibold truncate md:text-base xl:text-lg text-primary max-2xl:mb-1">
-                    {product?.title}
-                  </h4>
-                  <p className="text-sm max-2xl:text-xs text-body truncate max-w-[250px]">
-                    {product?.subTitle}
-                  </p>
-                </Flex>
-                <Flex className="flex-col items-end max-2xl:items-start max-2xl:flex-row-reverse max-2xl:gap-x-2">
-                  {product?.originalPrice && (
-                    <p className="text-lg max-2xl:text-sm text-body line-through">
-                      {product?.originalPrice}$
-                    </p>
+          {Array.isArray(featuredProducts) &&
+            featuredProducts?.map((product, index) => {
+              const { hasVariants } = product;
+
+              const firstVariant = product?.variants?.[0];
+              const defaultProduct = {
+                imgageUrl: hasVariants
+                  ? firstVariant?.imageMappings?.[0]?.image?.url
+                  : product?.images?.[0]?.url,
+                price: hasVariants ? firstVariant?.price : product?.price,
+              };
+
+              return (
+                <Flex
+                  vertical
+                  key={index}
+                  className={classNames(
+                    'relative group bg-gray-100 rounded-md cursor-pointer overflow-hidden',
+                    index === 0
+                      ? `${spanClasses?.cols[2]} ${spanClasses?.rows[2]}`
+                      : index === featuredProducts?.length - 2
+                      ? `${spanClasses?.cols[1]} ${spanClasses?.rows[2]}`
+                      : ''
                   )}
-                  <p className="max-2xl:text-base text-2xl text-primary font-semibold font-segoe">
-                    {product?.price}$
+                  onClick={() => handleSelectedProduct(product)}
+                >
+                  <Flex align="center" justify="center" className="h-full">
+                    <Image
+                      src={defaultProduct?.imgageUrl}
+                      className="transition duration-300 ease-in-out group-has-hover:scale-115"
+                    />
+                  </Flex>
+                  <Flex
+                    justify="space-between"
+                    className="overflow-hidden items-end w-full px-7! pb-7! max-2xl:px-4! max-2xl:pb-4! shrink-0 max-2xl:flex-col max-2xl:items-start z-2"
+                  >
+                    <Flex vertical justify="space-between" className="w-full">
+                      <h4 className="text-sm font-semibold truncate md:text-base xl:text-lg text-primary max-2xl:mb-1 max-w-[250px]">
+                        {product?.name}
+                      </h4>
+                      <p className="text-sm max-2xl:text-xs text-body truncate max-w-[250px]">
+                        {product?.description}
+                      </p>
+                    </Flex>
+                    <Flex className="w-full justify-end flex-col max-2xl:justify-items-start max-2xl:flex-row-reverse max-2xl:gap-x-2">
+                      <p className="max-2xl:text-base text-2xl text-primary font-semibold font-segoe">
+                        {convertToVND(defaultProduct?.price)}
+                      </p>
+                    </Flex>
+                  </Flex>
+                  <p className="absolute pt-0.5 pb-1 px-3 bg-primary text-white rounded-md top-3 left-3 lg:top-7 lg:left-7">
+                    20%
                   </p>
                 </Flex>
-              </Flex>
-              <p className="absolute pt-0.5 pb-1 px-3 bg-primary text-white rounded-md top-3 left-3 lg:top-7 lg:left-7">
-                20%
-              </p>
-            </Flex>
-          ))}
+              );
+            })}
         </div>
       ),
     },
@@ -674,17 +700,17 @@ const HomePage = () => {
           spaceBetween={10}
           slidesPerView={isXl ? 5 : isSm ? 3 : 2}
         >
-          {flashSales?.map(({ key, ...item }) => (
-            <SwiperSlide key={key}>
-              <ProductCard
-                vertical
-                size="sm"
-                imgSrc={item?.img}
-                onClick={() => handleSelectedProduct(item)}
-                {...item}
-              />
-            </SwiperSlide>
-          ))}
+          {Array.isArray(flashSaleProducts) &&
+            flashSaleProducts?.map((product, index) => (
+              <SwiperSlide key={index}>
+                <ProductCard
+                  vertical
+                  size="sm"
+                  product={product}
+                  onClick={() => handleSelectedProduct(product)}
+                />
+              </SwiperSlide>
+            ))}
         </Swiper>
       ),
     },
@@ -692,9 +718,10 @@ const HomePage = () => {
       key: 'winter-collection',
       children: (
         <Image
-          src={BANNER_8_WINTER_COLLECTION}
           alt="winter collection"
           className="cursor-pointer"
+          src={BANNER_8_WINTER_COLLECTION}
+          onClick={() => navigate(PATH.PRODUCTS_WITHOUT_SLUG)}
         />
       ),
     },
@@ -708,6 +735,7 @@ const HomePage = () => {
               justify="center"
               key={topBrand?.key}
               className="group flex text-center relative overflow-hidden rounded-md cursor-pointer"
+              onClick={() => navigate(PATH.PRODUCTS_WITHOUT_SLUG)}
             >
               <span
                 style={{
@@ -751,17 +779,17 @@ const HomePage = () => {
       title: 'Sản phẩm hàng đầu',
       children: (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
-          {topProducts?.map(({ key, ...product }) => (
-            <ProductCard
-              key={key}
-              imgSrc={product?.img}
-              customClassNames={{
-                img: 'shrink-0 w-32 sm:w-44 md:w-40 lg:w-52 2xl:w-56 3xl:w-64',
-              }}
-              onClick={() => handleSelectedProduct(product)}
-              {...product}
-            />
-          ))}
+          {Array.isArray(topProducts) &&
+            topProducts?.map((product, key) => (
+              <ProductCard
+                key={key}
+                product={product}
+                customClassNames={{
+                  img: 'shrink-0 w-32 sm:w-44 md:w-40 lg:w-52 2xl:w-56 3xl:w-64',
+                }}
+                onClick={() => handleSelectedProduct(product)}
+              />
+            ))}
         </div>
       ),
     },
@@ -839,16 +867,16 @@ const HomePage = () => {
       title: 'Sản phẩm mới',
       children: (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
-          {newArrivals?.map(({ key, ...product }) => (
-            <ProductCard
-              vertical
-              key={key}
-              effect="lift"
-              imgSrc={product?.img}
-              onClick={() => handleSelectedProduct(product)}
-              {...product}
-            />
-          ))}
+          {Array.isArray(newArrivalProducts) &&
+            newArrivalProducts?.map((product, key) => (
+              <ProductCard
+                vertical
+                key={key}
+                effect="lift"
+                product={product}
+                onClick={() => handleSelectedProduct(product)}
+              />
+            ))}
         </div>
       ),
     },
@@ -867,6 +895,7 @@ const HomePage = () => {
                 displayType="outlined"
                 title="Khám phá bộ sưu tập"
                 className="absolute w-max bottom-5 right-1/2 max-lg:translate-x-1/2 lg:-bottom-10 lg:right-10 transition-all duration-300 ease-in-out lg:group-has-hover:bottom-10"
+                onClick={() => navigate(PATH.PRODUCTS_WITHOUT_SLUG)}
               />
             </div>
             <Flex vertical justify="center" align="center">
@@ -902,65 +931,16 @@ const HomePage = () => {
         );
       },
     },
-    // {
-    //   key: 'subscription',
-    //   children: (
-    //     <Flex
-    //       vertical
-    //       align={isXl ? 'start' : 'center'}
-    //       className="px-5! sm:px-8! md:px-16! 2xl:px-24! relative overflow-hidden sm:items-center xl:items-start rounded-lg bg-[#f9f9f9] py-10! md:py-14! lg:py-16!"
-    //     >
-    //       <div className="-mt-1.5 lg:-mt-2 xl:-mt-0.5 text-center ltr:xl:text-left rtl:xl:text-right mb-7 md:mb-8 lg:mb-9 xl:mb-0">
-    //         <h3 className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 font-bold text-heading mb-2 md:mb-2.5 lg:mb-3 xl:mb-3.5">
-    //           Nhận lời khuyên của chuyên gia
-    //         </h3>
-    //         <p className="text-xs leading-6 text-body md:text-sm md:leading-7">
-    //           Đăng ký nhận bản tin của chúng tôi và cập nhật thông tin mới nhất.
-    //         </p>
-    //       </div>
-    //       <Form
-    //         layout="inline"
-    //         form={subscriptionForm}
-    //         onFinish={(values) => console.log(values)}
-    //         className="w-full shrink-0 sm:w-96 md:w-[545px] md:mt-7 z-10"
-    //       >
-    //         <FormItem className="w-full max-w-full md:max-w-[74%] mb-[2%]! md:mr-[2%]!">
-    //           <Input className="h-11 md:h-12 min-h-12" />
-    //         </FormItem>
-    //         <Button
-    //           title="Đăng ký"
-    //           className="w-full max-w-full md:max-w-[24%] text-sm leading-4 px-5! md:px-6! lg:px-8! py-4! md:py-3.5! lg:py-4! mt-3! sm:mt-0! md:h-full"
-    //           onClick={() => subscriptionForm.submit()}
-    //         />
-    //       </Form>
-    //       <div
-    //         style={{ backgroundImage: `url(${SUBSCRIPTION_BG})` }}
-    //         className="hidden xl:block absolute w-full h-full right-0 top-0 bg-contain bg-right bg-no-repeat z-0"
-    //       ></div>
-    //     </Flex>
-    //   ),
-    // },
   ];
 
-  const handleSelectedSize = (size: Size['size']) => {
-    setSize({ size });
-  };
-
-  const handleSelectedColor = (color: string) => {
-    setColor(color);
-  };
-
-  const handleSelectedProduct = (product: Product) => {
-    setIsOpen(true);
+  const handleSelectedProduct = (product: IProduct) => {
     setSelectedProduct(product);
+    setIsProductModalVisible(true);
   };
 
-  const handleDecrease = () => {
-    setQuantity((prev) => prev - (prev === MIN_QUANTITY ? 0 : 1));
-  };
-
-  const handleIncrease = () => {
-    setQuantity((prev) => prev + (prev === MAX_QUANTITY ? 0 : 1));
+  const handleCancelProductModal = () => {
+    setIsProductModalVisible(false);
+    setSelectedProduct(undefined);
   };
 
   return (
@@ -1006,16 +986,10 @@ const HomePage = () => {
       </Space>
 
       <ProductModal
-        open={isOpen}
-        quantity={quantity}
-        selectedColor={color}
-        selectedSize={size?.size}
-        product={selectedProduct}
-        onDecrease={handleDecrease}
-        onIncrease={handleIncrease}
-        onSelectSize={handleSelectedSize}
-        onSelectColor={handleSelectedColor}
-        onCancel={() => setIsOpen(false)}
+        open={isProductModalVisible}
+        product={selectedProduct || ({} as IProduct)}
+        setIsProductModalVisible={setIsProductModalVisible}
+        onCancel={handleCancelProductModal}
       />
     </Layout>
   );
