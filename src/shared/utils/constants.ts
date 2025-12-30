@@ -5,6 +5,7 @@ const MAX_QUANTITY = 99;
 
 const DEFAULT_URL_FIELDS = ['website', 'facebook', 'instagram'];
 
+const SESSION_KEY = 'sessionId';
 const GUEST_USER_KEY = 'guestUserId';
 const LATEST_ORDER_NUMBER_STORAGE_KEY = 'lastedOrderNumber';
 
@@ -29,6 +30,7 @@ export {
   MIN_QUANTITY,
   MAX_QUANTITY,
   DEFAULT_URL_FIELDS,
+  SESSION_KEY,
   GUEST_USER_KEY,
   LATEST_ORDER_NUMBER_STORAGE_KEY,
   RANGE_PRICE_CONSTANTS,
