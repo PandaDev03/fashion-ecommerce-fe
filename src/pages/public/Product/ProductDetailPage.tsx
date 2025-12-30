@@ -598,8 +598,8 @@ const ProductDetailPage = () => {
 
       <Content>
         <Flex vertical className="gap-y-6">
-          <h3 className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 font-bold text-primary capitalize">
-            Sản phẩm liên quan
+          <h3 className="text-lg md:text-xl lg:text-2xl 2xl:text-3xl xl:leading-10 font-bold text-primary">
+            Có thể bạn sẽ thích
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
             {recommendationProducts?.map((product, index) => (

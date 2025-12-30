@@ -1,6 +1,8 @@
+import { useMutation } from '@tanstack/react-query';
 import { Carousel, Flex, Space } from 'antd';
 import classNames from 'classnames';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SwiperSlide } from 'swiper/react';
 
 import {
@@ -26,7 +28,10 @@ import {
   WOMEN,
 } from '~/assets/images';
 import { Link } from '~/assets/svg';
-import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
+import { productAPI } from '~/features/products/api/productApi';
+import { IProduct, IProductParams } from '~/features/products/types/product';
+import { recommendationApi } from '~/features/recommendation/api/recommendationApi';
+import { IGetFeaturedProductParams } from '~/features/recommendation/types/recommendation';
 import Button from '~/shared/components/Button/Button';
 import Image from '~/shared/components/Image/Image';
 import { Layout } from '~/shared/components/Layout/Layout';
@@ -34,14 +39,10 @@ import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
 import Swiper from '~/shared/components/Swiper/Swiper';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
-import { useNavigate } from 'react-router-dom';
-import { PATH } from '~/shared/utils/path';
-import { useMutation } from '@tanstack/react-query';
-import { recommendationApi } from '~/features/recommendation/api/recommendationApi';
-import { IProduct, IProductParams } from '~/features/products/types/product';
-import { IGetFeaturedProductParams } from '~/features/recommendation/types/recommendation';
+import { useRecommendations } from '~/shared/hooks/useRecommendation';
+import { useAppSelector } from '~/shared/hooks/useStore';
 import { convertToVND } from '~/shared/utils/function';
-import { productAPI } from '~/features/products/api/productApi';
+import { PATH } from '~/shared/utils/path';
 
 interface Category {
   key: string;
@@ -484,14 +485,18 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { is2Xs, isSm, isMd, isLg, isXl } = useBreakpoint();
 
+  const [selectedProduct, setSelectedProduct] = useState<IProduct>();
   const [isProductModalVisible, setIsProductModalVisible] = useState(false);
 
   const [topProducts, setTopProducts] = useState<IProduct[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<IProduct[]>([]);
-  const [flashSaleProducts, setFlashSaleProducts] = useState<IProduct[]>([]);
   const [newArrivalProducts, setNewArrivalProducts] = useState<IProduct[]>([]);
 
-  const [selectedProduct, setSelectedProduct] = useState<IProduct>();
+  const { currentUser } = useAppSelector((state) => state.user);
+
+  const { products: recommendationProducts } = useRecommendations({
+    userId: currentUser?.id,
+  });
 
   const { mutate: getFeaturedProduct } = useMutation({
     mutationFn: (params: IGetFeaturedProductParams) =>
@@ -511,14 +516,6 @@ const HomePage = () => {
     },
   });
 
-  const { mutate: getFlashSaleProducts } = useMutation({
-    mutationFn: (params: IProductParams) => productAPI.getProducts(params),
-    onSuccess: (response) => {
-      const products = response?.data || [];
-      setFlashSaleProducts(products);
-    },
-  });
-
   const { mutate: getNewArrivalProducts } = useMutation({
     mutationFn: (params: IProductParams) => productAPI.getProducts(params),
     onSuccess: (response) => {
@@ -530,7 +527,6 @@ const HomePage = () => {
   useEffect(() => {
     getTopProduct({ limit: 6 });
     getFeaturedProduct({ limit: 4 });
-    getFlashSaleProducts({ status: 'active' });
     getNewArrivalProducts({ status: 'active', page: 1, pageSize: 12 });
   }, []);
 
@@ -674,7 +670,7 @@ const HomePage = () => {
                         {product?.description}
                       </p>
                     </Flex>
-                    <Flex className="w-full justify-end flex-col max-2xl:justify-items-start max-2xl:flex-row-reverse max-2xl:gap-x-2">
+                    <Flex className="max-lg:w-full justify-end flex-col max-2xl:justify-items-start max-2xl:flex-row-reverse max-2xl:gap-x-2">
                       <p className="max-2xl:text-base text-2xl text-primary font-semibold font-segoe">
                         {convertToVND(defaultProduct?.price)}
                       </p>
@@ -690,8 +686,8 @@ const HomePage = () => {
       ),
     },
     {
-      key: 'flash-sale',
-      title: 'Flash sale',
+      key: 'for-you',
+      title: 'Dành cho bạn',
       children: (
         <Swiper
           loop
@@ -700,8 +696,8 @@ const HomePage = () => {
           spaceBetween={10}
           slidesPerView={isXl ? 5 : isSm ? 3 : 2}
         >
-          {Array.isArray(flashSaleProducts) &&
-            flashSaleProducts?.map((product, index) => (
+          {Array.isArray(recommendationProducts) &&
+            recommendationProducts?.map((product, index) => (
               <SwiperSlide key={index}>
                 <ProductCard
                   vertical

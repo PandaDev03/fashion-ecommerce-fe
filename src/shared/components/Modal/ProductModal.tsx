@@ -66,11 +66,19 @@ const ProductModal = ({
   );
 
   const customClassNames: ModalProps['classNames'] = {
-    body: 'max-h-[calc(-120px+100vh)] overflow-auto',
+    // body: 'max-h-[calc(-120px+100vh)] md:h-[550px] lg:h-[600px]',
+    body: 'max-h-[calc(-120px+100vh)] max-lg:overflow-auto lg:h-[600px]',
     content: 'overflow-hidden p-0!',
     footer: 'mt-0!',
     ...classNames,
   };
+
+  // const customClassNames: ModalProps['classNames'] = {
+  //   body: 'p-0! overflow-hidden h-[calc(100vh-100px)] md:h-[550px] lg:h-[600px]',
+  //   content: 'overflow-hidden p-0! rounded-lg',
+  //   footer: 'mt-0!',
+  //   ...classNames,
+  // };
 
   const defaultProduct = useMemo(
     () => ({
@@ -253,7 +261,8 @@ const ProductModal = ({
               style={{
                 width: 'initial',
               }}
-              className="block max-w-full max-lg:max-h-[430px]"
+              // className="block max-w-full max-lg:max-h-[430px]"
+              className="block max-w-full"
             />
           </span>
           <img
@@ -261,16 +270,25 @@ const ProductModal = ({
             className="block w-full absolute top-0 bottom-0 left-0 right-0 inset-0 m-auto min-w-full max-w-full min-h-full max-h-full object-cover"
           />
         </span>
-        <Flex vertical className="p-5! md:p-8! w-full">
+        <Flex
+          vertical
+          style={{
+            scrollbarWidth: 'thin',
+          }}
+          className="p-5! md:p-8! w-full overflow-y-scroll"
+        >
+          {/* <Flex vertical className="p-5! md:p-8! w-full lg:overflow-auto"> */}
           <div className="pb-5">
             <div className="mb-2 md:mb-2.5 block -mt-1.5">
               <h2 className="text-primary text-lg md:text-xl lg:text-2xl font-semibold">
                 {product?.name || '-'}
               </h2>
             </div>
-            <p className="text-sm leading-6 md:text-body md:leading-7">
-              {product?.description || '-'}
-            </p>
+            {product?.description && (
+              <p className="text-sm leading-6 md:text-body md:leading-7">
+                {product?.description}
+              </p>
+            )}
             <Flex align="center" className="mt-3">
               <p className="text-heading font-semibold text-base md:text-xl lg:text-2xl">
                 {convertToVND(defaultProduct?.price)}
