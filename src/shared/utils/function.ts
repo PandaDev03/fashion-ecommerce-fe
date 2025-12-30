@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { FileType } from '../components/Upload/Dragger';
-import { DEFAULT_URL_FIELDS, GUEST_USER_KEY } from './constants';
-import { IProduct, IVariant } from '~/features/products/types/product';
 import { RefObject } from 'react';
+import { IProduct, IVariant } from '~/features/products/types/product';
+import { FileType } from '../components/Upload/Dragger';
+import { DEFAULT_URL_FIELDS, GUEST_USER_KEY, SESSION_KEY } from './constants';
 import { notificationEmitter } from './notificationEmitter';
 
 export const generateSlug = (name: string) => {
@@ -110,6 +110,34 @@ export const getGuestUserId = (): string | null => {
 
 export const clearGuestUserId = (): void => {
   localStorage.removeItem(GUEST_USER_KEY);
+};
+
+export const getOrCreateSessionId = (): string => {
+  let sessionId = sessionStorage.getItem(SESSION_KEY);
+
+  if (!sessionId) {
+    sessionId = `session-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    sessionStorage.setItem(SESSION_KEY, sessionId);
+  }
+
+  return sessionId;
+};
+
+export const getUserIdentifier = (userId?: string): string => {
+  if (userId) return `user:${userId}`;
+
+  const guestId = getOrCreateGuestUserId();
+  return `guest:${guestId}`;
+};
+
+/**
+ * Clear guest data (khi user logout)
+ */
+export const clearGuestData = (): void => {
+  localStorage.removeItem(GUEST_USER_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
 };
 
 export const validateStockAvailability = ({

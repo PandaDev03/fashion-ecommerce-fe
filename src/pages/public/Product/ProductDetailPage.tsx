@@ -24,6 +24,7 @@ import Image from '~/shared/components/Image/Image';
 import { Content, Layout } from '~/shared/components/Layout/Layout';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import { useToast } from '~/shared/contexts/NotificationContext';
+import { useProductView } from '~/shared/hooks/useProductView';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
 import { MAX_QUANTITY, MIN_QUANTITY } from '~/shared/utils/constants';
 import {
@@ -34,129 +35,8 @@ import {
   validateStockAvailability,
 } from '~/shared/utils/function';
 import { PATH } from '~/shared/utils/path';
-import { Product } from '../Home/HomePage';
 import ProductDetailSkeleton from './components/ProductDetailSkeleton';
-
-const newArrivals: Product[] = [
-  {
-    key: '1',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F1.jpg&w=384&q=100',
-  },
-  {
-    key: '2',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F3.jpg&w=384&q=100',
-  },
-  {
-    key: '3',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F2.jpg&w=384&q=100',
-  },
-  {
-    key: '4',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F4.jpg&w=384&q=100',
-  },
-  {
-    key: '5',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F5.jpg&w=384&q=100',
-  },
-  {
-    key: '6',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F6.jpg&w=384&q=100',
-  },
-  {
-    key: '7',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F7.jpg&w=384&q=100',
-  },
-  {
-    key: '8',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F8.jpg&w=384&q=100',
-  },
-  {
-    key: '9',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F9.jpg&w=384&q=100',
-  },
-  {
-    key: '10',
-    price: 18.59,
-    title: 'Áo thun cổ tròn nữ Roadster',
-    subTitle:
-      'Fendi bắt đầu hoạt động vào năm 1925 với tư cách là một cửa hàng chuyên bán lông thú và đồ da ở Rome.',
-    img: 'https://chawkbazar.vercel.app/_next/image?url=%2Fassets%2Fimages%2Fproducts%2Fancient%2F10.jpg&w=384&q=100',
-  },
-];
-
-const collapseItems: CollapseProps['items'] = [
-  {
-    key: '1',
-    label: 'Chi tiết sản phẩm',
-    children: (
-      <p className="leading-7 text-sm text-gray-600">
-        Đội ngũ Chăm sóc Khách hàng của chúng tôi làm việc 7 ngày một tuần và
-        cung cấp 2 cách liên hệ: Email và Trò chuyện. Chúng tôi cố gắng phản hồi
-        nhanh chóng, vì vậy bạn không cần phải chờ đợi quá lâu!
-      </p>
-    ),
-  },
-  {
-    key: '2',
-    label: 'Thông tin bổ sung',
-    children: (
-      <p className="leading-7 text-sm text-gray-600">
-        Vui lòng đọc kỹ tài liệu. Chúng tôi cũng có một số video hướng dẫn trực
-        tuyến về vấn đề này. Nếu sự cố vẫn tiếp diễn, vui lòng mở phiếu hỗ trợ
-        trong diễn đàn hỗ trợ.
-      </p>
-    ),
-  },
-  {
-    key: '3',
-    label: 'Đánh giá của khách hàng',
-    children: (
-      <div className="leading-7 text-sm text-gray-600">
-        <p>
-          Trước tiên, vui lòng kiểm tra kết nối internet của bạn. Chúng tôi cũng
-          có một số video hướng dẫn trực tuyến về vấn đề này. Nếu sự cố vẫn tiếp
-          diễn, vui lòng mở phiếu hỗ trợ trong diễn đàn hỗ trợ.
-        </p>
-      </div>
-    ),
-  },
-];
+import { useRecommendations } from '~/shared/hooks/useRecommendation';
 
 const TOAST_COOLDOWN = 2000;
 
@@ -178,6 +58,7 @@ const ProductDetailPage = () => {
   const [productDetails, setProductDetails] = useState<IProduct>();
   const [productOptions, setProductOptions] = useState<IProduct['options']>([]);
 
+  const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems } = useAppSelector((state) => state.cart);
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
@@ -185,6 +66,19 @@ const ProductDetailPage = () => {
       mutationFn: (slug: string) => productAPI.getProductBySlug(slug),
       onSuccess: (response) => setProductDetails(response?.data),
     });
+
+  const { trackImageClick } = useProductView({
+    productId: productDetails?.id,
+    userId: currentUser?.id,
+    source: 'direct',
+    enabled: !!productDetails?.id,
+  });
+
+  const { products } = useRecommendations({
+    userId: currentUser?.id,
+  });
+
+  console.log('useRecommendations', products);
 
   const breadCrumbItems: BreadcrumbProps['items'] = [
     {
@@ -202,6 +96,48 @@ const ProductDetailPage = () => {
       title: productDetails?.name,
     },
   ];
+
+  const collapseItems: CollapseProps['items'] = useMemo(
+    () => [
+      {
+        key: '1',
+        label: 'Chi tiết sản phẩm',
+        children: (
+          <p className="leading-7 text-sm text-gray-600">
+            {productDetails?.description ??
+              `Đội ngũ Chăm sóc Khách hàng của chúng tôi làm việc 7 ngày một tuần
+            và cung cấp 2 cách liên hệ: Email và Trò chuyện. Chúng tôi cố gắng
+            phản hồi nhanh chóng, vì vậy bạn không cần phải chờ đợi quá lâu!`}
+          </p>
+        ),
+      },
+      {
+        key: '2',
+        label: 'Thông tin bổ sung',
+        children: (
+          <p className="leading-7 text-sm text-gray-600">
+            Vui lòng đọc kỹ tài liệu. Chúng tôi cũng có một số video hướng dẫn
+            trực tuyến về vấn đề này. Nếu sự cố vẫn tiếp diễn, vui lòng mở phiếu
+            hỗ trợ trong diễn đàn hỗ trợ.
+          </p>
+        ),
+      },
+      {
+        key: '3',
+        label: 'Đánh giá của khách hàng',
+        children: (
+          <div className="leading-7 text-sm text-gray-600">
+            <p>
+              Trước tiên, vui lòng kiểm tra kết nối internet của bạn. Chúng tôi
+              cũng có một số video hướng dẫn trực tuyến về vấn đề này. Nếu sự cố
+              vẫn tiếp diễn, vui lòng mở phiếu hỗ trợ trong diễn đàn hỗ trợ.
+            </p>
+          </div>
+        ),
+      },
+    ],
+    [productDetails]
+  );
 
   const isShowSkeleton = useMemo(
     () =>
@@ -286,6 +222,8 @@ const ProductDetailPage = () => {
   const goToSlide = (index: number) => {
     carouselRef.current?.goTo(index);
     setCurrentSlide(index);
+
+    trackImageClick();
   };
 
   const handleDecrease = () => {
@@ -447,7 +385,11 @@ const ProductDetailPage = () => {
                     afterChange={(current) => setCurrentSlide(current)}
                   >
                     {selectedVariant?.imageMappings?.map(({ image }) => (
-                      <div key={image?.id} className="outline-none">
+                      <div
+                        key={image?.id}
+                        className="outline-none"
+                        onClick={trackImageClick}
+                      >
                         <Image
                           preview
                           width="100%"
@@ -465,9 +407,9 @@ const ProductDetailPage = () => {
                 <h2 className="text-primary text-lg md:text-xl lg:text-2xl 2xl:text-3xl font-bold hover:text-black mb-3.5">
                   {productDetails?.name}
                 </h2>
-                <p className="text-body text-sm lg:text-base leading-6 lg:leading-8">
+                {/* <p className="text-body text-sm lg:text-base leading-6 lg:leading-8">
                   {productDetails?.description}
-                </p>
+                </p> */}
                 <Flex className="flex items-center mt-5!">
                   <p className="text-primary font-bold text-base md:text-xl lg:text-2xl 2xl:text-4xl ltr:pr-2 rtl:pl-2 ltr:md:pr-0 rtl:md:pl-0 ltr:lg:pr-2 rtl:lg:pl-2 ltr:2xl:pr-0 rtl:2xl:pl-0">
                     {convertToVND(selectedVariant?.price)}
@@ -626,7 +568,12 @@ const ProductDetailPage = () => {
                 <Divider />
 
                 <Flex className="gap-y-6 md:gap-y-7">
-                  <Collapse ghost items={collapseItems} />
+                  <Collapse
+                    ghost
+                    items={collapseItems}
+                    defaultActiveKey={'1'}
+                    onChange={() => console.log('active')}
+                  />
                 </Flex>
               </div>
             </>
