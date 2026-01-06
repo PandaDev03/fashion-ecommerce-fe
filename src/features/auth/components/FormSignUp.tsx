@@ -47,8 +47,8 @@ const FormSignUp = ({ ...props }: IFormProps) => {
       onFinishFailed={handleFinishFailed}
       {...props}
     >
-      {signUpFormItems.map(({ children, ...props }, index) => (
-        <FormItem key={index} {...props}>
+      {signUpFormItems.map(({ children, ...formItemProps }, index) => (
+        <FormItem key={index} {...formItemProps}>
           {children}
         </FormItem>
       ))}

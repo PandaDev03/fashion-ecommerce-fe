@@ -90,10 +90,9 @@ const Form = ({
           {submitTitle && (
             <Col span={cancelTitle ? undefined : 24}>
               <Button
-                fill
                 type="submit"
-                title={submitTitle}
                 loading={loading}
+                title={submitTitle}
                 className={classNames('w-full', submitClass)}
               />
             </Col>

@@ -1,5 +1,11 @@
 import axiosApi from '~/config/axios';
-import { ISignIn, ISignInWithGoogle, ISignUp } from '../types/auth';
+import {
+  IRequestPasswordReset,
+  IResetPassword,
+  ISignIn,
+  ISignInWithGoogle,
+  ISignUp,
+} from '../types/auth';
 
 export const AuthApi = {
   signUp: async (payload: ISignUp) => {
@@ -13,5 +19,11 @@ export const AuthApi = {
   },
   signOut: async () => {
     return await axiosApi.post('/auth/sign-out');
+  },
+  requestPasswordReset: async (params: IRequestPasswordReset) => {
+    return await axiosApi.post('/auth/request-password-reset', params);
+  },
+  resetPassword: async (params: IResetPassword) => {
+    return await axiosApi.post('/auth/reset-password', params);
   },
 };
