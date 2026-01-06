@@ -161,7 +161,10 @@ const ProductDetailPage = () => {
   );
 
   useEffect(() => {
-    if (slug) getProductBySlug(slug);
+    if (!slug) return;
+
+    getProductBySlug(slug);
+    window.scroll({ top: 0, behavior: 'smooth' });
   }, [slug]);
 
   useEffect(() => {
@@ -198,30 +201,40 @@ const ProductDetailPage = () => {
   useEffect(() => {
     if (!productDetails) return;
 
-    if (selectedColorId && selectedSizeId) {
-      const selectedVariant = productDetails?.variants?.find((variant) => {
-        const isMatchColorId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedColorId
-        );
-        const isMatchSizeId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedSizeId
-        );
+    if (productDetails?.hasVariants) {
+      if (selectedColorId && selectedSizeId) {
+        const selectedVariant = productDetails?.variants?.find((variant) => {
+          const isMatchColorId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedColorId
+          );
+          const isMatchSizeId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedSizeId
+          );
 
-        return isMatchColorId && isMatchSizeId;
-      });
+          return isMatchColorId && isMatchSizeId;
+        });
 
-      setSelectedVariant(selectedVariant);
-    } else if (selectedSizeId) {
-      const selectedVariant = productDetails?.variants?.find((variant) => {
-        const isMatchSizeId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedSizeId
-        );
+        setSelectedVariant(selectedVariant);
+      } else if (selectedSizeId) {
+        const selectedVariant = productDetails?.variants?.find((variant) => {
+          const isMatchSizeId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedSizeId
+          );
 
-        return isMatchSizeId;
-      });
+          return isMatchSizeId;
+        });
 
-      setSelectedVariant(selectedVariant);
-    } else setSelectedVariant(undefined);
+        setSelectedVariant(selectedVariant);
+      } else setSelectedVariant(undefined);
+    } else {
+      const product: IVariant = {
+        ...productDetails,
+        stock: Number(productDetails?.stock),
+        imageMappings: productDetails?.images,
+      };
+
+      setSelectedVariant(product);
+    }
   }, [selectedColorId, selectedSizeId, productDetails]);
 
   const goToSlide = (index: number) => {
@@ -349,24 +362,26 @@ const ProductDetailPage = () => {
                     WebkitOverflowScrolling: 'touch',
                   }}
                 >
-                  {selectedVariant?.imageMappings?.map(({ image }, index) => (
-                    <div
-                      key={image?.id}
-                      className={classNames(
-                        'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
-                        currentSlide === index
-                          ? 'border-black'
-                          : 'border-gray-200'
-                      )}
-                      onClick={() => goToSlide(index)}
-                    >
-                      <img
-                        alt="thumbnail"
-                        src={image?.url}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
+                  {selectedVariant?.imageMappings?.map(
+                    ({ image, url }, index) => (
+                      <div
+                        key={image?.id}
+                        className={classNames(
+                          'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
+                          currentSlide === index
+                            ? 'border-black'
+                            : 'border-gray-200'
+                        )}
+                        onClick={() => goToSlide(index)}
+                      >
+                        <img
+                          alt="thumbnail"
+                          src={url ?? image?.url}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )
+                  )}
                 </Flex>
                 <div className="relative max-h-max flex-1 overflow-hidden rounded-lg select-none">
                   {selectedVariant &&
@@ -399,7 +414,7 @@ const ProductDetailPage = () => {
                     autoplaySpeed={3000}
                     afterChange={(current) => setCurrentSlide(current)}
                   >
-                    {selectedVariant?.imageMappings?.map(({ image }) => (
+                    {selectedVariant?.imageMappings?.map(({ image, url }) => (
                       <div
                         key={image?.id}
                         className="outline-none"
@@ -408,8 +423,8 @@ const ProductDetailPage = () => {
                         <Image
                           preview
                           width="100%"
-                          src={image?.url}
                           alt="main product"
+                          src={url ?? image?.url}
                           className="w-full aspect-3/4 object-cover bg-gray-100"
                         />
                       </div>

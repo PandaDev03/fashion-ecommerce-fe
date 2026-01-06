@@ -232,7 +232,10 @@ const CheckoutPage = () => {
                       width={64}
                       height={64}
                       className="rounded-md object-cover"
-                      src={item?.variant?.imageMappings?.[0]?.image?.url}
+                      src={
+                        item?.images?.[0]?.url ??
+                        item?.variant?.imageMappings?.[0]?.image?.url
+                      }
                     />
                     <Flex vertical className="ltr:pl-3! rtl:pr-3!">
                       <Tooltip title={item?.name}>

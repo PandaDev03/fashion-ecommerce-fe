@@ -499,6 +499,11 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
   };
 
   const handleDecrease = (item: ICart) => {
+    if (!item?.variant?.id) {
+      toast.error('Không tìm thấy ID của biến thể');
+      return;
+    }
+
     dispatch(
       updateQuantity({
         variantId: item?.variant?.id,
@@ -508,6 +513,11 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
   };
 
   const handleIncrease = (item: ICart) => {
+    if (!item?.variant?.id || !item?.variant?.stock) {
+      toast.error('Không tìm thấy ID của biến thể');
+      return;
+    }
+
     const { variant } = item;
     const newQuantity = item?.quantity + 1;
 
@@ -531,7 +541,12 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const handleDeleteCartItem = (variantId: string) => {
+  const handleDeleteCartItem = (variantId?: string) => {
+    if (!variantId) {
+      toast.error('Không tìm thấy ID của biến thể');
+      return;
+    }
+
     dispatch(deleteCartItem({ variantId }));
   };
 
@@ -672,51 +687,56 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
           </Flex>
         ) : (
           <Space size="middle" direction="vertical" className="w-full">
-            {cartItems?.map((item, index) => (
-              <Flex
-                key={index}
-                align="center"
-                className="w-full h-auto bg-white py-4 md:py-7 border-b border-gray-100 relative last:border-b-0"
-              >
-                <div
-                  className="group relative flex shrink-0 w-24 h-24 overflow-hidden bg-gray-200 rounded-md cursor-pointer md:w-28 md:h-28 ltr:mr-4 rtl:ml-4"
-                  onClick={() => handleDeleteCartItem(item?.variant?.id)}
+            {cartItems?.map((item, index) => {
+              const defaultImg =
+                item?.images?.[0] || item?.variant?.imageMappings?.[0]?.image;
+
+              return (
+                <Flex
+                  key={index}
+                  align="center"
+                  className="w-full h-auto bg-white py-4 md:py-7 border-b border-gray-100 relative last:border-b-0"
                 >
-                  <img
-                    className="w-full rounded-lg object-cover"
-                    src={item?.variant?.imageMappings?.[0]?.image?.url}
-                    onError={(element) => {
-                      element.currentTarget.src = FALLBACK_IMG;
-                      element.currentTarget.srcset = FALLBACK_IMG;
-                    }}
-                  />
-                  <div className="absolute flex items-center justify-center top-0 w-full h-full transition duration-200 ease-in-out bg-[#0000004d] ltr:left-0 rtl:right-0 md:bg-transparent md:group-hover:bg-[#0000004d]">
-                    <CloseFill />
-                  </div>
-                </div>
-                <Flex vertical className="w-full overflow-hidden">
-                  <p className="text-sm text-primary mb-1.5 -mt-1 truncate">
-                    {item?.name}
-                  </p>
-                  <p className="text-sm text-gray-400 mb-2.5">
-                    Giá:&nbsp;
-                    {convertToVND(Number(item?.variant?.price ?? 0))}
-                  </p>
-                  <Flex align="center" justify="space-between">
-                    <QuantitySelector
-                      size="small"
-                      className="shrink-0"
-                      quantity={item?.quantity}
-                      onDecrease={() => handleDecrease(item)}
-                      onIncrease={() => handleIncrease(item)}
+                  <div
+                    className="group relative flex shrink-0 w-24 h-24 overflow-hidden bg-gray-200 rounded-md cursor-pointer md:w-28 md:h-28 ltr:mr-4 rtl:ml-4"
+                    onClick={() => handleDeleteCartItem(item?.variant?.id)}
+                  >
+                    <img
+                      className="w-full rounded-lg object-cover"
+                      src={defaultImg?.url}
+                      onError={(element) => {
+                        element.currentTarget.src = FALLBACK_IMG;
+                        element.currentTarget.srcset = FALLBACK_IMG;
+                      }}
                     />
-                    <p className="text-sm font-semibold leading-5 md:text-base text-heading">
-                      {convertToVND(Number(item?.price) * item?.quantity)}
+                    <div className="absolute flex items-center justify-center top-0 w-full h-full transition duration-200 ease-in-out bg-[#0000004d] ltr:left-0 rtl:right-0 md:bg-transparent md:group-hover:bg-[#0000004d]">
+                      <CloseFill />
+                    </div>
+                  </div>
+                  <Flex vertical className="w-full overflow-hidden">
+                    <p className="text-sm text-primary mb-1.5 -mt-1 truncate">
+                      {item?.name}
                     </p>
+                    <p className="text-sm text-gray-400 mb-2.5">
+                      Giá:&nbsp;
+                      {convertToVND(Number(item?.variant?.price ?? 0))}
+                    </p>
+                    <Flex align="center" justify="space-between">
+                      <QuantitySelector
+                        size="small"
+                        className="shrink-0"
+                        quantity={item?.quantity}
+                        onDecrease={() => handleDecrease(item)}
+                        onIncrease={() => handleIncrease(item)}
+                      />
+                      <p className="text-sm font-semibold leading-5 md:text-base text-heading">
+                        {convertToVND(Number(item?.price) * item?.quantity)}
+                      </p>
+                    </Flex>
                   </Flex>
                 </Flex>
-              </Flex>
-            ))}
+              );
+            })}
           </Space>
         )}
       </AntdDrawer>
