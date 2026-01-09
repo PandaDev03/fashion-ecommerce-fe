@@ -24,8 +24,10 @@ import Image from '~/shared/components/Image/Image';
 import { Content, Layout } from '~/shared/components/Layout/Layout';
 import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
+import ProductCardSkeleton from '~/shared/components/ProductCardSkeleton/ProductCardSkeleton';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import { useToast } from '~/shared/contexts/NotificationContext';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useProductView } from '~/shared/hooks/useProductView';
 import { useRecommendations } from '~/shared/hooks/useRecommendation';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
@@ -45,6 +47,8 @@ const TOAST_COOLDOWN = 2000;
 const ProductDetailPage = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+
+  const { isLg, isMd } = useBreakpoint();
   const { slug } = useParams<{ slug: string }>();
 
   const lastToastTime = useRef(0);
@@ -68,9 +72,10 @@ const ProductDetailPage = () => {
   const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems } = useAppSelector((state) => state.cart);
 
-  const { products: recommendationProducts } = useRecommendations({
-    userId: currentUser?.id,
-  });
+  const { products: recommendationProducts, loading: recommendationLoading } =
+    useRecommendations({
+      userId: currentUser?.id,
+    });
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({
@@ -161,7 +166,10 @@ const ProductDetailPage = () => {
   );
 
   useEffect(() => {
-    if (slug) getProductBySlug(slug);
+    if (!slug) return;
+
+    getProductBySlug(slug);
+    window.scroll({ top: 0, behavior: 'smooth' });
   }, [slug]);
 
   useEffect(() => {
@@ -198,30 +206,40 @@ const ProductDetailPage = () => {
   useEffect(() => {
     if (!productDetails) return;
 
-    if (selectedColorId && selectedSizeId) {
-      const selectedVariant = productDetails?.variants?.find((variant) => {
-        const isMatchColorId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedColorId
-        );
-        const isMatchSizeId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedSizeId
-        );
+    if (productDetails?.hasVariants) {
+      if (selectedColorId && selectedSizeId) {
+        const selectedVariant = productDetails?.variants?.find((variant) => {
+          const isMatchColorId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedColorId
+          );
+          const isMatchSizeId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedSizeId
+          );
 
-        return isMatchColorId && isMatchSizeId;
-      });
+          return isMatchColorId && isMatchSizeId;
+        });
 
-      setSelectedVariant(selectedVariant);
-    } else if (selectedSizeId) {
-      const selectedVariant = productDetails?.variants?.find((variant) => {
-        const isMatchSizeId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedSizeId
-        );
+        setSelectedVariant(selectedVariant);
+      } else if (selectedSizeId) {
+        const selectedVariant = productDetails?.variants?.find((variant) => {
+          const isMatchSizeId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedSizeId
+          );
 
-        return isMatchSizeId;
-      });
+          return isMatchSizeId;
+        });
 
-      setSelectedVariant(selectedVariant);
-    } else setSelectedVariant(undefined);
+        setSelectedVariant(selectedVariant);
+      } else setSelectedVariant(undefined);
+    } else {
+      const product: IVariant = {
+        ...productDetails,
+        stock: Number(productDetails?.stock),
+        imageMappings: productDetails?.images,
+      };
+
+      setSelectedVariant(product);
+    }
   }, [selectedColorId, selectedSizeId, productDetails]);
 
   const goToSlide = (index: number) => {
@@ -349,24 +367,26 @@ const ProductDetailPage = () => {
                     WebkitOverflowScrolling: 'touch',
                   }}
                 >
-                  {selectedVariant?.imageMappings?.map(({ image }, index) => (
-                    <div
-                      key={image?.id}
-                      className={classNames(
-                        'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
-                        currentSlide === index
-                          ? 'border-black'
-                          : 'border-gray-200'
-                      )}
-                      onClick={() => goToSlide(index)}
-                    >
-                      <img
-                        alt="thumbnail"
-                        src={image?.url}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
+                  {selectedVariant?.imageMappings?.map(
+                    ({ image, url }, index) => (
+                      <div
+                        key={image?.id}
+                        className={classNames(
+                          'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
+                          currentSlide === index
+                            ? 'border-black'
+                            : 'border-gray-200'
+                        )}
+                        onClick={() => goToSlide(index)}
+                      >
+                        <img
+                          alt="thumbnail"
+                          src={url ?? image?.url}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )
+                  )}
                 </Flex>
                 <div className="relative max-h-max flex-1 overflow-hidden rounded-lg select-none">
                   {selectedVariant &&
@@ -399,7 +419,7 @@ const ProductDetailPage = () => {
                     autoplaySpeed={3000}
                     afterChange={(current) => setCurrentSlide(current)}
                   >
-                    {selectedVariant?.imageMappings?.map(({ image }) => (
+                    {selectedVariant?.imageMappings?.map(({ image, url }) => (
                       <div
                         key={image?.id}
                         className="outline-none"
@@ -408,8 +428,8 @@ const ProductDetailPage = () => {
                         <Image
                           preview
                           width="100%"
-                          src={image?.url}
                           alt="main product"
+                          src={url ?? image?.url}
                           className="w-full aspect-3/4 object-cover bg-gray-100"
                         />
                       </div>
@@ -422,9 +442,6 @@ const ProductDetailPage = () => {
                 <h2 className="text-primary text-lg md:text-xl lg:text-2xl 2xl:text-3xl font-bold hover:text-black mb-3.5">
                   {productDetails?.name}
                 </h2>
-                {/* <p className="text-body text-sm lg:text-base leading-6 lg:leading-8">
-                  {productDetails?.description}
-                </p> */}
                 <Flex className="flex items-center mt-5!">
                   <p className="text-primary font-bold text-base md:text-xl lg:text-2xl 2xl:text-4xl ltr:pr-2 rtl:pl-2 ltr:md:pr-0 rtl:md:pl-0 ltr:lg:pr-2 rtl:lg:pl-2 ltr:2xl:pr-0 rtl:2xl:pl-0">
                     {convertToVND(selectedVariant?.price)}
@@ -602,15 +619,19 @@ const ProductDetailPage = () => {
             Có thể bạn sẽ thích
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
-            {recommendationProducts?.map((product, index) => (
-              <ProductCard
-                vertical
-                key={index}
-                effect="lift"
-                product={product}
-                onClick={() => handleSelectedRecommendationProduct(product)}
-              />
-            ))}
+            {recommendationLoading ? (
+              <ProductCardSkeleton count={isLg ? 5 : isMd ? 3 : 2} />
+            ) : (
+              recommendationProducts?.map((product, index) => (
+                <ProductCard
+                  vertical
+                  key={index}
+                  effect="lift"
+                  product={product}
+                  onClick={() => handleSelectedRecommendationProduct(product)}
+                />
+              ))
+            )}
           </div>
         </Flex>
 

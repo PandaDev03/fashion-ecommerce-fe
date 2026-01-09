@@ -172,12 +172,12 @@ export interface IVariant {
   updatedAt: string;
   createdBy: string;
   updatedBy: string;
-  productId: string;
+  productId?: string;
   price: string;
   stock: number;
   status: string;
-  position: number;
-  optionValues: OptionValue[];
+  position?: number;
+  optionValues?: OptionValue[];
   imageMappings: ImageMapping[];
 }
 
@@ -187,10 +187,11 @@ interface ImageMapping {
   updatedAt: string;
   createdBy: string;
   updatedBy: string;
-  variantId: string;
-  imageId: string;
+  variantId?: string;
+  imageId?: string;
   position: number;
-  image: Value;
+  image?: Value;
+  url?: string;
 }
 
 interface OptionValue {

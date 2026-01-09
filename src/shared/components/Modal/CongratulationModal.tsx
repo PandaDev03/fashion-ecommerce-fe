@@ -1,8 +1,9 @@
 import { ModalProps, Space } from 'antd';
+import { memo } from 'react';
 
 import Confetti_Icon from '~/assets/animations/confetti.json';
-import LordIcon from '~/shared/components/Icon/LordIcon';
-import Modal from '~/shared/components/Modal/Modal';
+import LordIcon from '../Icon/LordIcon';
+import Modal from './Modal';
 
 interface IProps extends ModalProps {
   icon?: any;
@@ -28,4 +29,4 @@ const CongratulationModal = ({
   );
 };
 
-export default CongratulationModal;
+export default memo(CongratulationModal);

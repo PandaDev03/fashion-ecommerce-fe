@@ -95,7 +95,7 @@ const BrandCreateModal = ({
       ],
     },
     {
-      title: 'Logo thương hiệu',
+      title: 'Logo',
       formItems: [
         {
           name: 'logo',

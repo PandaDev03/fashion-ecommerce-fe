@@ -1,11 +1,13 @@
 import React from 'react';
 
+import { UserRole } from '~/shared/utils/enum';
 import { PATH } from '~/shared/utils/path';
 
 import AccountLayout from '~/layouts/AccountLayout/AccountLayout';
 import AdminLayout from '~/layouts/AdminLayout/AdminLayout';
+import BaseLayout from '~/layouts/BaseLayout';
 import MainLayout from '~/layouts/MainLayout/MainLayout';
-import { UserRole } from '~/shared/utils/enum';
+import SimpleLayout from '~/layouts/SimpleLayout/SimpleLayout';
 
 export interface AppRoute {
   path: string;
@@ -20,49 +22,63 @@ const routes: AppRoute[] = [
   // PUBLIC ROUTES
   {
     path: PATH.HOME,
-    layout: MainLayout,
+    layout: BaseLayout,
+    subLayout: MainLayout,
     element: React.lazy(() => import('~/pages/public/Home/HomePage')),
   },
   {
     path: PATH.PRODUCTS,
-    layout: MainLayout,
+    layout: BaseLayout,
+    subLayout: MainLayout,
     element: React.lazy(() => import('~/pages/public/Product/ProductPage')),
   },
   {
     path: PATH.PRODUCT_DETAILS,
-    layout: MainLayout,
+    layout: BaseLayout,
+    subLayout: MainLayout,
     element: React.lazy(
       () => import('~/pages/public/Product/ProductDetailPage')
     ),
   },
   {
     path: PATH.CHECKOUT,
-    layout: MainLayout,
+    layout: BaseLayout,
+    subLayout: MainLayout,
     element: React.lazy(() => import('~/pages/public/Checkout/CheckoutPage')),
   },
   {
     path: PATH.ORDER,
-    layout: MainLayout,
+    layout: BaseLayout,
+    subLayout: MainLayout,
     element: React.lazy(() => import('~/pages/public/Order/OrderPage')),
   },
   {
     path: PATH.ORDER_WITHOUT_ORDER_NUMBER,
-    layout: MainLayout,
+    layout: BaseLayout,
+    subLayout: MainLayout,
     element: React.lazy(() => import('~/pages/public/Order/OrderPage')),
+  },
+  {
+    path: PATH.RESET_PASSWORD,
+    layout: BaseLayout,
+    subLayout: SimpleLayout,
+    element: React.lazy(
+      () => import('~/pages/user/ResetPassword/ResetPassword')
+    ),
   },
 
   // PROTECTED ROUTES
   {
     isProtected: true,
     path: PATH.ACCOUNT_ORDERS,
-    layout: MainLayout,
+    layout: BaseLayout,
     subLayout: AccountLayout,
     element: React.lazy(() => import('~/pages/user/Order/OrderPage')),
   },
   {
     isProtected: true,
     path: PATH.ACCOUNT_DETAILS,
-    layout: MainLayout,
+    layout: BaseLayout,
     subLayout: AccountLayout,
     element: React.lazy(
       () => import('~/pages/user/Account/AccountDetailsPage')
@@ -71,7 +87,7 @@ const routes: AppRoute[] = [
   {
     isProtected: true,
     path: PATH.ACCOUNT_CHANGE_PASSWORD,
-    layout: MainLayout,
+    layout: BaseLayout,
     subLayout: AccountLayout,
     element: React.lazy(
       () => import('~/pages/user/Account/AccountChangePasswordPage')

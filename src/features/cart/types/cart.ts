@@ -13,7 +13,7 @@ export interface ICart {
   stock: string;
   quantity: number;
   status: string;
-  variant: IVariant;
+  variant?: IVariant;
   category: {
     id: string;
     name: string;
@@ -39,7 +39,7 @@ export type CartState = IPaginatedData<ICart> & { isCartDrawerOpen?: boolean };
 
 export interface ILocalCartItem {
   productId: string;
-  variantId: string;
+  variantId?: string;
   quantity: number;
   addedAt: number;
 }

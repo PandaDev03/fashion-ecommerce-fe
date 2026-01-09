@@ -5,8 +5,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PAGE_HEADER } from '~/assets/images';
 import { Cart, SettingOutlined, User } from '~/assets/svg';
-import { Content, Layout } from '~/shared/components/Layout/Layout';
+import { Content } from '~/shared/components/Layout/Layout';
 import { PATH } from '~/shared/utils/path';
+import Footer from '../components/Footer/Footer';
 
 interface ISidebarItem {
   icon: ReactNode;
@@ -37,7 +38,7 @@ const AccountLayout = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
 
   return (
-    <Layout className="bg-white!">
+    <>
       <div
         style={{
           backgroundImage: `url(${PAGE_HEADER})`,
@@ -77,7 +78,8 @@ const AccountLayout = ({ children }: { children: ReactNode }) => {
           </div>
         </div>
       </Content>
-    </Layout>
+      <Footer />
+    </>
   );
 };
 
