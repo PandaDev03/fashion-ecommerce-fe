@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { Carousel, Flex, Space } from 'antd';
+import { Carousel, Empty, Flex, Space } from 'antd';
 import classNames from 'classnames';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -635,65 +635,66 @@ const HomePage = () => {
         <div className="grid grid-cols-4 gap-x-2.5">
           <ProductCardSkeleton count={4} />
         </div>
-      ) : (
+      ) : Array.isArray(featuredProducts) && featuredProducts?.length ? (
         <div className="grid grid-rows-2 grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 xl:gap-7">
-          {Array.isArray(featuredProducts) &&
-            featuredProducts?.map((product, index) => {
-              const { hasVariants } = product;
+          {featuredProducts?.map((product, index) => {
+            const { hasVariants } = product;
 
-              const firstVariant = product?.variants?.[0];
-              const defaultProduct = {
-                imgageUrl: hasVariants
-                  ? firstVariant?.imageMappings?.[0]?.image?.url
-                  : product?.images?.[0]?.url,
-                price: hasVariants ? firstVariant?.price : product?.price,
-              };
+            const firstVariant = product?.variants?.[0];
+            const defaultProduct = {
+              imgageUrl: hasVariants
+                ? firstVariant?.imageMappings?.[0]?.image?.url
+                : product?.images?.[0]?.url,
+              price: hasVariants ? firstVariant?.price : product?.price,
+            };
 
-              return (
-                <Flex
-                  vertical
-                  key={index}
-                  className={classNames(
-                    'relative group bg-gray-100 rounded-md cursor-pointer overflow-hidden',
-                    index === 0
-                      ? `${spanClasses?.cols[2]} ${spanClasses?.rows[2]}`
-                      : index === featuredProducts?.length - 2
-                      ? `${spanClasses?.cols[1]} ${spanClasses?.rows[2]}`
-                      : ''
-                  )}
-                  onClick={() => handleSelectedProduct(product)}
-                >
-                  <Flex align="center" justify="center" className="h-full">
-                    <Image
-                      src={defaultProduct?.imgageUrl}
-                      className="transition duration-300 ease-in-out group-has-hover:scale-115"
-                    />
-                  </Flex>
-                  <Flex
-                    justify="space-between"
-                    className="overflow-hidden items-end w-full px-7! pb-7! max-2xl:px-4! max-2xl:pb-4! shrink-0 max-2xl:flex-col max-2xl:items-start z-2"
-                  >
-                    <Flex vertical justify="space-between" className="w-full">
-                      <h4 className="text-sm font-semibold truncate md:text-base xl:text-lg text-primary max-2xl:mb-1 max-w-[250px]">
-                        {product?.name}
-                      </h4>
-                      <p className="text-sm max-2xl:text-xs text-body truncate max-w-[250px]">
-                        {product?.description}
-                      </p>
-                    </Flex>
-                    <Flex className="max-lg:w-full justify-end flex-col max-2xl:justify-items-start max-2xl:flex-row-reverse max-2xl:gap-x-2">
-                      <p className="max-2xl:text-base text-2xl text-primary font-semibold font-segoe">
-                        {convertToVND(defaultProduct?.price)}
-                      </p>
-                    </Flex>
-                  </Flex>
-                  <p className="absolute pt-0.5 pb-1 px-3 bg-primary text-white rounded-md top-3 left-3 lg:top-7 lg:left-7">
-                    20%
-                  </p>
+            return (
+              <Flex
+                vertical
+                key={index}
+                className={classNames(
+                  'relative group bg-gray-100 rounded-md cursor-pointer overflow-hidden',
+                  index === 0
+                    ? `${spanClasses?.cols[2]} ${spanClasses?.rows[2]}`
+                    : index === featuredProducts?.length - 2
+                    ? `${spanClasses?.cols[1]} ${spanClasses?.rows[2]}`
+                    : ''
+                )}
+                onClick={() => handleSelectedProduct(product)}
+              >
+                <Flex align="center" justify="center" className="h-full">
+                  <Image
+                    src={defaultProduct?.imgageUrl}
+                    className="transition duration-300 ease-in-out group-has-hover:scale-115"
+                  />
                 </Flex>
-              );
-            })}
+                <Flex
+                  justify="space-between"
+                  className="overflow-hidden items-end w-full px-7! pb-7! max-2xl:px-4! max-2xl:pb-4! shrink-0 max-2xl:flex-col max-2xl:items-start z-2"
+                >
+                  <Flex vertical justify="space-between" className="w-full">
+                    <h4 className="text-sm font-semibold truncate md:text-base xl:text-lg text-primary max-2xl:mb-1 max-w-[250px]">
+                      {product?.name}
+                    </h4>
+                    <p className="text-sm max-2xl:text-xs text-body truncate max-w-[250px]">
+                      {product?.description}
+                    </p>
+                  </Flex>
+                  <Flex className="max-lg:w-full justify-end flex-col max-2xl:justify-items-start max-2xl:flex-row-reverse max-2xl:gap-x-2">
+                    <p className="max-2xl:text-base text-2xl text-primary font-semibold font-segoe">
+                      {convertToVND(defaultProduct?.price)}
+                    </p>
+                  </Flex>
+                </Flex>
+                <p className="absolute pt-0.5 pb-1 px-3 bg-primary text-white rounded-md top-3 left-3 lg:top-7 lg:left-7">
+                  20%
+                </p>
+              </Flex>
+            );
+          })}
         </div>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ),
     },
     {
@@ -707,25 +708,27 @@ const HomePage = () => {
           spaceBetween={10}
           slidesPerView={isXl ? 5 : isSm ? 4 : 2}
         >
-          {recommendationLoading
-            ? Array.from({ length: isXl ? 5 : isSm ? 4 : 2 }).map(
-                (_, index) => (
-                  <SwiperSlide key={index}>
-                    <ProductCardSkeleton count={1} />
-                  </SwiperSlide>
-                )
-              )
-            : Array.isArray(recommendationProducts) &&
-              recommendationProducts?.map((product, index) => (
-                <SwiperSlide key={index}>
-                  <ProductCard
-                    vertical
-                    size="sm"
-                    product={product}
-                    onClick={() => handleSelectedProduct(product)}
-                  />
-                </SwiperSlide>
-              ))}
+          {recommendationLoading ? (
+            Array.from({ length: isXl ? 5 : isSm ? 4 : 2 }).map((_, index) => (
+              <SwiperSlide key={index}>
+                <ProductCardSkeleton count={1} />
+              </SwiperSlide>
+            ))
+          ) : Array.isArray(recommendationProducts) &&
+            recommendationProducts?.length ? (
+            recommendationProducts?.map((product, index) => (
+              <SwiperSlide key={index}>
+                <ProductCard
+                  vertical
+                  size="sm"
+                  product={product}
+                  onClick={() => handleSelectedProduct(product)}
+                />
+              </SwiperSlide>
+            ))
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          )}
         </Swiper>
       ),
     },
@@ -796,20 +799,21 @@ const HomePage = () => {
         <div className="grid grid-cols-5 gap-x-2.5">
           <ProductCardSkeleton count={5} />
         </div>
-      ) : (
+      ) : Array.isArray(topProducts) && topProducts?.length ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
-          {Array.isArray(topProducts) &&
-            topProducts?.map((product, key) => (
-              <ProductCard
-                key={key}
-                product={product}
-                customClassNames={{
-                  img: 'shrink-0 w-32 sm:w-44 md:w-40 lg:w-52 2xl:w-56 3xl:w-64',
-                }}
-                onClick={() => handleSelectedProduct(product)}
-              />
-            ))}
+          {topProducts?.map((product, key) => (
+            <ProductCard
+              key={key}
+              product={product}
+              customClassNames={{
+                img: 'shrink-0 w-32 sm:w-44 md:w-40 lg:w-52 2xl:w-56 3xl:w-64',
+              }}
+              onClick={() => handleSelectedProduct(product)}
+            />
+          ))}
         </div>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ),
     },
     {
@@ -888,19 +892,20 @@ const HomePage = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7">
           <ProductCardSkeleton count={isLg ? 5 : isMd ? 3 : 2} />
         </div>
-      ) : (
+      ) : Array.isArray(newArrivalProducts) && newArrivalProducts?.length ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
-          {Array.isArray(newArrivalProducts) &&
-            newArrivalProducts?.map((product, key) => (
-              <ProductCard
-                vertical
-                key={key}
-                effect="lift"
-                product={product}
-                onClick={() => handleSelectedProduct(product)}
-              />
-            ))}
+          {newArrivalProducts?.map((product, key) => (
+            <ProductCard
+              vertical
+              key={key}
+              effect="lift"
+              product={product}
+              onClick={() => handleSelectedProduct(product)}
+            />
+          ))}
         </div>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ),
     },
     {
