@@ -161,6 +161,8 @@ const ProductPage = () => {
     getBrandOptions();
     getCategoryOptions();
 
+    window.scroll({ top: 0, behavior: 'smooth' });
+
     return () => {
       if (skeletonTimeoutRef.current) clearTimeout(skeletonTimeoutRef.current);
     };

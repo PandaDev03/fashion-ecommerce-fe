@@ -1,10 +1,11 @@
+import { useMutation } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { IProduct } from '~/features/products/types/product';
 import { recommendationApi } from '~/features/recommendation/api/recommendationApi';
-import { getUserIdentifier } from '../utils/function';
-import { useMutation } from '@tanstack/react-query';
 import { IGetRecommendationParams } from '~/features/recommendation/types/recommendation';
+import { getUserIdentifier } from '../utils/function';
+import { useAppSelector } from './useStore';
 
 interface UseRecommendationsOptions {
   userId?: string;
@@ -17,11 +18,8 @@ export const useRecommendations = ({
   limit = 10,
   enabled = true,
 }: UseRecommendationsOptions = {}) => {
-  // const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-
-  //   const [products, setProducts] = useState<IRecommendationProduct[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
+  const { loading: userLoading } = useAppSelector((state) => state.user);
 
   const { mutate: getRecommendations, isPending: loading } = useMutation({
     mutationFn: (params: IGetRecommendationParams) =>
@@ -33,53 +31,13 @@ export const useRecommendations = ({
   });
 
   useEffect(() => {
-    if (!enabled) return;
-
-    // const fetchRecommendations = async () => {
-    //   setLoading(true);
-    //   setError(null);
-
-    //   try {
-    //     const userIdentifier = getUserIdentifier(userId);
-    //     const data = await recommendationApi.getRecommendations({
-    //       userIdentifier,
-    //       limit,
-    //     });
-
-    //     setProducts(data);
-    //   } catch (err) {
-    //     console.error('Fetch recommendations error:', err);
-    //     setError('Không thể tải sản phẩm đề xuất');
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
-    // fetchRecommendations();
+    if (!enabled || userLoading) return;
 
     const userIdentifier = getUserIdentifier(userId);
     getRecommendations({ userIdentifier, limit });
-  }, [userId, limit, enabled]);
+  }, [userId, limit, enabled, userLoading]);
 
   const refresh = async () => {
-    // setLoading(true);
-    // setError(null);
-
-    // try {
-    //   const userIdentifier = getUserIdentifier(userId);
-    //   const data = await recommendationApi.getRecommendations({
-    //     userIdentifier,
-    //     limit,
-    //   });
-
-    //   setProducts(data);
-    // } catch (err) {
-    //   console.error('Refresh recommendations error:', err);
-    //   setError('Không thể tải sản phẩm đề xuất');
-    // } finally {
-    //   setLoading(false);
-    // }
-
     const userIdentifier = getUserIdentifier(userId);
     getRecommendations({ userIdentifier, limit });
   };
@@ -87,7 +45,6 @@ export const useRecommendations = ({
   return {
     products,
     loading,
-    // error,
     refresh,
   };
 };

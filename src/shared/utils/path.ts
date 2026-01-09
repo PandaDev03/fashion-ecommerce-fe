@@ -6,6 +6,8 @@ export const PATH = {
   ACCOUNT_CHANGE_PASSWORD: '/my-account/change-password',
   ACCOUNT_ORDERS: '/my-account/orders',
 
+  RESET_PASSWORD: '/reset-password',
+
   PRODUCTS: '/products/:slug?',
   PRODUCTS_WITHOUT_SLUG: '/products',
   PRODUCT_DETAILS: '/product/:slug',
@@ -21,9 +23,8 @@ export const PATH = {
   ADMIN_BRAND_MANAGEMENT: '/admin/brand-management',
   ADMIN_ORDER_MANAGEMENT: '/admin/order-management',
   ADMIN_ORDER_DETAILS: '/admin/order/order-details/:orderId',
-  
+
   ADMIN_PRODUCT_MANAGEMENT: '/admin/product-management',
   ADMIN_PRODUCT_DETAILS: '/admin/product-management/:slug',
   ADMIN_PRODUCT_CREATE: '/admin/product-create',
-
 };

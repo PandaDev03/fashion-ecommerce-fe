@@ -37,6 +37,7 @@ import Image from '~/shared/components/Image/Image';
 import { Layout } from '~/shared/components/Layout/Layout';
 import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
+import ProductCardSkeleton from '~/shared/components/ProductCardSkeleton/ProductCardSkeleton';
 import Swiper from '~/shared/components/Swiper/Swiper';
 import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useRecommendations } from '~/shared/hooks/useRecommendation';
@@ -494,29 +495,35 @@ const HomePage = () => {
 
   const { currentUser } = useAppSelector((state) => state.user);
 
-  const { products: recommendationProducts } = useRecommendations({
-    userId: currentUser?.id,
-  });
+  const { products: recommendationProducts, loading: recommendationLoading } =
+    useRecommendations({
+      userId: currentUser?.id,
+    });
 
-  const { mutate: getFeaturedProduct } = useMutation({
-    mutationFn: (params: IGetFeaturedProductParams) =>
-      recommendationApi.getPopularProduct(params),
-    onSuccess: (response) => {
-      const products = response?.data || [];
-      setFeaturedProducts(products);
-    },
-  });
+  const { mutate: getFeaturedProduct, isPending: isGetFeaturedProductPending } =
+    useMutation({
+      mutationFn: (params: IGetFeaturedProductParams) =>
+        recommendationApi.getPopularProduct(params),
+      onSuccess: (response) => {
+        const products = response?.data || [];
+        setFeaturedProducts(products);
+      },
+    });
 
-  const { mutate: getTopProduct } = useMutation({
-    mutationFn: (params: IGetFeaturedProductParams) =>
-      recommendationApi.getPopularProduct(params),
-    onSuccess: (response) => {
-      const products = response?.data || [];
-      setTopProducts(products);
-    },
-  });
+  const { mutate: getTopProduct, isPending: isGetTopProductPending } =
+    useMutation({
+      mutationFn: (params: IGetFeaturedProductParams) =>
+        recommendationApi.getPopularProduct(params),
+      onSuccess: (response) => {
+        const products = response?.data || [];
+        setTopProducts(products);
+      },
+    });
 
-  const { mutate: getNewArrivalProducts } = useMutation({
+  const {
+    mutate: getNewArrivalProducts,
+    isPending: isGetNewArrivalProductPending,
+  } = useMutation({
     mutationFn: (params: IProductParams) => productAPI.getProducts(params),
     onSuccess: (response) => {
       const products = response?.data || [];
@@ -624,7 +631,11 @@ const HomePage = () => {
     {
       key: 'featured-products',
       title: 'Sản phẩm nổi bật',
-      children: (
+      children: isGetFeaturedProductPending ? (
+        <div className="grid grid-cols-4 gap-x-2.5">
+          <ProductCardSkeleton count={4} />
+        </div>
+      ) : (
         <div className="grid grid-rows-2 grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 xl:gap-7">
           {Array.isArray(featuredProducts) &&
             featuredProducts?.map((product, index) => {
@@ -694,19 +705,27 @@ const HomePage = () => {
           arrows
           autoplay
           spaceBetween={10}
-          slidesPerView={isXl ? 5 : isSm ? 3 : 2}
+          slidesPerView={isXl ? 5 : isSm ? 4 : 2}
         >
-          {Array.isArray(recommendationProducts) &&
-            recommendationProducts?.map((product, index) => (
-              <SwiperSlide key={index}>
-                <ProductCard
-                  vertical
-                  size="sm"
-                  product={product}
-                  onClick={() => handleSelectedProduct(product)}
-                />
-              </SwiperSlide>
-            ))}
+          {recommendationLoading
+            ? Array.from({ length: isXl ? 5 : isSm ? 4 : 2 }).map(
+                (_, index) => (
+                  <SwiperSlide key={index}>
+                    <ProductCardSkeleton count={1} />
+                  </SwiperSlide>
+                )
+              )
+            : Array.isArray(recommendationProducts) &&
+              recommendationProducts?.map((product, index) => (
+                <SwiperSlide key={index}>
+                  <ProductCard
+                    vertical
+                    size="sm"
+                    product={product}
+                    onClick={() => handleSelectedProduct(product)}
+                  />
+                </SwiperSlide>
+              ))}
         </Swiper>
       ),
     },
@@ -773,7 +792,11 @@ const HomePage = () => {
     {
       key: 'top-products',
       title: 'Sản phẩm hàng đầu',
-      children: (
+      children: isGetTopProductPending ? (
+        <div className="grid grid-cols-5 gap-x-2.5">
+          <ProductCardSkeleton count={5} />
+        </div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
           {Array.isArray(topProducts) &&
             topProducts?.map((product, key) => (
@@ -861,7 +884,11 @@ const HomePage = () => {
     {
       key: 'new-arrivals',
       title: 'Sản phẩm mới',
-      children: (
+      children: isGetNewArrivalProductPending ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7">
+          <ProductCardSkeleton count={isLg ? 5 : isMd ? 3 : 2} />
+        </div>
+      ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
           {Array.isArray(newArrivalProducts) &&
             newArrivalProducts?.map((product, key) => (

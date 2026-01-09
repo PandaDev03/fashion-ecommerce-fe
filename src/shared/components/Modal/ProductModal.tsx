@@ -66,19 +66,11 @@ const ProductModal = ({
   );
 
   const customClassNames: ModalProps['classNames'] = {
-    // body: 'max-h-[calc(-120px+100vh)] md:h-[550px] lg:h-[600px]',
     body: 'max-h-[calc(-120px+100vh)] max-lg:overflow-auto lg:h-[600px]',
     content: 'overflow-hidden p-0!',
     footer: 'mt-0!',
     ...classNames,
   };
-
-  // const customClassNames: ModalProps['classNames'] = {
-  //   body: 'p-0! overflow-hidden h-[calc(100vh-100px)] md:h-[550px] lg:h-[600px]',
-  //   content: 'overflow-hidden p-0! rounded-lg',
-  //   footer: 'mt-0!',
-  //   ...classNames,
-  // };
 
   const defaultProduct = useMemo(
     () => ({
@@ -87,7 +79,7 @@ const ProductModal = ({
         selectedVariant?.imageMappings?.[0]?.image?.url,
       price: product?.price || selectedVariant?.price,
     }),
-    [selectedVariant]
+    [selectedVariant, product]
   );
 
   useEffect(() => {
@@ -128,30 +120,38 @@ const ProductModal = ({
   useEffect(() => {
     if (!product) return;
 
-    if (selectedColorId && selectedSizeId) {
-      const selectedVariant = product?.variants?.find((variant) => {
-        const isMatchColorId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedColorId
-        );
-        const isMatchSizeId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedSizeId
-        );
+    if (product?.hasVariants) {
+      if (selectedColorId && selectedSizeId) {
+        const selectedVariant = product?.variants?.find((variant) => {
+          const isMatchColorId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedColorId
+          );
+          const isMatchSizeId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedSizeId
+          );
 
-        return isMatchColorId && isMatchSizeId;
+          return isMatchColorId && isMatchSizeId;
+        });
+
+        setSelectedVariant(selectedVariant);
+      } else if (selectedSizeId) {
+        const selectedVariant = product?.variants?.find((variant) => {
+          const isMatchSizeId = variant?.optionValues?.some(
+            (optVal) => optVal?.optionValueId === selectedSizeId
+          );
+
+          return isMatchSizeId;
+        });
+
+        setSelectedVariant(selectedVariant);
+      } else setSelectedVariant(undefined);
+    } else {
+      setSelectedVariant({
+        ...product,
+        stock: Number(product?.stock),
+        imageMappings: product?.images,
       });
-
-      setSelectedVariant(selectedVariant);
-    } else if (selectedSizeId) {
-      const selectedVariant = product?.variants?.find((variant) => {
-        const isMatchSizeId = variant?.optionValues?.some(
-          (optVal) => optVal?.optionValueId === selectedSizeId
-        );
-
-        return isMatchSizeId;
-      });
-
-      setSelectedVariant(selectedVariant);
-    } else setSelectedVariant(undefined);
+    }
   }, [selectedColorId, selectedSizeId, product]);
 
   const handleDecrease = () => {
@@ -227,7 +227,7 @@ const ProductModal = ({
       category: product?.category,
       brand: product?.brand,
       images: product?.images,
-      variant: selectedVariant,
+      variant: product?.hasVariants ? selectedVariant : undefined,
       quantity,
     };
 
@@ -261,7 +261,6 @@ const ProductModal = ({
               style={{
                 width: 'initial',
               }}
-              // className="block max-w-full max-lg:max-h-[430px]"
               className="block max-w-full"
             />
           </span>
@@ -277,7 +276,6 @@ const ProductModal = ({
           }}
           className="p-5! md:p-8! w-full overflow-y-scroll"
         >
-          {/* <Flex vertical className="p-5! md:p-8! w-full lg:overflow-auto"> */}
           <div className="pb-5">
             <div className="mb-2 md:mb-2.5 block -mt-1.5">
               <h2 className="text-primary text-lg md:text-xl lg:text-2xl font-semibold">

@@ -33,7 +33,7 @@ const saveLocalCartItems = (cartItems: ICart[]) => {
   try {
     const localItems: ILocalCartItem[] = cartItems.map((item) => ({
       productId: item.id,
-      variantId: item.variant.id,
+      ...(item.variant && { variantId: item.variant.id }),
       quantity: item.quantity,
       addedAt: Date.now(),
     }));

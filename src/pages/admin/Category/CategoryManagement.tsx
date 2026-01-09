@@ -91,7 +91,7 @@ const CategoryManagement = () => {
   const { mutate: getParentCategories } = useMutation({
     mutationFn: () => categoryApi.getAllParents(),
     onSuccess: (response) => {
-      setParentCategories(response?.data);
+      setParentCategories(response?.data || []);
     },
   });
 
@@ -158,13 +158,13 @@ const CategoryManagement = () => {
     },
     {
       key: '2',
-      width: 200,
+      width: 150,
       title: 'Tên',
       dataIndex: 'name',
     },
     {
       key: '3',
-      width: 200,
+      width: 150,
       title: 'Slug',
       dataIndex: 'slug',
     },
@@ -209,7 +209,11 @@ const CategoryManagement = () => {
       width: 150,
       title: 'Ngày chỉnh sửa',
       dataIndex: 'updatedAt',
-      render: (value) => dayjs(value).format('DD/MM/YYYY HH:mm:ss'),
+      render: (value, record) => {
+        return record?.updatedBy
+          ? dayjs(value).format('DD/MM/YYYY HH:mm:ss')
+          : '-';
+      },
     },
     {
       key: '10',

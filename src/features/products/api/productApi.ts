@@ -10,7 +10,7 @@ import {
 
 export const productAPI = {
   getProducts: async (params: IProductParams) => {
-    return await axiosApi.get('/products', { params });
+    return await axiosApi.get('/products', { params, timeout: 20000 });
   },
   getProductBySlug: async (slug: string, includeVariants?: boolean) => {
     return await axiosApi.get('/products/slug', {
