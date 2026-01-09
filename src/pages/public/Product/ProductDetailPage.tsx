@@ -24,8 +24,10 @@ import Image from '~/shared/components/Image/Image';
 import { Content, Layout } from '~/shared/components/Layout/Layout';
 import ProductModal from '~/shared/components/Modal/ProductModal';
 import ProductCard from '~/shared/components/ProductCard/ProductCard';
+import ProductCardSkeleton from '~/shared/components/ProductCardSkeleton/ProductCardSkeleton';
 import QuantitySelector from '~/shared/components/QuantitySelector/QuantitySelector';
 import { useToast } from '~/shared/contexts/NotificationContext';
+import useBreakpoint from '~/shared/hooks/useBreakpoint';
 import { useProductView } from '~/shared/hooks/useProductView';
 import { useRecommendations } from '~/shared/hooks/useRecommendation';
 import { useAppDispatch, useAppSelector } from '~/shared/hooks/useStore';
@@ -45,6 +47,8 @@ const TOAST_COOLDOWN = 2000;
 const ProductDetailPage = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+
+  const { isLg, isMd } = useBreakpoint();
   const { slug } = useParams<{ slug: string }>();
 
   const lastToastTime = useRef(0);
@@ -68,9 +72,10 @@ const ProductDetailPage = () => {
   const { currentUser } = useAppSelector((state) => state.user);
   const { items: cartItems } = useAppSelector((state) => state.cart);
 
-  const { products: recommendationProducts } = useRecommendations({
-    userId: currentUser?.id,
-  });
+  const { products: recommendationProducts, loading: recommendationLoading } =
+    useRecommendations({
+      userId: currentUser?.id,
+    });
 
   const { mutate: getProductBySlug, isPending: isGetProductBySlugPending } =
     useMutation({
@@ -437,9 +442,6 @@ const ProductDetailPage = () => {
                 <h2 className="text-primary text-lg md:text-xl lg:text-2xl 2xl:text-3xl font-bold hover:text-black mb-3.5">
                   {productDetails?.name}
                 </h2>
-                {/* <p className="text-body text-sm lg:text-base leading-6 lg:leading-8">
-                  {productDetails?.description}
-                </p> */}
                 <Flex className="flex items-center mt-5!">
                   <p className="text-primary font-bold text-base md:text-xl lg:text-2xl 2xl:text-4xl ltr:pr-2 rtl:pl-2 ltr:md:pr-0 rtl:md:pl-0 ltr:lg:pr-2 rtl:lg:pl-2 ltr:2xl:pr-0 rtl:2xl:pl-0">
                     {convertToVND(selectedVariant?.price)}
@@ -617,15 +619,19 @@ const ProductDetailPage = () => {
             Có thể bạn sẽ thích
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-7 gap-y-8">
-            {recommendationProducts?.map((product, index) => (
-              <ProductCard
-                vertical
-                key={index}
-                effect="lift"
-                product={product}
-                onClick={() => handleSelectedRecommendationProduct(product)}
-              />
-            ))}
+            {recommendationLoading ? (
+              <ProductCardSkeleton count={isLg ? 5 : isMd ? 3 : 2} />
+            ) : (
+              recommendationProducts?.map((product, index) => (
+                <ProductCard
+                  vertical
+                  key={index}
+                  effect="lift"
+                  product={product}
+                  onClick={() => handleSelectedRecommendationProduct(product)}
+                />
+              ))
+            )}
           </div>
         </Flex>
 
