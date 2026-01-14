@@ -1,5 +1,7 @@
 export interface IUserParams extends IPaginationParams {
   search?: string;
+  role?: string;
+  isActive?: boolean;
   createdFrom?: string;
   createdTo?: string;
 }

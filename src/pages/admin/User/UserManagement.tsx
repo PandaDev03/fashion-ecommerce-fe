@@ -33,6 +33,8 @@ interface ISearchForm {
 }
 
 export interface IFilterForm {
+  role?: string;
+  isActive?: string;
   createdDate?: string[];
 }
 
@@ -85,6 +87,31 @@ const UserManagement = () => {
         refetch();
       },
     });
+
+  const { mutate: exportUser, isPending: isUserExportPending } = useMutation({
+    mutationFn: (params: IUserParams) => UserAPI.exportUser(params),
+    onSuccess: (response) => {
+      const data = response.data || response;
+      const blob = new Blob([data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+
+      link.setAttribute(
+        'download',
+        `users_export_${new Date().getTime()}.xlsx`
+      );
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    },
+  });
 
   const columns: ColumnType<IUser>[] = [
     {
@@ -222,6 +249,9 @@ const UserManagement = () => {
         : undefined;
 
     filterForm.setFieldValue('createdDate', [createdFrom, createdTo]);
+    filterForm.setFieldValue('isActive', queryValues?.isActive);
+    filterForm.setFieldValue('role', queryValues?.role);
+
     searchForm.setFieldValue('search', queryValues?.search);
 
     setTitle('Người dùng');
@@ -243,12 +273,20 @@ const UserManagement = () => {
     resetPaginationAndUrl();
 
     setIsFilterVisible(false);
-    setFilterParams({ createdFrom: undefined, createdTo: undefined });
+    setFilterParams({
+      role: undefined,
+      isActive: undefined,
+      createdFrom: undefined,
+      createdTo: undefined,
+    });
   };
 
   const handleFinishFilter = (values: IFilterForm) => {
-    const { createdDate } = values;
+    const { createdDate, isActive, ...rest } = values;
     const params: IUserParams = {
+      ...rest,
+      isActive:
+        isActive === undefined ? undefined : isActive === 'true' ? true : false,
       createdFrom: createdDate?.[0]
         ? dayjs(createdDate?.[0]).startOf('day').toISOString()
         : undefined,
@@ -288,8 +326,6 @@ const UserManagement = () => {
   };
 
   const handleFinishModal = (values: IUserForm) => {
-    console.log('finish', values);
-
     if (!selectedUser) {
       toast.error('Không tìm thấy thông tin người dùng');
       return;
@@ -304,7 +340,10 @@ const UserManagement = () => {
   };
 
   return (
-    <Layout className="border border-gray-200 rounded-lg overflow-hidden">
+    <Layout
+      loading={isUserExportPending}
+      className="border border-gray-200 rounded-lg overflow-hidden"
+    >
       <Content className="flex items-center justify-between">
         <Flex vertical>
           <h2 className="font-semibold capitalize text-lg text-primary">
@@ -313,15 +352,11 @@ const UserManagement = () => {
           <p className="text-body">Quản lý người dùng</p>
         </Flex>
         <Flex className="gap-x-4">
-          {/* <Button
-            title="Import"
-            displayType="outlined"
-            iconAfter={<UploadOutlined />}
-          /> */}
           <Button
             title="Export"
             displayType="outlined"
             iconAfter={<DownloadOutlined />}
+            onClick={() => exportUser({})}
           />
         </Flex>
       </Content>

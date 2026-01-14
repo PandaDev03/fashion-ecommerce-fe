@@ -13,6 +13,12 @@ export const UserAPI = {
   getAllUsers: async (params: IUserParams) => {
     return await axiosApi.get('/users/admin/all', { params });
   },
+  exportUser: async (params: IUserParams) => {
+    return await axiosApi.get('/users/admin/export', {
+      params,
+      responseType: 'blob',
+    });
+  },
   updateUser: async (params: IUpdateUser) => {
     return await axiosApi.put('/users', params);
   },

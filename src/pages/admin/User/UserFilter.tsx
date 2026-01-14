@@ -6,6 +6,7 @@ import Button from '~/shared/components/Button/Button';
 import Form from '~/shared/components/Form/Form';
 import FormItem from '~/shared/components/Form/FormItem';
 import RangePicker from '~/shared/components/RangePicker/RangePicker';
+import Select from '~/shared/components/Select/Select';
 import { IFilterForm } from './UserManagement';
 
 interface UserFilterProps extends DropDownProps {
@@ -40,6 +41,48 @@ const UserFilter = ({
         />
       </Flex>
       <Divider className="my-1.5!" />
+      <FormItem
+        name="role"
+        className="py-1.5! px-4!"
+        label={
+          <h2 className="uppercase font-semibold text-body mt-2">Chức vụ</h2>
+        }
+      >
+        <Select
+          placeholder="Chọn chức vụ"
+          options={[
+            {
+              label: 'User',
+              value: 'user',
+            },
+            {
+              label: 'Admin',
+              value: 'admin',
+            },
+          ]}
+        />
+      </FormItem>
+      {/* <FormItem
+        name="isActive"
+        className="py-1.5! px-4!"
+        label={
+          <h2 className="uppercase font-semibold text-body mt-2">Trạng thái</h2>
+        }
+      >
+        <Select
+          placeholder="Chọn trạng thái"
+          options={[
+            {
+              label: 'Hoạt động',
+              value: 'true',
+            },
+            {
+              label: 'Ngừng hoạt động',
+              value: 'false',
+            },
+          ]}
+        />
+      </FormItem> */}
       <FormItem
         name="createdDate"
         className="py-1.5! px-4!"
