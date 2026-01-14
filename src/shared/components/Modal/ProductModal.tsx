@@ -227,6 +227,7 @@ const ProductModal = ({
       category: product?.category,
       brand: product?.brand,
       images: product?.images,
+      hasVariant: product?.hasVariants,
       variant: product?.hasVariants ? selectedVariant : undefined,
       quantity,
     };

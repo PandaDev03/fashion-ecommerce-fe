@@ -15,8 +15,6 @@ const App = () => {
   const accessToken = localStorage.getItem('accessToken');
   const clientId = import.meta.env.VITE_APP_GOOGLE_CLIENT_ID;
 
-  // useOrderMigration();
-
   useEffect(() => {
     if (!clientId) {
       toast.error('Google Client ID is missing!');

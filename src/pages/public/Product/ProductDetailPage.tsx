@@ -322,7 +322,8 @@ const ProductDetailPage = () => {
       category: productDetails?.category,
       brand: productDetails?.brand,
       images: productDetails?.images,
-      variant: selectedVariant,
+      // variant: selectedVariant,
+      variant: productDetails?.hasVariants ? selectedVariant : undefined,
       quantity,
     };
 
@@ -370,7 +371,7 @@ const ProductDetailPage = () => {
                   {selectedVariant?.imageMappings?.map(
                     ({ image, url }, index) => (
                       <div
-                        key={image?.id}
+                        key={index}
                         className={classNames(
                           'w-16 h-20 md:w-20 md:h-24 cursor-pointer rounded border-2 transition-all overflow-hidden shrink-0',
                           currentSlide === index
@@ -419,21 +420,23 @@ const ProductDetailPage = () => {
                     autoplaySpeed={3000}
                     afterChange={(current) => setCurrentSlide(current)}
                   >
-                    {selectedVariant?.imageMappings?.map(({ image, url }) => (
-                      <div
-                        key={image?.id}
-                        className="outline-none"
-                        onClick={trackImageClick}
-                      >
-                        <Image
-                          preview
-                          width="100%"
-                          alt="main product"
-                          src={url ?? image?.url}
-                          className="w-full aspect-3/4 object-cover bg-gray-100"
-                        />
-                      </div>
-                    ))}
+                    {selectedVariant?.imageMappings?.map(
+                      ({ image, url }, index) => (
+                        <div
+                          key={index}
+                          className="outline-none"
+                          onClick={trackImageClick}
+                        >
+                          <Image
+                            preview
+                            width="100%"
+                            alt="main product"
+                            src={url ?? image?.url}
+                            className="w-full aspect-3/4 object-cover bg-gray-100"
+                          />
+                        </div>
+                      )
+                    )}
                   </Carousel>
                 </div>
               </Flex>
@@ -450,16 +453,16 @@ const ProductDetailPage = () => {
 
                 <Divider />
 
-                {productOptions?.map(({ id, name, values }) => {
+                {productOptions?.map(({ id, name, values }, index) => {
                   const isColorOpt = isColorOption(name);
 
                   return (
-                    <div key={id} className="mb-4">
+                    <div key={index} className="mb-4">
                       <h3 className="text-base md:text-lg text-heading font-semibold mb-2.5 capitalize">
                         {name}
                       </h3>
                       <Flex className="gap-x-3">
-                        {values?.map((val) => {
+                        {values?.map((val, childIndex) => {
                           const imageUrl = isColorOpt
                             ? getOptionValueImage(val?.id, productDetails)
                             : null;
@@ -511,9 +514,9 @@ const ProductDetailPage = () => {
 
                           return (
                             <Flex
+                              key={childIndex}
                               align="center"
                               justify="center"
-                              key={val?.id}
                               className={classNames(
                                 'border p-1! uppercase overflow-hidden transition-all duration-300 ease-in-out',
                                 isColorOpt
