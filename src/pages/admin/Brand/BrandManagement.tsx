@@ -267,7 +267,6 @@ const BrandManagement = () => {
       width: 150,
       title: 'Ngày chỉnh sửa',
       dataIndex: 'updatedAt',
-      // render: (value) => dayjs(value).format('DD/MM/YYYY HH:mm:ss'),
       render: (value, record) => {
         return record?.updatedBy
           ? dayjs(value).format('DD/MM/YYYY HH:mm:ss')

@@ -92,7 +92,7 @@ const usePagination = <T, P extends { page: number; pageSize: number }>({
       { replace: true }
     );
 
-    fetchFn(queryParams as P).then((res: T) => setData(res));
+    fetchFn(queryParams as P)?.then((res: T) => setData(res));
   }, [currentPage, itemsPerPage, extraParams]);
 
   const resetPaginationAndUrl = useCallback(
