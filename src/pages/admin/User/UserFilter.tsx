@@ -62,7 +62,7 @@ const UserFilter = ({
           ]}
         />
       </FormItem>
-      {/* <FormItem
+      <FormItem
         name="isActive"
         className="py-1.5! px-4!"
         label={
@@ -82,7 +82,7 @@ const UserFilter = ({
             },
           ]}
         />
-      </FormItem> */}
+      </FormItem>
       <FormItem
         name="createdDate"
         className="py-1.5! px-4!"

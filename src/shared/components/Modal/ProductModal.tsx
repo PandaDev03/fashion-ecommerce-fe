@@ -399,6 +399,8 @@ const ProductModal = ({
             })}
           </div>
 
+          <p>{selectedVariant?.stock} sản phẩm có sẵn</p>
+
           <Space direction="vertical" className="pt-2 md:pt-4">
             <Flex align="center" className="w-full gap-x-3 sm:gap-x-4">
               <QuantitySelector

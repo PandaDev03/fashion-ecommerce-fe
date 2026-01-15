@@ -69,6 +69,7 @@ const OrderPage = () => {
     if (!orderNumber) return;
 
     getOrderByNumber(orderNumber);
+    window.scroll({ top: 0, behavior: 'smooth' });
   }, [orderNumber]);
 
   return (

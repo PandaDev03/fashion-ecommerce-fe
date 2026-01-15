@@ -322,6 +322,7 @@ const ProductDetailPage = () => {
       category: productDetails?.category,
       brand: productDetails?.brand,
       images: productDetails?.images,
+      hasVariant: productDetails?.hasVariants,
       // variant: selectedVariant,
       variant: productDetails?.hasVariants ? selectedVariant : undefined,
       quantity,
@@ -558,6 +559,8 @@ const ProductDetailPage = () => {
                     </div>
                   );
                 })}
+
+                <p>{selectedVariant?.stock} sản phẩm có sẵn</p>
 
                 <div className="pt-2 md:pt-4">
                   <Flex
