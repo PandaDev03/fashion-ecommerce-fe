@@ -24,6 +24,8 @@ export const getCartItems = createAsyncThunk(
         };
       });
 
+      console.log('cartItems--', cartItems);
+
       return cartItems;
     } catch (error: any) {
       return rejectWithValue(error);

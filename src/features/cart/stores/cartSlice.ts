@@ -75,9 +75,10 @@ const cartSlice = createSlice({
       }
     },
     updateQuantity: (state, action: PayloadAction<IUpdateQuantity>) => {
-      const { variantId, quantity } = action.payload;
-      const itemIndex = state.items.findIndex(
-        (item) => item?.variant?.id === variantId
+      const { id, variantId, quantity } = action.payload;
+
+      const itemIndex = state.items.findIndex((item) =>
+        item?.hasVariant ? item?.variant?.id === variantId : item?.id === id
       );
 
       if (itemIndex === -1) return;
@@ -86,11 +87,11 @@ const cartSlice = createSlice({
       saveLocalCartItems(state.items);
     },
     deleteCartItem: (state, action: PayloadAction<IDeleteCartItem>) => {
-      const { variantId } = action.payload;
+      const { id, variantId } = action.payload;
       const currentItems = state.items;
 
-      const newCartItems = currentItems.filter(
-        (item) => item?.variant?.id !== variantId
+      const newCartItems = currentItems.filter((item) =>
+        item?.hasVariant ? item?.variant?.id !== variantId : item?.id !== id
       );
 
       saveLocalCartItems(newCartItems);

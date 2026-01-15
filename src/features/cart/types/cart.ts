@@ -13,6 +13,7 @@ export interface ICart {
   stock: string;
   quantity: number;
   status: string;
+  hasVariant: boolean;
   variant?: IVariant;
   category: {
     id: string;
@@ -45,10 +46,12 @@ export interface ILocalCartItem {
 }
 
 export interface IUpdateQuantity {
-  variantId: string;
+  id?: string;
+  variantId?: string;
   quantity: number;
 }
 
 export interface IDeleteCartItem {
-  variantId: string;
+  id?: string;
+  variantId?: string;
 }

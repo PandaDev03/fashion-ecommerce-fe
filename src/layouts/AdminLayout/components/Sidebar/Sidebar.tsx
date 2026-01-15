@@ -33,11 +33,14 @@ const siderItems: MenuProps['items'] = [
       },
     ],
   },
-  { key: PATH.ADMIN_PROFILE, label: 'Hồ sơ', icon: <UserCircleOutlined /> },
+  {
+    key: PATH.ADMIN_USER_MANAGEMENT,
+    label: 'Người dùng',
+    icon: <UserCircleOutlined />,
+  },
 ];
 
 const routePatterns = [
-  { pattern: PATH.ADMIN_PROFILE, keys: [PATH.ADMIN_PROFILE] },
   { pattern: PATH.ADMIN_DASHBOARD, keys: [PATH.ADMIN_DASHBOARD] },
   { pattern: PATH.ADMIN_BRAND_MANAGEMENT, keys: [PATH.ADMIN_BRAND_MANAGEMENT] },
   {
@@ -59,6 +62,10 @@ const routePatterns = [
   {
     pattern: PATH.ADMIN_ORDER_DETAILS,
     keys: [PATH.ADMIN_ORDER_MANAGEMENT],
+  },
+  {
+    pattern: PATH.ADMIN_USER_MANAGEMENT,
+    keys: [PATH.ADMIN_USER_MANAGEMENT],
   },
 ];
 

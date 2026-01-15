@@ -664,6 +664,7 @@ const HomePage = () => {
               >
                 <Flex align="center" justify="center" className="h-full">
                   <Image
+                    height={300}
                     src={defaultProduct?.imgageUrl}
                     className="transition duration-300 ease-in-out group-has-hover:scale-115"
                   />

@@ -67,6 +67,7 @@ import ProductVariantModal from './ProductVariantModal';
 interface IProductEditForm {
   name: string;
   slug: string;
+  status: string;
   parentPrice?: number;
   parentStock?: number;
   brandId: string;
@@ -513,25 +514,33 @@ const ProductDetailsManagement = () => {
   }, [slug, location]);
 
   useEffect(() => {
+    if (!Object.keys(product).length) return;
+
     const selectedVariant = product?.variants?.[0];
     const selectedImage = hasVariant
       ? selectedVariant?.imageMappings?.[0]?.image
       : product?.images?.[0];
 
+    if (!selectedImage) {
+      toast.error('Không tìm thấy thông tin hình ảnh');
+      return;
+    }
+
     const dataSource: IDataSource[] = product?.variants?.map(
-      ({ id, stock, status, position, optionValues, ...variant }) => ({
+      ({ id, stock, status, optionValues, ...variant }) => ({
         id,
         stock,
         status,
-        position,
         price: Number(variant?.price ?? 0),
-        optionValues: optionValues?.map((value) => ({
-          ...value,
-          optionValueId: {
-            label: value?.optionValue?.value,
-            value: value?.optionValue?.id,
-          },
-        })),
+        position: Number(variant?.position ?? 0),
+        optionValues:
+          optionValues?.map((value) => ({
+            ...value,
+            optionValueId: {
+              label: value?.optionValue?.value,
+              value: value?.optionValue?.id,
+            },
+          })) || [],
         name:
           optionValues
             ?.map(({ optionValue }) => optionValue?.value)
@@ -620,6 +629,11 @@ const ProductDetailsManagement = () => {
 
     const selectedImage = selectedVariant?.imageMappings?.[0]?.image;
 
+    if (!selectedImage) {
+      toast.error('Không tìm thấy thông tin hình ảnh');
+      return;
+    }
+
     setSelectedVariant(selectedVariant);
     setSelectedImage({
       id: selectedImage?.id,
@@ -640,6 +654,7 @@ const ProductDetailsManagement = () => {
     const productEditFormValues: IProductEditForm = {
       name: product?.name,
       slug: product?.slug,
+      status: product?.status,
       parentStock: Number(product?.stock),
       parentPrice: Number(product?.price),
       brandId: product?.brandId,
@@ -913,12 +928,35 @@ const ProductDetailsManagement = () => {
               className="bg-white py-4! px-5! border border-gray-200 rounded-lg overflow-hidden gap-y-2"
             >
               <span className="text-body">Trạng thái</span>
-              <Tag
-                className="max-w-max"
-                color={product?.status === 'active' ? 'green' : 'default'}
-              >
-                {product?.status === 'active' ? 'Đáng bán' : 'Tạm ngừng'}
-              </Tag>
+              {isProductEdit ? (
+                <FormItem
+                  name="status"
+                  rules={[
+                    { required: true, message: 'Vui lòng chọn trạng thái' },
+                  ]}
+                >
+                  <Select
+                    placeholder="Chọn trạng thái"
+                    options={[
+                      {
+                        label: 'Hoạt động',
+                        value: 'active',
+                      },
+                      {
+                        label: 'Ngừng hoạt động',
+                        value: 'inactive',
+                      },
+                    ]}
+                  />
+                </FormItem>
+              ) : (
+                <Tag
+                  className="max-w-max"
+                  color={product?.status === 'active' ? 'green' : 'error'}
+                >
+                  {product?.status === 'active' ? 'Đáng bán' : 'Tạm ngừng'}
+                </Tag>
+              )}
             </Flex>
           </div>
           <div className="grid grid-cols-4 gap-x-4 min-h-[580px]">
@@ -1006,12 +1044,19 @@ const ProductDetailsManagement = () => {
                                     ? 'border-black'
                                     : 'border-[#e5e5e5]'
                                 )}
-                                onClick={() =>
+                                onClick={() => {
+                                  if (!image?.id) {
+                                    toast.error(
+                                      'Không tìm thấy thông tin hình ảnh'
+                                    );
+                                    return;
+                                  }
+
                                   setSelectedImage({
                                     id: image?.id,
                                     url: image?.url ?? FALLBACK_IMG,
-                                  })
-                                }
+                                  });
+                                }}
                               />
                             ))
                           : product?.images?.map((image) => (
