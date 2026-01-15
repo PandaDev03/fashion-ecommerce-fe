@@ -87,6 +87,8 @@ const CheckoutPage = () => {
       email: shippingInfo?.email,
     };
     shippingAddressForm.setFieldsValue(fieldsValue);
+
+    window.scroll({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleSaveToLocal = (values: IShippingAddressForm) => {

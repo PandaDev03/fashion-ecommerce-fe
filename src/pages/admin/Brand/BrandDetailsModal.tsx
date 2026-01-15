@@ -84,7 +84,6 @@ const BrandDetailsModal = forwardRef(
 
       const domainOnly = removeUrlPrefix({ website, facebook, instagram });
       form.setFieldsValue({ ...brand, ...domainOnly });
-      // form.setFieldsValue({ ...selectedBrand });
 
       setIsEdit(true);
     };

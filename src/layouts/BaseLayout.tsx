@@ -394,11 +394,10 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
 
   const totalPrice = useMemo(
     () =>
-      cartItems?.reduce(
-        (prev, current) =>
-          (prev += Number(current?.variant?.price ?? 0) * current?.quantity),
-        0
-      ),
+      cartItems?.reduce((prev, current) => {
+        const price = current?.price ?? current?.variant?.price ?? 0;
+        return (prev += Number(price) * current?.quantity);
+      }, 0),
     [cartItems]
   );
 
@@ -499,21 +498,29 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
   };
 
   const handleDecrease = (item: ICart) => {
-    if (!item?.variant?.id) {
+    const { hasVariant } = item;
+    const currentId = hasVariant ? item?.variant?.id : item?.id;
+
+    if (!currentId) {
       toast.error('Không tìm thấy ID của biến thể');
       return;
     }
 
     dispatch(
       updateQuantity({
-        variantId: item?.variant?.id,
+        ...(item?.hasVariant ? { variantId: currentId } : { id: currentId }),
         quantity: item?.quantity > 1 ? -1 : 0,
       })
     );
   };
 
   const handleIncrease = (item: ICart) => {
-    if (!item?.variant?.id || !item?.variant?.stock) {
+    const { hasVariant } = item;
+
+    const currentId = hasVariant ? item?.variant?.id : item?.id;
+    const currentStock = hasVariant ? item?.variant?.stock : item?.stock;
+
+    if (!currentId || !currentStock) {
       toast.error('Không tìm thấy ID của biến thể');
       return;
     }
@@ -524,7 +531,7 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
     const isAvailableStock = validateStockAvailability({
       item: {
         quantity: newQuantity,
-        stock: variant?.stock,
+        stock: Number(currentStock),
         optionValues: variant?.optionValues,
       },
       toastCoolDown: TOAST_COOLDOWN,
@@ -535,19 +542,25 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
 
     dispatch(
       updateQuantity({
-        variantId: item?.variant?.id,
+        ...(item?.hasVariant ? { variantId: currentId } : { id: currentId }),
         quantity: 1,
       })
     );
   };
 
-  const handleDeleteCartItem = (variantId?: string) => {
-    if (!variantId) {
+  const handleDeleteCartItem = (item: ICart) => {
+    const currentId = item?.hasVariant ? item?.variant?.id : item?.id;
+
+    if (!currentId) {
       toast.error('Không tìm thấy ID của biến thể');
       return;
     }
 
-    dispatch(deleteCartItem({ variantId }));
+    dispatch(
+      deleteCartItem({
+        ...(item?.hasVariant ? { variantId: currentId } : { id: currentId }),
+      })
+    );
   };
 
   const handleCheckout = () => {
@@ -688,8 +701,11 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
         ) : (
           <Space size="middle" direction="vertical" className="w-full">
             {cartItems?.map((item, index) => {
-              const defaultImg =
-                item?.images?.[0] || item?.variant?.imageMappings?.[0]?.image;
+              const defaultInfo = {
+                img:
+                  item?.images?.[0] ?? item?.variant?.imageMappings?.[0]?.image,
+                price: item?.price ?? item?.variant?.price,
+              };
 
               return (
                 <Flex
@@ -699,11 +715,11 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
                 >
                   <div
                     className="group relative flex shrink-0 w-24 h-24 overflow-hidden bg-gray-200 rounded-md cursor-pointer md:w-28 md:h-28 ltr:mr-4 rtl:ml-4"
-                    onClick={() => handleDeleteCartItem(item?.variant?.id)}
+                    onClick={() => handleDeleteCartItem(item)}
                   >
                     <img
                       className="w-full rounded-lg object-cover"
-                      src={defaultImg?.url}
+                      src={defaultInfo?.img?.url}
                       onError={(element) => {
                         element.currentTarget.src = FALLBACK_IMG;
                         element.currentTarget.srcset = FALLBACK_IMG;
@@ -719,7 +735,7 @@ const BaseLayout = ({ children }: { children: ReactNode }) => {
                     </p>
                     <p className="text-sm text-gray-400 mb-2.5">
                       Giá:&nbsp;
-                      {convertToVND(Number(item?.variant?.price ?? 0))}
+                      {convertToVND(Number(defaultInfo?.price ?? 0))}
                     </p>
                     <Flex align="center" justify="space-between">
                       <QuantitySelector

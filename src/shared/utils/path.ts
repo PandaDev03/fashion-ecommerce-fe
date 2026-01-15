@@ -27,4 +27,6 @@ export const PATH = {
   ADMIN_PRODUCT_MANAGEMENT: '/admin/product-management',
   ADMIN_PRODUCT_DETAILS: '/admin/product-management/:slug',
   ADMIN_PRODUCT_CREATE: '/admin/product-create',
+
+  ADMIN_USER_MANAGEMENT: '/admin/user-management',
 };

@@ -159,6 +159,15 @@ const routes: AppRoute[] = [
       () => import('~/pages/admin/Order/OrderDetailManagement')
     ),
   },
+  {
+    isProtected: true,
+    layout: AdminLayout,
+    path: PATH.ADMIN_USER_MANAGEMENT,
+    requiredRoles: [UserRole.ADMIN],
+    element: React.lazy(
+      () => import('~/pages/admin/User/UserManagement')
+    ),
+  },
 
   // NOT FOUND
   {

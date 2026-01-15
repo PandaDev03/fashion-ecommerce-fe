@@ -227,6 +227,7 @@ const ProductModal = ({
       category: product?.category,
       brand: product?.brand,
       images: product?.images,
+      hasVariant: product?.hasVariants,
       variant: product?.hasVariants ? selectedVariant : undefined,
       quantity,
     };
@@ -397,6 +398,8 @@ const ProductModal = ({
               );
             })}
           </div>
+
+          <p>{selectedVariant?.stock} sản phẩm có sẵn</p>
 
           <Space direction="vertical" className="pt-2 md:pt-4">
             <Flex align="center" className="w-full gap-x-3 sm:gap-x-4">
